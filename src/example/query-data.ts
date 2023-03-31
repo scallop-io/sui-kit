@@ -8,11 +8,10 @@ dotenv.config();
 
 (async() => {
 	const mnemonics = process.env.mnemonics;
-	// Init a SuiKit instance, it will use testnet by default. Read the doc for more options
-	const suiKit = new SuiKit({ mnemonics, networkType: 'testnet' })
-	const address = suiKit.getAddress({ accountIndex: 0 })
-
-	console.log('SUI address: ', address);
-	const balance = await suiKit.getBalance()
-	console.log('SUI balance: ' + balance.totalBalance);
+	const suiKit = new SuiKit({ mnemonics })
+	for (let i = 0; i < 10; i++) {
+		suiKit.switchAccount({ accountIndex: i });
+		const address = suiKit.getAddress();
+		console.log(`address for account ${i}: ${address}`)
+	}
 })();

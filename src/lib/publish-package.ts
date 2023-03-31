@@ -8,9 +8,31 @@ import {
 	ObjectId,
 	RawSigner,
 	getExecutionStatusType,
-	getPublishedObjectChanges, getObjectChanges,
 } from "@mysten/sui.js";
 import {parsePublishTxn} from "./sui-response-parser";
+
+/**
+ * Options for build & publish packages
+ */
+type BuildOptions = {
+	// Also publish transitive dependencies that are not published yet
+	withUnpublishedDependencies?: boolean
+	// Skip fetching the latest git dependencies
+	skipFetchLatestGitDeps?: boolean
+}
+
+export type PublishOptions = BuildOptions & {
+	// The gas budget for the publish transaction
+	gasBudget?: number
+} 
+const defaultBuildOptions: BuildOptions = {
+	withUnpublishedDependencies: true,
+	skipFetchLatestGitDeps: true,
+}
+const defaultPublishOptions: PublishOptions = {
+	...defaultBuildOptions,
+	gasBudget: 100000,
+}
 
 /**
  * Publishes a package to the SUI blockchain, and returns the packageId and publish txn response
@@ -19,15 +41,16 @@ import {parsePublishTxn} from "./sui-response-parser";
  * @param signer, signer who is going the publish the package
  * @returns { packageId, publishTxn }, the packageId and publishTxn
  */
-export const publishPackage = async (suiBinPath: string, packagePath: string, signer: RawSigner) => {
+export const publishPackage = async (suiBinPath: string, packagePath: string, signer: RawSigner, options: PublishOptions = defaultPublishOptions) => {
+	const gasBudget = options.gasBudget || defaultPublishOptions.gasBudget as number;
 
 	// build the package
-	const compiledModulesAndDeps = buildPackage(suiBinPath, packagePath);
+	const compiledModulesAndDeps = buildPackage(suiBinPath, packagePath, options);
 
 	// create a transaction block for publish package
 	const publishTxnBlock = new TransactionBlock();
 	// TODO: publish dry run fails currently. Remove this once it's fixed.
-	publishTxnBlock.setGasBudget(100000);
+	publishTxnBlock.setGasBudget(gasBudget);
 
 	// obtain the upgradeCap, and transfer it to the publisher
 	const upgradeCap = publishTxnBlock.publish(
@@ -47,15 +70,15 @@ export const publishPackage = async (suiBinPath: string, packagePath: string, si
 	// Otherwise, return empty data
 	if (getExecutionStatusType(publishTxn) === 'success') {
 		const { packageId, upgradeCapId, created } = parsePublishTxn(publishTxn);
-		console.log('Successfully published package'.green)
-		console.log('PackageId: ', packageId.blue.bold)
-		console.log('UpgradeCapId: ', upgradeCapId.blue.bold)
-		console.log('Other created objects:')
+		console.log('Successfully published package\n'.green)
+		console.log('\nCreated objects:\n')
 		created.forEach(({ type, objectId , owner}) => {
-			console.log(`\ttype: ${type}`)
-			console.log(`\towner: ${owner}`)
-			console.log(`\tobjectId: ${objectId} \n`)
+			console.log('type: '.gray, type)
+			console.log('owner: '.gray, owner)
+			console.log('objectId: '.gray, objectId, '\n')
 		})
+		console.log('PackageId: '.gray, packageId.blue.bold)
+		console.log('UpgradeCapId: '.gray, upgradeCapId.blue.bold)
 		return { packageId, publishTxn };
 	} else {
 		console.error('Publish package failed!'.red)
@@ -74,20 +97,19 @@ type BuildPackageResult = {
  * @param packagePath, the path to the package to be built
  * @returns {BuildPackageResult}, the compiled modules and dependencies
  */
-export const buildPackage = (suiBinPath: string, packagePath: string) => {
-
+export const buildPackage = (suiBinPath: string, packagePath: string, options: BuildOptions = defaultBuildOptions) => {
 	// remove all controlled temp objects on process exit
 	tmp.setGracefulCleanup()
 
 	const tmpDir = tmp.dirSync({ unsafeCleanup: true });
 	try {
-		const skipDepFetchOption = '--skip-fetch-latest-git-deps';
-		const withUnpublishedDep = '--with-unpublished-dependencies';
+		const withUnpublishedDep = options.withUnpublishedDependencies ? '--with-unpublished-dependencies' : '';
+		const skipDepFetch = options.skipFetchLatestGitDeps ? '--skip-fetch-latest-git-deps' : '';
 		const buildCmd =
-			`${suiBinPath} move build --dump-bytecode-as-base64 --path ${packagePath} ${skipDepFetchOption} ${withUnpublishedDep} --install-dir ${tmpDir.name}`;
+			`${suiBinPath} move build --dump-bytecode-as-base64 --path ${packagePath} ${skipDepFetch} ${withUnpublishedDep}`;
 		console.log('Running build package command')
 		console.log(buildCmd.cyan.bold)
-		const buildCommandOutput = execSync(buildCmd, {encoding: 'utf-8'});
+		const buildCommandOutput = execSync(`${buildCmd} --install-dir ${tmpDir.name}`, {encoding: 'utf-8'});
 		const compiledModulesAndDeps = JSON.parse(buildCommandOutput);
 		console.log('Build package success'.green)
 		return {

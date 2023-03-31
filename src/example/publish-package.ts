@@ -15,6 +15,6 @@ dotenv.config();
 		await suiKit.requestFaucet()
 	}
 	const packagePath = path.join(__dirname, './sample_move/package_a')
-	const result = await suiKit.publishPackage(packagePath)
+	const result = await suiKit.publishPackage(packagePath, { skipFetchLatestGitDeps: false })
 	console.log('packageId: ' + result.packageId)
 })();

@@ -9,7 +9,7 @@ import { getKeyPair, DerivePathParams } from "./keypair";
 import { NetworkType, getDefaultNetworkParams } from "./default-chain-configs";
 import {hexOrBase64ToUint8Array} from "./util";
 import { requestFaucet } from "./faucet";
-import {publishPackage} from "./publish-package";
+import {PublishOptions, publishPackage} from "./publish-package";
 
 type ToolKitParams = {
 	mnemonics?: string;
@@ -150,7 +150,7 @@ export class SuiKit {
 	 * The building process takes place in a tmp directory, which would be cleaned later
 	 * @param packagePath
 	 */
-	async publishPackage(packagePath: string) {
+	async publishPackage(packagePath: string, options?: PublishOptions) {
 		return publishPackage(this.suiBin, packagePath, this.currentSigner)
 	}
 }

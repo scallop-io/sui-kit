@@ -26,7 +26,7 @@ export const publishPackage = async (suiBinPath: string, packagePath: string, si
 	// create a transaction block for publish package
 	const publishTxnBlock = new TransactionBlock();
 	// TODO: publish dry run fails currently. Remove this once it's fixed.
-	publishTxnBlock.setGasBudget(10000);
+	publishTxnBlock.setGasBudget(100000);
 
 	// obtain the upgradeCap, and transfer it to the publisher
 	const upgradeCap = publishTxnBlock.publish(
@@ -76,8 +76,10 @@ export const buildPackage = (suiBinPath: string, packagePath: string) => {
 
 	const tmpDir = tmp.dirSync({ unsafeCleanup: true });
 	try {
+		const skipDepFetchOption = '--skip-fetch-latest-git-deps';
+		const withUnpublishedDep = '--with-unpublished-dependencies';
 		const buildCmd =
-				`${suiBinPath} move build --dump-bytecode-as-base64 --path ${packagePath} --install-dir ${tmpDir.name}`;
+			`${suiBinPath} move build --dump-bytecode-as-base64 --path ${packagePath} ${skipDepFetchOption} ${withUnpublishedDep} --install-dir ${tmpDir.name}`;
 		console.log('Running build package command')
 		console.log(buildCmd.cyan.bold)
 		const buildCommandOutput = execSync(buildCmd, {encoding: 'utf-8'});

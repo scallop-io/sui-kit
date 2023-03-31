@@ -11,6 +11,7 @@ import {hexOrBase64ToUint8Array} from "./util";
 import { requestFaucet } from "./faucet";
 import {PublishOptions, publishPackage} from "./publish-package";
 import { generateMnemonic } from './crypto';
+import { composeTransferSuiTxn } from './transfer-sui';
 
 type ToolKitParams = {
 	mnemonics?: string;
@@ -71,77 +72,81 @@ export class SuiKit {
 			this.mnemonics = generateMnemonic(24)
 		}
 
-		// Init the currentKeyPair
-		this.currentKeyPair = this.getKeyPair();
-		// Init the currentSigner
-		this.currentSigner = this.getSigner();
-		// Init the currentAddress
-		this.currentAddress = this.getAddress();
+		// Init the current account
+		this.currentKeyPair = this.secretKey
+			? Ed25519Keypair.fromSecretKey(hexOrBase64ToUint8Array(this.secretKey))
+			: getKeyPair(this.mnemonics);
+		this.currentSigner = new RawSigner(this.currentKeyPair, this.provider);
+		this.currentAddress = this.currentKeyPair.getPublicKey().toSuiAddress();
+
 		// Set the sui binary for building and publishing packages
 		this.suiBin = suiBin || 'sui';
 	}
 
 	/**
-	 * When mnemonics is provided, it will generate keyPair based on the given derivePathParams.
-	 * Otherwise, it will use the secretKey to generate keyPair, and ignore the derivePathParams.
+	 * if derivePathParams is not provided or mnemonics is empty, it will return the currentKeyPair.
+	 * else:
+	 * it will generate keyPair from the mnemonic with the given derivePathParams.
 	 */
-	getKeyPair(derivePathParams: DerivePathParams = {}) {
-		if (this.mnemonics) {
-			return getKeyPair(this.mnemonics, derivePathParams)
-		} else if (!this.currentKeyPair) {
-			const arrayData = hexOrBase64ToUint8Array(this.secretKey);
-			return Ed25519Keypair.fromSecretKey(arrayData);
-		} else {
-			return this.currentKeyPair;
-		}
+	getKeyPair(derivePathParams?: DerivePathParams) {
+		if (!derivePathParams || !this.mnemonics) return this.currentKeyPair;
+		return getKeyPair(this.mnemonics, derivePathParams);
 	}
 
 	/**
-	 * When mnemonics is provided, it will generate address based on the given derivePathParams.
-	 * Otherwise, it will use the currentKeyPair to generate address, and ignore the derivePathParams.
+	 * if derivePathParams is not provided or mnemonics is empty, it will return the currentAddress.
+	 * else:
+	 * it will generate address from the mnemonic with the given derivePathParams.
 	 */
-	getAddress(derivePathParams: DerivePathParams = {}) {
-		return this.getKeyPair(derivePathParams).getPublicKey().toSuiAddress();
+	getAddress(derivePathParams?: DerivePathParams) {
+		if (!derivePathParams || !this.mnemonics) return this.currentAddress;
+		return getKeyPair(this.mnemonics, derivePathParams).getPublicKey().toSuiAddress();
 	}
 
 	/**
-	 * When mnemonics is provided, it will generate signer based on the given derivePathParams.
-	 * Otherwise, it will use the currentSigner, and ignore the derivePathParams.
+	 * if derivePathParams is not provided or mnemonics is empty, it will return the currentSigner.
+	 * else:
+	 * it will generate address from the mnemonic with the given derivePathParams.
 	 */
-	getSigner(derivePathParams: DerivePathParams = {}) {
-		return new RawSigner(this.getKeyPair(derivePathParams), this.provider);
+	getSigner(derivePathParams?: DerivePathParams) {
+		if (!derivePathParams || !this.mnemonics) return this.currentSigner;
+		return new RawSigner(getKeyPair(this.mnemonics, derivePathParams), this.provider);
 	}
 
 	/**
 	 * Switch the current account with the given derivePathParams.
 	 * This is only useful when the mnemonics is provided. For secretKey mode, it will always use the same account.
 	 */
-	switchAccount(derivePathParams: DerivePathParams = {}) {
-		if (!this.mnemonics) {
-			this.currentKeyPair = this.getKeyPair(derivePathParams);
+	switchAccount(derivePathParams: DerivePathParams) {
+		if (this.mnemonics) {
+			this.currentKeyPair = getKeyPair(this.mnemonics, derivePathParams);
 			this.currentSigner = new RawSigner(this.currentKeyPair, this.provider);
 			this.currentAddress = this.currentKeyPair.getPublicKey().toSuiAddress();
 		}
 	}
 
 	/**
-	 * Request the faucet to send some SUI to the current account.
+	 * Request some SUI from faucet
 	 * @Returns {Promise<boolean>}, true if the request is successful, false otherwise.
 	 */
-	async requestFaucet() {
-		return requestFaucet(this.currentAddress, this.provider)
+	async requestFaucet(derivePathParams?: DerivePathParams) {
+		const addr = this.getAddress(derivePathParams);
+		return requestFaucet(addr, this.provider)
 	}
 
-	async getBalance(coinType?: string) {
-		return this.provider.getBalance({ owner: this.currentAddress, coinType});
+	async getBalance(coinType?: string, derivePathParams?: DerivePathParams) {
+		const owner = this.getAddress(derivePathParams);
+		return this.provider.getBalance({ owner, coinType});
 	}
 
-	async signTxn(tx: Uint8Array | TransactionBlock) {
-		return this.currentSigner.signTransactionBlock({ transactionBlock: tx });
+	async signTxn(tx: Uint8Array | TransactionBlock, derivePathParams?: DerivePathParams) {
+		const signer = this.getSigner(derivePathParams);
+		return signer.signTransactionBlock({ transactionBlock: tx });
 	}
 
-	async signAndSendTxn(tx: Uint8Array | TransactionBlock) {
-		return this.currentSigner.signAndExecuteTransactionBlock({ transactionBlock: tx  })
+	async signAndSendTxn(tx: Uint8Array | TransactionBlock, derivePathParams?: DerivePathParams) {
+		const signer = this.getSigner(derivePathParams);
+		return signer.signAndExecuteTransactionBlock({ transactionBlock: tx  })
 	}
 
 	/**
@@ -150,7 +155,13 @@ export class SuiKit {
 	 * The building process takes place in a tmp directory, which would be cleaned later
 	 * @param packagePath
 	 */
-	async publishPackage(packagePath: string, options?: PublishOptions) {
-		return publishPackage(this.suiBin, packagePath, this.currentSigner)
+	async publishPackage(packagePath: string, options?: PublishOptions, derivePathParams?: DerivePathParams) {
+		const signer = this.getSigner(derivePathParams);
+		return publishPackage(this.suiBin, packagePath, signer)
+	}
+
+	async transferSui(to: string, amount: number, derivePathParams?: DerivePathParams) {
+		const tx = composeTransferSuiTxn(to, amount);
+		return this.signAndSendTxn(tx, derivePathParams);
 	}
 }

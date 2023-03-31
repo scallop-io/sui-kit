@@ -2,7 +2,7 @@
  * This is an example of using SuiKit to publish a move package
  */
 import path from "path";
-import { SuiKit } from "../lib/sui-kit";
+import { SuiKit } from "../sui-kit";
 
 (async() => {
 	const suiKit = new SuiKit()

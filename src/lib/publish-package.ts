@@ -71,14 +71,15 @@ export const publishPackage = async (suiBinPath: string, packagePath: string, si
 	if (getExecutionStatusType(publishTxn) === 'success') {
 		const { packageId, upgradeCapId, created } = parsePublishTxn(publishTxn);
 		console.log('Successfully published package\n'.green)
-		console.log('\nCreated objects:\n')
+		console.log('==============Created objects=============='.gray)
 		created.forEach(({ type, objectId , owner}) => {
 			console.log('type: '.gray, type)
 			console.log('owner: '.gray, owner)
 			console.log('objectId: '.gray, objectId, '\n')
 		})
+		console.log('==============Package info=============='.gray)
 		console.log('PackageId: '.gray, packageId.blue.bold)
-		console.log('UpgradeCapId: '.gray, upgradeCapId.blue.bold)
+		console.log('UpgradeCapId: '.gray, upgradeCapId.blue.bold, '\n')
 		return { packageId, publishTxn };
 	} else {
 		console.error('Publish package failed!'.red)

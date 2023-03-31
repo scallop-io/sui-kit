@@ -8,8 +8,9 @@ import {
 	ObjectId,
 	RawSigner,
 	getExecutionStatusType,
-	getPublishedObjectChanges
+	getPublishedObjectChanges, getObjectChanges,
 } from "@mysten/sui.js";
+import {parsePublishTxn} from "./sui-response-parser";
 
 /**
  * Publishes a package to the SUI blockchain, and returns the packageId and publish txn response
@@ -45,12 +46,16 @@ export const publishPackage = async (suiBinPath: string, packagePath: string, si
 	// If the publish transaction is successful, retrieve the packageId from the 'publish' event
 	// Otherwise, return empty data
 	if (getExecutionStatusType(publishTxn) === 'success') {
-		const packageId = getPublishedObjectChanges(publishTxn)[0].packageId.replace(
-			/^(0x)(0+)/,
-			'0x',
-		);
+		const { packageId, upgradeCapId, created } = parsePublishTxn(publishTxn);
 		console.log('Successfully published package'.green)
-		console.log('Package id: ', packageId.blue.bold)
+		console.log('PackageId: ', packageId.blue.bold)
+		console.log('UpgradeCapId: ', upgradeCapId.blue.bold)
+		console.log('Other created objects:')
+		created.forEach(({ type, objectId , owner}) => {
+			console.log(`\ttype: ${type}`)
+			console.log(`\towner: ${owner}`)
+			console.log(`\tobjectId: ${objectId} \n`)
+		})
 		return { packageId, publishTxn };
 	} else {
 		console.error('Publish package failed!'.red)

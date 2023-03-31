@@ -14,7 +14,7 @@ dotenv.config();
 	if (balance.totalBalance <= 3000) {
 		await suiKit.requestFaucet()
 	}
-	const packagePath = path.join(__dirname, './sample_move/package_b')
+	const packagePath = path.join(__dirname, './sample_move/package_a')
 	const result = await suiKit.publishPackage(packagePath)
 	console.log('packageId: ' + result.packageId)
 })();

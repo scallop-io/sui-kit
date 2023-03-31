@@ -19,10 +19,10 @@ export type NetworkType = 'testnet' | 'mainnet' | 'devnet';
 
 /**
  * @description Get the default fullnode url and faucet url for the given network type
- * @param networkType, 'testnet' | 'mainnet' | 'devnet', default is 'testnet'
+ * @param networkType, 'testnet' | 'mainnet' | 'devnet', default is 'devnet'
  * @returns { fullNode: string, faucet: string }
   */
-export const getDefaultNetworkParams = (networkType: NetworkType = 'testnet'): { fullNode: string, faucet: string } => {
+export const getDefaultNetworkParams = (networkType: NetworkType = 'devnet'): { fullNode: string, faucet: string } => {
 	switch (networkType) {
 		case 'testnet':
 			return {

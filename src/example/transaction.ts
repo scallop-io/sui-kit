@@ -1,15 +1,14 @@
 /**
  * This is an example of using SuiKit to publish a move package
  */
-import dotenv from 'dotenv'
-import * as process from "process";
+import { TransactionBlock, Ed25519Keypair } from '@mysten/sui.js'
 import { SuiKit } from "../lib/sui-kit";
-import { TransactionBlock  } from '@mysten/sui.js'
-dotenv.config();
 
 (async() => {
-	const mnemonics = process.env.mnemonics;
+	const mnemonics = 'always secret tiny else choose head settle guess just tape tunnel owner perfect tonight avocado bullet include gentle cloud always dentist regular tide guitar';
 	const suiKit = new SuiKit({ mnemonics, networkType: 'devnet' })
+
+
 
 	const tx = new TransactionBlock();
 	tx.moveCall({

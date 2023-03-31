@@ -10,6 +10,7 @@ import { NetworkType, getDefaultNetworkParams } from "./default-chain-configs";
 import {hexOrBase64ToUint8Array} from "./util";
 import { requestFaucet } from "./faucet";
 import {PublishOptions, publishPackage} from "./publish-package";
+import { generateMnemonic } from './crypto';
 
 type ToolKitParams = {
 	mnemonics?: string;
@@ -38,18 +39,18 @@ export class SuiKit {
 	 * Support the following ways to init the SuiToolkit:
 	 * 1. mnemonics
 	 * 2. secretKey (base64 or hex)
-	 * Need to pass in either mnemonics or secretKey.
+	 * If none of them is provided, will generate a random mnemonics with 24 words.
 	 *
 	 * @param mnemonics, 12 or 24 mnemonics words, separated by space
 	 * @param secretKey, base64 or hex string, when mnemonics is provided, secretKey will be ignored
-	 * @param networkType, 'testnet' | 'mainnet' | 'devnet', default is 'testnet'
+	 * @param networkType, 'testnet' | 'mainnet' | 'devnet', default is 'devnet'
 	 * @param fullnodeUrl, the fullnode url, default is the preconfig fullnode url for the given network type
 	 * @param faucetUrl, the faucet url, default is the preconfig faucet url for the given network type
 	 * @param suiBin, the path to sui cli binary, default to 'cargo run --bin sui'
 	 */
-	constructor({ mnemonics, secretKey, networkType, fullnodeUrl, faucetUrl, suiBin }: ToolKitParams) {
+	constructor({ mnemonics, secretKey, networkType, fullnodeUrl, faucetUrl, suiBin }: ToolKitParams = {}) {
 		// Get the default fullnode url and faucet url for the given network type, default is 'testnet'
-		const defaultNetworkParams = getDefaultNetworkParams(networkType || 'testnet');
+		const defaultNetworkParams = getDefaultNetworkParams(networkType || 'devnet');
 
 		// Set fullnodeUrl and faucetUrl, if they are not provided, use the default value.
 		this.fullnodeUrl = fullnodeUrl || defaultNetworkParams.fullNode;
@@ -62,17 +63,16 @@ export class SuiKit {
 		});
 		this.provider = new JsonRpcProvider(connection);
 
-		// Init the currentKeyPair
-		// If the mnemonics or secretKey is provided, use it to init the currentKeyPair
-		// Otherwise, throw an error
+		// If the mnemonics or secretKey is provided, use it
+		// Otherwise, generate a random mnemonics with 24 words 
 		this.mnemonics = mnemonics || "";
 		this.secretKey = secretKey || "";
-		if (this.mnemonics || this.secretKey) {
-			this.currentKeyPair = this.getKeyPair();
-		} else {
-			throw new Error("Please provide the mnemonics or secretKey");
+		if (!this.mnemonics && !this.secretKey) {
+			this.mnemonics = generateMnemonic(24)
 		}
 
+		// Init the currentKeyPair
+		this.currentKeyPair = this.getKeyPair();
 		// Init the currentSigner
 		this.currentSigner = this.getSigner();
 		// Init the currentAddress

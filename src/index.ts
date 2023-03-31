@@ -1,3 +1,5 @@
-/**
- * This is an example of using SuiToolkit
- */
+export { TransactionBlock } from '@mysten/sui.js'
+export { SuiKit } from './lib/sui-kit'
+export { requestFaucet } from './lib/faucet'
+export * from './lib/util'
+export * from './lib/crypto'

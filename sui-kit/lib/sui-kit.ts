@@ -4,14 +4,12 @@
  * @author IceFox
  * @version 0.1.0
  */
-import {Ed25519Keypair, JsonRpcProvider, RawSigner, Connection, TransactionBlock} from '@mysten/sui.js'
-import { getKeyPair, DerivePathParams } from "./keypair";
+import {JsonRpcProvider, RawSigner, Connection, TransactionBlock} from '@mysten/sui.js'
 import { NetworkType, getDefaultNetworkParams } from "./default-chain-configs";
-import {hexOrBase64ToUint8Array} from "./util";
 import { requestFaucet } from "./faucet";
 import {PublishOptions, publishPackage} from "./publish-package";
-import { generateMnemonic } from './crypto';
 import { composeTransferSuiTxn } from './transfer-sui';
+import { SuiAccountManager, DerivePathParams } from "./sui-account-manager";
 
 type ToolKitParams = {
 	mnemonics?: string;
@@ -26,14 +24,11 @@ type ToolKitParams = {
  * @description This class is used to aggregate the tools that used to interact with SUI network.
  */
 export class SuiKit {
-	private mnemonics: string;
-	private secretKey: string;
+
+	public accountManager: SuiAccountManager;
 	public fullnodeUrl: string;
 	public faucetUrl: string;
 	public provider: JsonRpcProvider;
-	public currentKeyPair: Ed25519Keypair;
-	public currentSigner: RawSigner;
-	public currentAddress: string;
 	public suiBin: string;
 
 	/**
@@ -50,9 +45,10 @@ export class SuiKit {
 	 * @param suiBin, the path to sui cli binary, default to 'cargo run --bin sui'
 	 */
 	constructor({ mnemonics, secretKey, networkType, fullnodeUrl, faucetUrl, suiBin }: ToolKitParams = {}) {
+		// Init the account manager
+		this.accountManager = new SuiAccountManager({ mnemonics, secretKey });
 		// Get the default fullnode url and faucet url for the given network type, default is 'testnet'
 		const defaultNetworkParams = getDefaultNetworkParams(networkType || 'devnet');
-
 		// Set fullnodeUrl and faucetUrl, if they are not provided, use the default value.
 		this.fullnodeUrl = fullnodeUrl || defaultNetworkParams.fullNode;
 		this.faucetUrl = faucetUrl || defaultNetworkParams.faucet;
@@ -64,43 +60,8 @@ export class SuiKit {
 		});
 		this.provider = new JsonRpcProvider(connection);
 
-		// If the mnemonics or secretKey is provided, use it
-		// Otherwise, generate a random mnemonics with 24 words 
-		this.mnemonics = mnemonics || "";
-		this.secretKey = secretKey || "";
-		if (!this.mnemonics && !this.secretKey) {
-			this.mnemonics = generateMnemonic(24)
-		}
-
-		// Init the current account
-		this.currentKeyPair = this.secretKey
-			? Ed25519Keypair.fromSecretKey(hexOrBase64ToUint8Array(this.secretKey))
-			: getKeyPair(this.mnemonics);
-		this.currentSigner = new RawSigner(this.currentKeyPair, this.provider);
-		this.currentAddress = this.currentKeyPair.getPublicKey().toSuiAddress();
-
 		// Set the sui binary for building and publishing packages
 		this.suiBin = suiBin || 'sui';
-	}
-
-	/**
-	 * if derivePathParams is not provided or mnemonics is empty, it will return the currentKeyPair.
-	 * else:
-	 * it will generate keyPair from the mnemonic with the given derivePathParams.
-	 */
-	getKeyPair(derivePathParams?: DerivePathParams) {
-		if (!derivePathParams || !this.mnemonics) return this.currentKeyPair;
-		return getKeyPair(this.mnemonics, derivePathParams);
-	}
-
-	/**
-	 * if derivePathParams is not provided or mnemonics is empty, it will return the currentAddress.
-	 * else:
-	 * it will generate address from the mnemonic with the given derivePathParams.
-	 */
-	getAddress(derivePathParams?: DerivePathParams) {
-		if (!derivePathParams || !this.mnemonics) return this.currentAddress;
-		return getKeyPair(this.mnemonics, derivePathParams).getPublicKey().toSuiAddress();
 	}
 
 	/**
@@ -109,33 +70,31 @@ export class SuiKit {
 	 * it will generate address from the mnemonic with the given derivePathParams.
 	 */
 	getSigner(derivePathParams?: DerivePathParams) {
-		if (!derivePathParams || !this.mnemonics) return this.currentSigner;
-		return new RawSigner(getKeyPair(this.mnemonics, derivePathParams), this.provider);
+		const keyPair = this.accountManager.getKeyPair(derivePathParams);
+		return new RawSigner(keyPair, this.provider);
 	}
 
-	/**
-	 * Switch the current account with the given derivePathParams.
-	 * This is only useful when the mnemonics is provided. For secretKey mode, it will always use the same account.
-	 */
 	switchAccount(derivePathParams: DerivePathParams) {
-		if (this.mnemonics) {
-			this.currentKeyPair = getKeyPair(this.mnemonics, derivePathParams);
-			this.currentSigner = new RawSigner(this.currentKeyPair, this.provider);
-			this.currentAddress = this.currentKeyPair.getPublicKey().toSuiAddress();
-		}
+		this.accountManager.switchAccount(derivePathParams);
 	}
+
+	getAddress(derivePathParams?: DerivePathParams) {
+		return this.accountManager.getAddress(derivePathParams);
+	}
+	currentAddress() { return this.accountManager.currentAddress }
+
 
 	/**
 	 * Request some SUI from faucet
 	 * @Returns {Promise<boolean>}, true if the request is successful, false otherwise.
 	 */
 	async requestFaucet(derivePathParams?: DerivePathParams) {
-		const addr = this.getAddress(derivePathParams);
+		const addr = this.accountManager.getAddress(derivePathParams);
 		return requestFaucet(addr, this.provider)
 	}
 
 	async getBalance(coinType?: string, derivePathParams?: DerivePathParams) {
-		const owner = this.getAddress(derivePathParams);
+		const owner = this.accountManager.getAddress(derivePathParams);
 		return this.provider.getBalance({ owner, coinType});
 	}
 

@@ -7,6 +7,6 @@ import { SuiKit } from "../sui-kit";
 	const suiKit = new SuiKit();
 	for (let i = 0; i < 10; i++) {
 		suiKit.switchAccount({ accountIndex: i });
-		console.log(`address for account ${i}: ${suiKit.currentAddress}`);
+		console.log(`address for account ${i}: ${suiKit.currentAddress()}`);
 	}
 })();

@@ -1,5 +1,4 @@
 import tmp from 'tmp';
-import 'colorts/lib/string';
 import { execSync } from 'child_process';
 import {
 	TransactionBlock,
@@ -9,7 +8,7 @@ import {
 	RawSigner,
 	getExecutionStatusType,
 } from "@mysten/sui.js";
-import {parsePublishTxn} from "./sui-response-parser";
+import {parsePublishTxn} from './sui-response-parser';
 
 /**
  * Options for build & publish packages

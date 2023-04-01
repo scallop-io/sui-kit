@@ -4,12 +4,12 @@
  * @author IceFox
  * @version 0.1.0
  */
-import {JsonRpcProvider, RawSigner, Connection, TransactionBlock} from '@mysten/sui.js'
-import { NetworkType, getDefaultNetworkParams } from "./default-chain-configs";
-import { requestFaucet } from "./faucet";
-import {PublishOptions, publishPackage} from "./publish-package";
+import 'colorts/lib/string'
+import { RawSigner, TransactionBlock } from '@mysten/sui.js'
 import { composeTransferSuiTxn } from './transfer-sui';
 import { SuiAccountManager, DerivePathParams } from "./sui-account-manager";
+import { SuiRpcProvider, NetworkType } from './sui-rpc-provider';
+import { SuiPackagePublisher, PublishOptions } from "./sui-package-publisher";
 
 type ToolKitParams = {
 	mnemonics?: string;
@@ -26,10 +26,8 @@ type ToolKitParams = {
 export class SuiKit {
 
 	public accountManager: SuiAccountManager;
-	public fullnodeUrl: string;
-	public faucetUrl: string;
-	public provider: JsonRpcProvider;
-	public suiBin: string;
+	public rpcProvider: SuiRpcProvider;
+	public packagePublisher: SuiPackagePublisher;
 
 	/**
 	 * Support the following ways to init the SuiToolkit:
@@ -47,21 +45,10 @@ export class SuiKit {
 	constructor({ mnemonics, secretKey, networkType, fullnodeUrl, faucetUrl, suiBin }: ToolKitParams = {}) {
 		// Init the account manager
 		this.accountManager = new SuiAccountManager({ mnemonics, secretKey });
-		// Get the default fullnode url and faucet url for the given network type, default is 'testnet'
-		const defaultNetworkParams = getDefaultNetworkParams(networkType || 'devnet');
-		// Set fullnodeUrl and faucetUrl, if they are not provided, use the default value.
-		this.fullnodeUrl = fullnodeUrl || defaultNetworkParams.fullNode;
-		this.faucetUrl = faucetUrl || defaultNetworkParams.faucet;
-
-		// Init the provider
-		const connection = new Connection({
-			fullnode: this.fullnodeUrl,
-			faucet: this.faucetUrl,
-		});
-		this.provider = new JsonRpcProvider(connection);
-
-		// Set the sui binary for building and publishing packages
-		this.suiBin = suiBin || 'sui';
+		// Init the rpc provider
+		this.rpcProvider = new SuiRpcProvider({ fullnodeUrl, faucetUrl, networkType });
+		// Init the package publisher
+		this.packagePublisher = new SuiPackagePublisher(suiBin);
 	}
 
 	/**
@@ -71,7 +58,7 @@ export class SuiKit {
 	 */
 	getSigner(derivePathParams?: DerivePathParams) {
 		const keyPair = this.accountManager.getKeyPair(derivePathParams);
-		return new RawSigner(keyPair, this.provider);
+		return new RawSigner(keyPair, this.rpcProvider.provider);
 	}
 
 	switchAccount(derivePathParams: DerivePathParams) {
@@ -83,19 +70,18 @@ export class SuiKit {
 	}
 	currentAddress() { return this.accountManager.currentAddress }
 
-
 	/**
 	 * Request some SUI from faucet
 	 * @Returns {Promise<boolean>}, true if the request is successful, false otherwise.
 	 */
 	async requestFaucet(derivePathParams?: DerivePathParams) {
 		const addr = this.accountManager.getAddress(derivePathParams);
-		return requestFaucet(addr, this.provider)
+		return this.rpcProvider.requestFaucet(addr);
 	}
 
 	async getBalance(coinType?: string, derivePathParams?: DerivePathParams) {
 		const owner = this.accountManager.getAddress(derivePathParams);
-		return this.provider.getBalance({ owner, coinType});
+		return this.rpcProvider.getBalance(owner, coinType);
 	}
 
 	async signTxn(tx: Uint8Array | TransactionBlock, derivePathParams?: DerivePathParams) {
@@ -116,7 +102,7 @@ export class SuiKit {
 	 */
 	async publishPackage(packagePath: string, options?: PublishOptions, derivePathParams?: DerivePathParams) {
 		const signer = this.getSigner(derivePathParams);
-		return publishPackage(this.suiBin, packagePath, signer)
+		return this.packagePublisher.publishPackage(packagePath, signer)
 	}
 
 	async transferSui(to: string, amount: number, derivePathParams?: DerivePathParams) {

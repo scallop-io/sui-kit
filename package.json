@@ -13,6 +13,7 @@
     "@mysten/bcs": "^0.7.0",
     "@mysten/sui.js": "^0.30.0",
     "@scure/bip39": "^1.2.0",
+    "assert": "^2.0.0",
     "colorts": "^0.1.63",
     "tmp": "^0.2.1",
     "ts-retry-promise": "^0.7.0"

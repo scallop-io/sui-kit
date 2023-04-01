@@ -1,7 +1,7 @@
 import assert from "assert";
 import { TransactionBlock } from "@mysten/sui.js";
 
-export const composeTransferSuiTxn = (recipients: string[], amounts: number[]) => {
+export const composeTransferSuiTxBlock = (recipients: string[], amounts: number[]) => {
   assert(recipients.length === amounts.length, "recipients and amounts must have the same length");
   const tx = new TransactionBlock();
   const coins = tx.splitCoins(tx.gas, amounts.map(amount => tx.pure(amount)));

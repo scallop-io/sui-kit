@@ -22,6 +22,7 @@ dotenv.config();
 	const suiKitS = new SuiKit({ secretKey, networkType: 'testnet' });
 	await displayBalance(suiKitS)
 
+	// Transfer all SUI from account S to account M except the gas budget
 	const gasBudget = 10**3 * 1200;
 	const balanceS = await suiKitS.getBalance();
 	console.log(`Transfer ${balanceS.totalBalance - gasBudget} from ${suiKitS.currentAddress()} to ${suiKitM.currentAddress()}`)

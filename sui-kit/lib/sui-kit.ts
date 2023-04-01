@@ -54,17 +54,25 @@ export class SuiKit {
 	/**
 	 * if derivePathParams is not provided or mnemonics is empty, it will return the currentSigner.
 	 * else:
-	 * it will generate address from the mnemonic with the given derivePathParams.
+	 * it will generate signer from the mnemonic with the given derivePathParams.
 	 */
 	getSigner(derivePathParams?: DerivePathParams) {
 		const keyPair = this.accountManager.getKeyPair(derivePathParams);
 		return new RawSigner(keyPair, this.rpcProvider.provider);
 	}
 
+	/**
+	 * @description Switch the current account with the given derivePathParams
+	 * @param derivePathParams, such as { accountIndex: 2, isExternal: false, addressIndex: 10 }, comply with the BIP44 standard
+	 */
 	switchAccount(derivePathParams: DerivePathParams) {
 		this.accountManager.switchAccount(derivePathParams);
 	}
 
+	/**
+	 * @description Get the address of the account for the given derivePathParams
+	 * @param derivePathParams, such as { accountIndex: 2, isExternal: false, addressIndex: 10 }, comply with the BIP44 standard
+	 */
 	getAddress(derivePathParams?: DerivePathParams) {
 		return this.accountManager.getAddress(derivePathParams);
 	}

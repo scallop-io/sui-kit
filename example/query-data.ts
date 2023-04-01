@@ -2,13 +2,12 @@
  * This is an example of using SuiKit to query data from SUI network
  */
 import { SuiKit } from "../sui-kit";
+import * as process from "process";
 
 (async() => {
-	const suiKit = new SuiKit();
-	for (let i = 0; i < 10; i++) {
-		suiKit.switchAccount({ accountIndex: i });
-		const balance = await suiKit.getBalance();
-		console.log(`address for account ${i}: ${suiKit.currentAddress()}`);
-		console.log(`balance for account ${i}: ${balance.totalBalance}`);
-	}
+	const mnemonics = process.env.MNEMONICS;
+	const secretKey = "AONOr9SfnOFFGAjHiBPALiWFh+HrtVOh9S/0OGcZOKre";
+	const suiKit = new SuiKit({ secretKey, networkType: 'testnet' });
+	const balance = await suiKit.getBalance();
+	console.log(`balance for account ${suiKit.currentAddress()}: ${balance.totalBalance}`)
 })();

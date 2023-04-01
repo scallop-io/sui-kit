@@ -1,6 +1,6 @@
 import { Ed25519Keypair } from '@mysten/sui.js'
 import { getKeyPair, DerivePathParams } from "./keypair";
-import { hexOrBase64ToUint8Array } from "./util";
+import {hexOrBase64ToUint8Array, normalizePrivateKey} from "./util";
 import { generateMnemonic } from './crypto';
 
 type AccountMangerParams = {
@@ -33,7 +33,9 @@ export class SuiAccountManager {
 
 		// Init the current account
 		this.currentKeyPair = this.secretKey
-			? Ed25519Keypair.fromSecretKey(hexOrBase64ToUint8Array(this.secretKey))
+			? Ed25519Keypair.fromSecretKey(
+				normalizePrivateKey(hexOrBase64ToUint8Array(this.secretKey))
+			)
 			: getKeyPair(this.mnemonics);
 		this.currentAddress = this.currentKeyPair.getPublicKey().toSuiAddress();
 	}

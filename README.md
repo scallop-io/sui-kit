@@ -1,14 +1,11 @@
 # Tookit for interacting with SUI network
 
 ## Features
-- [x] Transfer SUI
-- [x] Transfer Custom Coin
-- [x] Publish move packages
-- [x] Compatible with programmable transaction
-- [x] Query data (balances, objects) from chain
+- [x] Transfer SUI & Custom Coin
 - [x] Request faucet from devnet, testnet
-- [x] Batch create sui accounts from mnemonic
-- [x] Sign and send transactions
+- [x] Compatible with programmable transaction
+- [x] Publish move packages
+- [x] Advanced features: multi-accounts.
 
 ## Pre-requisites
 
@@ -31,112 +28,109 @@ Please refer to the official documentation: [How to install SUI cli](https://doc
 
 
 ## How to use
+
+### Transfer coins
+You can use SuiKit to transfer SUI and other coins.
+
+```typescript
+
+/**
+ * This is an example of using SuiKit to transfer coins from one account to another.
+ */
+import { SuiKit } from 'sui-kit';
+
+const secretKey = '<Secret key>';
+const suiKit = new SuiKit({ secretKey });
+const recipient = '0xCAFE';
+suiKit.transferSui(recipient, 1000).then(() => console.log('transfered 1000 SUI'));
+suiKit.transferCoin(recipient, 1000, '0xCOFFEE::coin::COIN').then(
+  () => console.log('transfered 1000 COIN')
+);
+```
+
+### Request faucet
+You can use SuiKit to request faucet from devnet or testnet.
+
+```typescript
+import { SuiKit } from 'sui-kit';
+
+const secretKey = '<Secret key>';
+const suiKit = new SuiKit({ secretyKey,  networkType: 'devnet' });
+suiKit.requestFaucet().then(() => {
+  console.log('Faucet request success');
+});
+```
+
+
+### Programmable transaction
+With programmable transaction, you can send a transaction with multiple actions.
+The following example shows how to transfer SUI to multiple accounts in one transaction.
+
 ```typescript
 /**
- * This is an example of using SuiKit to publish a move package.
+ * This example shows how to use programmable transaction with SuiKit
+ */
+
+import { SuiKit, TransactionBlock } from 'sui-kit';
+
+const secretKey = '<Secret key>';
+const suiKit = new SuiKit({ secretKey });
+
+// build a transaction block to send coins to multiple accounts
+const tx = new TransactionBlock();
+
+const recipients = ['0x123', '0x456', '0x789'];
+recipients.forEach(recipient => {
+  const [coin] = tx.splitCoins(tx.gas, [tx.pure(1000)]);
+  tx.transferObjects([coin], tx.pure(recipient));
+});
+
+// send the transaction block
+suiKit.signAndSendTxn(tx).then(response => {
+  console.log('Transaction digest: ' + response.digest);
+});
+
+```
+
+### Publish move packages
+You can use SuiKit to publish move packages to the SUI network.
+**Notice: you need to install SUI cli first.** (see [Pre-requisites](#pre-requisites))
+
+```typescript
+/**
+ * This is an example of using SuiKit to publish a move package
  */
 import { SuiKit } from "sui-kit";
 
 (async() => {
-  const suiKit = new SuiKit()
-  const balance = await suiKit.getBalance()
+  const secretKey = '<Secret key>';
+  const suiKit = new SuiKit({ secretKey, networkType: 'devnet' });
+  const balance = await suiKit.getBalance();
   if (balance.totalBalance <= 3000) {
-    await suiKit.requestFaucet()
+    await suiKit.requestFaucet();
   }
   // Wait for 3 seconds before publish package
-  await new Promise(resolve => setTimeout(() => resolve(true), 3000))
+  await new Promise(resolve => setTimeout(() => resolve(true), 3000));
 
-  const packagePath = path.join(__dirname, './sample_move/package_a')
-  const result = await suiKit.publishPackage(packagePath)
-  console.log('packageId: ' + result.packageId)
-})();
-```
-
-```typescript
-/**
- * This is an example of using SuiKit to transfer SUI from one account to another.
- */
-import { SuiKit } from "../sui-kit";
-import * as process from "process";
-import dotenv from "dotenv";
-dotenv.config();
-
-(async() => {
-  const displayBalance = async (suiKit: SuiKit) => {
-    console.log(`balance for account ${suiKit.currentAddress()}: ${(await suiKit.getBalance()).totalBalance}`);
-  }
-
-  const mnemonics = process.env.MNEMONICS;
-
-  // Account that will receive SUI
-  const suiKitM = new SuiKit({ mnemonics, networkType: 'testnet' });
-  await displayBalance(suiKitM)
-
-  // Account that will send SUI
-  const secretKey = process.env.SECRET_KEY;
-  const suiKitS = new SuiKit({ secretKey, networkType: 'testnet' });
-  await displayBalance(suiKitS)
-
-  // Transfer all SUI from account S to account M except the gas budget
-  const gasBudget = 10**3 * 1200;
-  const balanceS = await suiKitS.getBalance();
-  console.log(`Transfer ${balanceS.totalBalance - gasBudget} from ${suiKitS.currentAddress()} to ${suiKitM.currentAddress()}`)
-  await suiKitS.transferSui(suiKitM.currentAddress(), balanceS.totalBalance - gasBudget)
-
-  console.log('Wait 3 seconds for the transaction to be confirmed...')
-  await new Promise(resolve => setTimeout(resolve, 3000));
-
-  console.log('After transfer:')
-  await displayBalance(suiKitM)
-  await displayBalance(suiKitS)
-})();
-```
-
-```typescript
-/**
- * This is an example of using SuiKit to transfer custom coin from one account to another.
- */
-import { SuiKit } from "../sui-kit";
-import * as process from "process";
-import dotenv from "dotenv";
-dotenv.config();
-
-(async() => {
-  const displayBalance = async (suiKit: SuiKit, accountIndex: number, coinType: string) => {
-    console.log(`balance for account ${accountIndex}: ${(await suiKit.getBalance(coinType, { accountIndex } )).totalBalance}`);
-  }
-
-  const coinType = '0x88a66d984ade7c7f106e0c6a91cffa58b764811233363e6020978da3d358d9c4::custom_coin::CUSTOM_COIN'
-
-  // Account that will receive SUI
-  const mnemonics = process.env.MNEMONICS;
-  const suiKit = new SuiKit({ mnemonics, networkType: 'devnet' });
-  await displayBalance(suiKit, 0, coinType)
-  await displayBalance(suiKit, 1, coinType)
-
-  console.log(`Transfer 100 coin from account0 to account1`)
-  const recipient = suiKit.getAddress({ accountIndex: 1 })
-  const amount = 100
-  await suiKit.transferCoin(recipient, amount, coinType, { accountIndex: 0 })
-
-  console.log('Wait 3 seconds for the transaction to be confirmed...')
-  await new Promise(resolve => setTimeout(resolve, 3000));
-
-  console.log('After transfer:')
-  await displayBalance(suiKit, 0, coinType)
-  await displayBalance(suiKit, 1, coinType)
+  const packagePath = path.join(__dirname, './example/sample_move/custom_coin');
+  const result = await suiKit.publishPackage(packagePath);
+  console.log('packageId: ' + result.packageId);
 })();
 
 ```
+
+## Advanced features
+
+### Multi-accounts
+
+SuiKit follows bip32 & bip39 standard, so you can use it to manage multiple accounts.
+When init SuiKit, you can pass in your mnemonics to create a wallet with multiple accounts.
 
 ```typescript
 /**
  * This is an example of using SuiKit to manage multiple accounts.
  */
-import dotenv from 'dotenv'
-import { SuiKit } from '../sui-kit'
-import {getShinamiFullNodeUrl} from "../sui-kit/lib/plugins/shinami";
-dotenv.config()
+import { SuiKit } from 'sui-kit'
 
 async function checkAccounts(suiKit: SuiKit) {
   const displayAccounts = async (suiKit: SuiKit, accountIndex: number) => {
@@ -159,8 +153,8 @@ async function internalTransferSui(suiKit: SuiKit, fromAccountIndex: number, toA
 }
 
 const mnemonics = process.env.MNEMONICS;
-const shinamiKey = process.env.SHINAMI_KEY || '';
-const shinamiFullnode = getShinamiFullNodeUrl(shinamiKey);
-const suiKit = new SuiKit({ mnemonics, fullnodeUrl: shinamiFullnode, networkType: 'testnet' })
+const suiKit = new SuiKit({ mnemonics })
 checkAccounts(suiKit).then(() => {})
+// transfer 1000 SUI from account 0 to account 1
+internalTransferSui(suiKit, 0, 1, 1000).then(() => {})
 ```

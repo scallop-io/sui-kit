@@ -121,6 +121,13 @@ export class SuiKit {
 		return this.signAndSendTxn(tx, derivePathParams);
 	}
 
+	/**
+	 * Transfer the given amount of coin to the recipient
+	 * @param recipient the recipient address
+	 * @param amount the amount of coin to transfer
+	 * @param coinType any custom coin type but not SUI
+	 * @param derivePathParams the derive path params for the current signer
+	 */
 	async transferCoin(recipient: string, amount: number, coinType: `${string}::${string}::${string}`, derivePathParams?: DerivePathParams) {
 		const tx = new SuiTxBlock();
 		const owner = this.accountManager.getAddress(derivePathParams);

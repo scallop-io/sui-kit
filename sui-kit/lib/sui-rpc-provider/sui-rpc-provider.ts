@@ -44,4 +44,34 @@ export class SuiRpcProvider {
 	async getBalance(addr: string, coinType?: string) {
 		return this.provider.getBalance({ owner: addr, coinType });
 	}
+
+	/**
+	 * @description Select coins that add up to the given amount.
+	 * @param addr the address of the owner
+	 * @param amount the amount that is needed for the coin
+	 * @param coinType the coin type, default is '0x2::SUI::SUI'
+	 */
+	async selectCoins(addr: string, amount: number, coinType: `${string}::${string}::${string}` = '0x2::SUI::SUI') {
+		const coins = await this.provider.getCoins({ owner: addr, coinType });
+		let selectedCoins: {objectId: string, digest: string, version: number}[] = [];
+		let totalAmount = 0;
+		// Sort the coins by balance in descending order
+		const coinsData = coins.data.sort((a, b) => b.balance - a.balance)
+		for(const coinData of coins.data) {
+			selectedCoins.push({
+				objectId: coinData.coinObjectId,
+				digest: coinData.digest,
+				version: coinData.version,
+			});
+			totalAmount = totalAmount + coinData.balance;
+			if (totalAmount >= amount) {
+				break;
+			}
+		}
+
+		if (!selectedCoins.length) {
+			throw new Error('No valid coins found for the transaction.');
+		}
+		return selectedCoins;
+	}
 }

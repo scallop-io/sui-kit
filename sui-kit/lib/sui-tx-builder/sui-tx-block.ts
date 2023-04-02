@@ -1,4 +1,4 @@
-import { TransactionBlock, JsonRpcProvider } from '@mysten/sui.js'
+import { TransactionBlock, JsonRpcProvider, TransactionArgument } from '@mysten/sui.js'
 
 interface BuildOptions {
 	provider?: JsonRpcProvider;
@@ -12,11 +12,10 @@ export class SuiTxBlock {
 
 	/**
 	 * @description Build the transaction block
-	 * @param provider
 	 * @param onlyTransactionKind, if false, it will do a dry run to get the gas price.
 	 */
-	build({ provider, onlyTransactionKind }: BuildOptions = {}) {
-		this.txBlock.build({ provider, onlyTransactionKind });
+	build(onlyTransactionKind: boolean = false) {
+		this.txBlock.build({ onlyTransactionKind });
 	}
 	transferSuiToMany(recipients: string[], amounts: number[]) {
 		const tx = this.txBlock;
@@ -26,17 +25,31 @@ export class SuiTxBlock {
 		});
 		return this;
 	}
-	transferSui(to: string, amount: number) {
-		return this.transferSuiToMany([to], [amount]);
+	transferSui(recipient: string, amount: number) {
+		return this.transferSuiToMany([recipient], [amount]);
+	}
+
+	transferObjects(objects: string[], recipient: string) {
+		const tx = this.txBlock;
+		tx.transferObjects(objects.map(obj => tx.object(obj)), tx.pure(recipient));
+		return this;
+	}
+
+	takeAmountFromCoins(coins: string[], amount: number) {
+		const tx = this.txBlock;
+		const mergedCoin = coins.length > 1
+			? tx.mergeCoins(tx.object(coins[0]),  coins.slice(1).map(coin => tx.object(coin)))
+			: tx.object(coins[0])
+		const [sendCoin] = tx.splitCoins(mergedCoin, [tx.pure(amount)]);
+		return [sendCoin, mergedCoin]
 	}
 
 	moveCall(target: `${string}::${string}::${string}`, args: any[] = [], typeArgs: string[] = []) {
 		const tx = this.txBlock;
-		tx.moveCall({
+		return tx.moveCall({
 			target: target,
 			arguments: args.map(arg => tx.pure(arg)),
 			typeArguments: typeArgs,
 		});
-		return this;
 	}
 }

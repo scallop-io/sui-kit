@@ -9,7 +9,7 @@ import { RawSigner, TransactionBlock } from '@mysten/sui.js'
 import { SuiAccountManager, DerivePathParams } from "./sui-account-manager";
 import { SuiRpcProvider, NetworkType } from './sui-rpc-provider';
 import { SuiPackagePublisher, PublishOptions } from "./sui-package-publisher";
-import {SuiTxBlock} from "./sui-tx-builder/sui-tx-builder";
+import {SuiTxBlock} from "./sui-tx-builder/sui-tx-block";
 
 type ToolKitParams = {
 	mnemonics?: string;
@@ -118,6 +118,16 @@ export class SuiKit {
 	async transferSui(recipient: string, amount: number, derivePathParams?: DerivePathParams) {
 		const tx = new SuiTxBlock();
 		tx.transferSui(recipient, amount);
+		return this.signAndSendTxn(tx, derivePathParams);
+	}
+
+	async transferCoin(recipient: string, amount: number, coinType: `${string}::${string}::${string}`, derivePathParams?: DerivePathParams) {
+		const tx = new SuiTxBlock();
+		const owner = this.accountManager.getAddress(derivePathParams);
+		const coins = await this.rpcProvider.selectCoins(owner, amount, coinType);
+		const [sendCoin, mergedCoin] = tx.takeAmountFromCoins(coins.map(c => c.objectId), amount);
+		tx.txBlock.transferObjects([sendCoin], tx.txBlock.pure(recipient));
+		tx.txBlock.transferObjects([mergedCoin], tx.txBlock.pure(owner));
 		return this.signAndSendTxn(tx, derivePathParams);
 	}
 }

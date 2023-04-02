@@ -41,5 +41,3 @@ export const getDefaultNetworkParams = (networkType: NetworkType = 'devnet'): { 
 			}
 	}
 }
-
-

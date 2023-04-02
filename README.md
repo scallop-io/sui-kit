@@ -29,40 +29,98 @@ Please refer to the official documentation: [How to install SUI cli](https://doc
 
 ## How to use
 ```typescript
+/**
+ * This is an example of using SuiKit to publish a move package.
+ */
 import { SuiKit } from "sui-kit";
 
 (async() => {
-	// init sui kit
-	const secretKey = '<replace with secret key: both hex and base64 are supported>';
-	const suiKit = new SuiKit({ secretKey, networkType: 'testnet' })
-  
-	// request faucet
-  await suiKit.requestFaucet()
-  
-  // sign and send transaction
-	
-	// publish package
-	const packagePath = '/path/to/package'
+	const suiKit = new SuiKit()
+	const balance = await suiKit.getBalance()
+	if (balance.totalBalance <= 3000) {
+		await suiKit.requestFaucet()
+	}
+	// Wait for 3 seconds before publish package
+	await new Promise(resolve => setTimeout(() => resolve(true), 3000))
+
+	const packagePath = path.join(__dirname, './sample_move/package_a')
 	const result = await suiKit.publishPackage(packagePath)
 	console.log('packageId: ' + result.packageId)
 })();
 ```
 
-Advanced features: manage multiple accounts from mnemonic
+```typescript
+/**
+ * This is an example of using SuiKit to transfer SUI from one account to another.
+ */
+import { SuiKit } from "../sui-kit";
+import * as process from "process";
+import dotenv from "dotenv";
+dotenv.config();
+
+(async() => {
+	const displayBalance = async (suiKit: SuiKit) => {
+		console.log(`balance for account ${suiKit.currentAddress()}: ${(await suiKit.getBalance()).totalBalance}`);
+	}
+
+	const mnemonics = process.env.MNEMONICS;
+
+	// Account that will receive SUI
+	const suiKitM = new SuiKit({ mnemonics, networkType: 'testnet' });
+	await displayBalance(suiKitM)
+
+	// Account that will send SUI
+	const secretKey = process.env.SECRET_KEY;
+	const suiKitS = new SuiKit({ secretKey, networkType: 'testnet' });
+	await displayBalance(suiKitS)
+
+	// Transfer all SUI from account S to account M except the gas budget
+	const gasBudget = 10**3 * 1200;
+	const balanceS = await suiKitS.getBalance();
+	console.log(`Transfer ${balanceS.totalBalance - gasBudget} from ${suiKitS.currentAddress()} to ${suiKitM.currentAddress()}`)
+	await suiKitS.transferSui(suiKitM.currentAddress(), balanceS.totalBalance - gasBudget)
+
+	console.log('Wait 3 seconds for the transaction to be confirmed...')
+	await new Promise(resolve => setTimeout(resolve, 3000));
+
+	console.log('After transfer:')
+	await displayBalance(suiKitM)
+	await displayBalance(suiKitS)
+})();
+```
 
 ```typescript
-import { SuiKit } from "sui-kit";
+/**
+ * This is an example of using SuiKit to manage multiple accounts.
+ */
+import dotenv from 'dotenv'
+import { SuiKit } from '../sui-kit'
+import {getShinamiFullNodeUrl} from "../sui-kit/lib/plugins/shinami";
+dotenv.config()
 
-const mnemonics = '<replace with your mnemonic>';
-// init sui kit with mnemonic
-const suiKit = new SuiKit({ mnemonics })
-for (let i = 0; i < 10; i++) {
-  // after switch account, the query and transaction will be signed by the account
-	suiKit.switchAccount({ accountIndex: i });
-	const address = suiKit.getAddress();
-	console.log(`address for account ${i}: ${address}`)
-  suiKit.getBalance().then((balance) => {
-    console.log(`balance for account ${i}: ${balance.totalBalance}`)
-  })
+async function checkAccounts(suiKit: SuiKit) {
+	const displayAccounts = async (suiKit: SuiKit, accountIndex: number) => {
+		const coinType = '0x2::sui::SUI'
+		const addr = suiKit.getAddress({accountIndex})
+		const balance = (await suiKit.getBalance(coinType, {accountIndex})).totalBalance
+		console.log(`Account ${accountIndex}: ${addr} has ${balance} SUI`)
+	}
+	// log the first 10 accounts
+	const numAccounts = 10
+	for (let i = 0; i < numAccounts; i++) {
+		await displayAccounts(suiKit, i)
+	}
 }
+
+async function internalTransferSui(suiKit: SuiKit, fromAccountIndex: number, toAccountIndex: number, amount: number) {
+	const toAddr = suiKit.getAddress({accountIndex: toAccountIndex })
+	console.log(`Transfer ${amount} SUI from account ${fromAccountIndex} to account ${toAccountIndex}`)
+	return await suiKit.transferSui(toAddr, amount,  {accountIndex: fromAccountIndex})
+}
+
+const mnemonics = process.env.MNEMONICS;
+const shinamiKey = process.env.SHINAMI_KEY || '';
+const shinamiFullnode = getShinamiFullNodeUrl(shinamiKey);
+const suiKit = new SuiKit({ mnemonics, fullnodeUrl: shinamiFullnode, networkType: 'testnet' })
+checkAccounts(suiKit).then(() => {})
 ```

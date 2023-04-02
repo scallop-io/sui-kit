@@ -6,10 +6,10 @@
  */
 import 'colorts/lib/string'
 import { RawSigner, TransactionBlock } from '@mysten/sui.js'
-import { composeTransferSuiTxn } from './transfer-sui';
 import { SuiAccountManager, DerivePathParams } from "./sui-account-manager";
 import { SuiRpcProvider, NetworkType } from './sui-rpc-provider';
 import { SuiPackagePublisher, PublishOptions } from "./sui-package-publisher";
+import {SuiTxBlock} from "./sui-tx-builder/sui-tx-builder";
 
 type ToolKitParams = {
 	mnemonics?: string;
@@ -92,12 +92,14 @@ export class SuiKit {
 		return this.rpcProvider.getBalance(owner, coinType);
 	}
 
-	async signTxn(tx: Uint8Array | TransactionBlock, derivePathParams?: DerivePathParams) {
+	async signTxn(tx: Uint8Array | TransactionBlock | SuiTxBlock, derivePathParams?: DerivePathParams) {
+		tx = tx instanceof SuiTxBlock ? tx.txBlock : tx;
 		const signer = this.getSigner(derivePathParams);
 		return signer.signTransactionBlock({ transactionBlock: tx });
 	}
 
-	async signAndSendTxn(tx: Uint8Array | TransactionBlock, derivePathParams?: DerivePathParams) {
+	async signAndSendTxn(tx: Uint8Array | TransactionBlock | SuiTxBlock, derivePathParams?: DerivePathParams) {
+		tx = tx instanceof SuiTxBlock ? tx.txBlock : tx;
 		const signer = this.getSigner(derivePathParams);
 		return signer.signAndExecuteTransactionBlock({ transactionBlock: tx  })
 	}
@@ -113,8 +115,9 @@ export class SuiKit {
 		return this.packagePublisher.publishPackage(packagePath, signer)
 	}
 
-	async transferSui(to: string, amount: number, derivePathParams?: DerivePathParams) {
-		const tx = composeTransferSuiTxn(to, amount);
+	async transferSui(recipient: string, amount: number, derivePathParams?: DerivePathParams) {
+		const tx = new SuiTxBlock();
+		tx.transferSui(recipient, amount);
 		return this.signAndSendTxn(tx, derivePathParams);
 	}
 }

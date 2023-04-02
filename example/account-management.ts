@@ -1,9 +1,8 @@
 import dotenv from 'dotenv'
 import { SuiKit } from '../sui-kit'
+import {getShinamiFullNodeUrl} from "../sui-kit/lib/plugins/shinami";
 dotenv.config()
 
-const mnemonics = process.env.MNEMONICS;
-const suiKit = new SuiKit({mnemonics, networkType: 'testnet'})
 async function checkAccounts(suiKit: SuiKit) {
 	const displayAccounts = async (suiKit: SuiKit, accountIndex: number) => {
 		const coinType = '0x2::sui::SUI'
@@ -23,3 +22,9 @@ async function internalTransferSui(suiKit: SuiKit, fromAccountIndex: number, toA
 	console.log(`Transfer ${amount} SUI from account ${fromAccountIndex} to account ${toAccountIndex}`)
 	return await suiKit.transferSui(toAddr, amount,  {accountIndex: fromAccountIndex})
 }
+
+const mnemonics = process.env.MNEMONICS;
+const shinamiKey = process.env.SHINAMI_KEY || '';
+const shinamiFullnode = getShinamiFullNodeUrl(shinamiKey);
+const suiKit = new SuiKit({ mnemonics, fullnodeUrl: shinamiFullnode, networkType: 'testnet' })
+checkAccounts(suiKit).then(() => {})

@@ -17,17 +17,17 @@ export const isBase64 = (str: string) => /^[a-zA-Z0-9+/]+={0,2}$/g.test(str);
  * @param hexStr
  */
 export function fromHEX(hexStr: string): Uint8Array {
-	if (!hexStr) {
-		throw new Error('cannot parse empty string to Uint8Array')
-	}
-	let intArr = hexStr
-		.replace('0x', '')
-		.match(/.{1,2}/g)?.map(byte => parseInt(byte, 16));
+  if (!hexStr) {
+    throw new Error('cannot parse empty string to Uint8Array')
+  }
+  let intArr = hexStr
+    .replace('0x', '')
+    .match(/.{1,2}/g)?.map(byte => parseInt(byte, 16));
 
-	if (!intArr || intArr.length === 0) {
-		throw new Error(`Unable to parse HEX: ${hexStr}`);
-	}
-	return Uint8Array.from(intArr);
+  if (!intArr || intArr.length === 0) {
+    throw new Error(`Unable to parse HEX: ${hexStr}`);
+  }
+  return Uint8Array.from(intArr);
 }
 
 
@@ -35,13 +35,13 @@ export function fromHEX(hexStr: string): Uint8Array {
  * @description Convert a hex or base64 string to Uint8Array
  */
 export const hexOrBase64ToUint8Array = (str: string): Uint8Array => {
-	if (isHex(str)) {
-		return fromHEX(str)
-	} else if (isBase64(str)) {
-		return fromB64(str)
-	} else {
-		throw new Error('The string is not a valid hex or base64 string.');
-	}
+  if (isHex(str)) {
+    return fromHEX(str)
+  } else if (isBase64(str)) {
+    return fromB64(str)
+  } else {
+    throw new Error('The string is not a valid hex or base64 string.');
+  }
 }
 
 /**
@@ -52,12 +52,12 @@ export const hexOrBase64ToUint8Array = (str: string): Uint8Array => {
  * 2. A 33-byte array with the first byte being 0x00 (sui.keystore key is a Base64 string with scheme flag 0x00 at the beginning)
  */
 export const normalizePrivateKey = (key: Uint8Array): Uint8Array => {
-	// sui.keystore key is a Base64 string with scheme flag 0x00 at the beginning
-	const PRIVATE_KEY_SIZE = 32;
-	if (key.length === PRIVATE_KEY_SIZE + 1 && key[0] === 0) {
-		return key.slice(1);
-	} else if (key.length === 32) {
-		return key;
-	}
-	throw new Error('invalid secret key');
+  // sui.keystore key is a Base64 string with scheme flag 0x00 at the beginning
+  const PRIVATE_KEY_SIZE = 32;
+  if (key.length === PRIVATE_KEY_SIZE + 1 && key[0] === 0) {
+    return key.slice(1);
+  } else if (key.length === 32) {
+    return key;
+  }
+  throw new Error('invalid secret key');
 }

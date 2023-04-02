@@ -23,21 +23,21 @@ export type NetworkType = 'testnet' | 'mainnet' | 'devnet';
  * @returns { fullNode: string, faucet: string }
   */
 export const getDefaultNetworkParams = (networkType: NetworkType = 'devnet'): { fullNode: string, faucet: string } => {
-	switch (networkType) {
-		case 'testnet':
-			return {
-				fullNode: DEFAULT_TESTNET_FULLNODE,
-				faucet: DEFAULT_TESTNET_FAUCET,
-			}
-		case 'mainnet':
-			return {
-				fullNode: DEFAULT_MAINNET_FULLNODE,
-				faucet: DEFAULT_MAINNET_FAUCET,
-			}
-		default:
-			return {
-				fullNode: DEFAULT_DEVNET_FULLNODE,
-				faucet: DEFAULT_DEVNET_FAUCET,
-			}
-	}
+  switch (networkType) {
+    case 'testnet':
+      return {
+        fullNode: DEFAULT_TESTNET_FULLNODE,
+        faucet: DEFAULT_TESTNET_FAUCET,
+      }
+    case 'mainnet':
+      return {
+        fullNode: DEFAULT_MAINNET_FULLNODE,
+        faucet: DEFAULT_MAINNET_FAUCET,
+      }
+    default:
+      return {
+        fullNode: DEFAULT_DEVNET_FULLNODE,
+        faucet: DEFAULT_DEVNET_FAUCET,
+      }
+  }
 }

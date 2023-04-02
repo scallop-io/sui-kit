@@ -1,6 +1,6 @@
-import { SuiKit } from '../sui-kit'
+import { SuiKit } from '../sui-kit';
 
 (async () => {
-	const suiKit = new SuiKit({ networkType: 'devnet' })
-	await suiKit.requestFaucet()
+  const suiKit = new SuiKit({ networkType: 'devnet' });
+  await suiKit.requestFaucet();
 })()

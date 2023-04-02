@@ -1,17 +1,17 @@
 import { Ed25519Keypair } from '@mysten/sui.js'
 
 export type DerivePathParams = {
-	accountIndex?: number;
-	isExternal?: boolean;
-	addressIndex?: number;
+  accountIndex?: number;
+  isExternal?: boolean;
+  addressIndex?: number;
 }
 /**
  * @description Get ed25519 derive path for SUI
  * @param derivePathParams
  */
 export const getDerivePathForSUI = (derivePathParams: DerivePathParams = {}) => {
-	const { accountIndex = 0, isExternal = false, addressIndex = 0 } = derivePathParams;
-	return `m/44'/784'/${accountIndex}'/${isExternal ? 1 : 0}'/${addressIndex}'`;
+  const { accountIndex = 0, isExternal = false, addressIndex = 0 } = derivePathParams;
+  return `m/44'/784'/${accountIndex}'/${isExternal ? 1 : 0}'/${addressIndex}'`;
 }
 
 /**
@@ -28,6 +28,6 @@ export const getDerivePathForSUI = (derivePathParams: DerivePathParams = {}) => 
  * @param derivePathParams
  */
 export const getKeyPair = (mnemonics: string, derivePathParams: DerivePathParams = {}) => {
-	const derivePath = getDerivePathForSUI(derivePathParams);
-	return Ed25519Keypair.deriveKeypair(mnemonics, derivePath);
+  const derivePath = getDerivePathForSUI(derivePathParams);
+  return Ed25519Keypair.deriveKeypair(mnemonics, derivePath);
 }

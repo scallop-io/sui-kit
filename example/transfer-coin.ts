@@ -1,5 +1,5 @@
 /**
- * This is an example of using SuiKit to transfer coin from one account to another.
+ * This is an example of using SuiKit to transfer custom coin from one account to another.
  */
 import { SuiKit } from "../sui-kit";
 import * as process from "process";

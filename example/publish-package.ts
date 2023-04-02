@@ -2,10 +2,13 @@
  * This is an example of using SuiKit to publish a move package
  */
 import path from "path";
+import dotenv from "dotenv";
 import { SuiKit } from "../sui-kit";
+dotenv.config();
 
 (async() => {
-	const suiKit = new SuiKit()
+	const mnemonics = process.env.MNEMONICS;
+	const suiKit = new SuiKit({ mnemonics })
 	const balance = await suiKit.getBalance()
 	if (balance.totalBalance <= 3000) {
 		await suiKit.requestFaucet()

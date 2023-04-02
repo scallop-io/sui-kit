@@ -1,9 +1,22 @@
-import { TransactionBlock } from '@mysten/sui.js'
+import { TransactionBlock, JsonRpcProvider } from '@mysten/sui.js'
 
+interface BuildOptions {
+	provider?: JsonRpcProvider;
+	onlyTransactionKind?: boolean;
+}
 export class SuiTxBlock {
 	public txBlock: TransactionBlock;
 	constructor() {
 		this.txBlock = new TransactionBlock();
+	}
+
+	/**
+	 * @description Build the transaction block
+	 * @param provider
+	 * @param onlyTransactionKind, if false, it will do a dry run to get the gas price.
+	 */
+	build({ provider, onlyTransactionKind }: BuildOptions = {}) {
+		this.txBlock.build({ provider, onlyTransactionKind });
 	}
 	transferSuiToMany(recipients: string[], amounts: number[]) {
 		const tx = this.txBlock;

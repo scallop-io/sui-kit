@@ -1,5 +1,5 @@
 /**
- * This is an example of using SuiKit to publish a move package
+ * This is an example of using SuiKit to transfer SUI from one account to another.
  */
 import { SuiKit } from "../sui-kit";
 

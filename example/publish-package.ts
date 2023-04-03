@@ -8,7 +8,7 @@ dotenv.config();
 
 (async() => {
   const mnemonics = process.env.MNEMONICS;
-  const suiKit = new SuiKit({ mnemonics });
+  const suiKit = new SuiKit({ mnemonics, networkType: 'testnet' });
   const balance = await suiKit.getBalance();
   if (balance.totalBalance <= 3000) {
     await suiKit.requestFaucet();

@@ -1,5 +1,7 @@
 # Tookit for interacting with SUI network
 
+[中文文档](./README_cn.md)
+
 ## Features
 - [x] Transfer SUI & Custom Coin
 - [x] Request faucet from devnet, testnet
@@ -15,14 +17,7 @@
 npm install
 ```
 
-2, Set the environment variables
-
-```bash
-cp .env.example .env
-```
-Then set the environment variables in the `.env` file according to the documentation in it.
-
-3, Install SUI cli (optional: only needed for publishing packages)
+2, Install SUI cli (optional: only needed for publishing packages)
 
 Please refer to the official documentation: [How to install SUI cli](https://docs.sui.io/devnet/build/install)
 

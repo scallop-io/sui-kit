@@ -30,7 +30,7 @@ const defaultBuildOptions: BuildOptions = {
 }
 const defaultPublishOptions: PublishOptions = {
   ...defaultBuildOptions,
-  gasBudget: 100000,
+  gasBudget: 10**8,
 }
 
 /**

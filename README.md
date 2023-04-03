@@ -5,6 +5,7 @@
 ## Features
 - [x] Transfer SUI & Custom Coin
 - [x] Request faucet from devnet, testnet
+- [x] Stake SUI
 - [x] Compatible with programmable transaction
 - [x] Publish move packages
 - [x] Advanced features: multi-accounts.
@@ -53,6 +54,24 @@ const secretKey = '<Secret key>';
 const suiKit = new SuiKit({ secretyKey,  networkType: 'devnet' });
 suiKit.requestFaucet().then(() => {
   console.log('Faucet request success');
+});
+```
+
+### Stake SUI
+You can use SuiKit to stake SUI.
+
+```typescript
+/**
+ * This is an example of using SuiKit to stake SUI
+ */
+import { SuiKit } from 'sui-kit';
+
+const secretKey = '<Secret key>';
+const suiKit = new SuiKit({ secretyKey,  networkType: 'devnet' });
+const stakeAmount = 1000;
+const validatorAddress = '0x123';
+suiKit.stakeSui(stakeAmount, validatorAddress).then(() => {
+  console.log('Stake SUI success');
 });
 ```
 

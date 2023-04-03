@@ -3,6 +3,7 @@
 ## 特点
 - [x] 转账SUI和自定义代币
 - [x] 从开发网络和测试网络请求水龙头
+- [x] 质押SUI
 - [x] 兼容可编程交易
 - [x] 发布 move 包
 - [x] 高级特性：多账户支持
@@ -49,6 +50,25 @@ const suiKit = new SuiKit({ secretyKey,  networkType: 'devnet' });
 suiKit.requestFaucet().then(() => {
   console.log('请求水龙头成功');
 });
+```
+
+### 质押SUI
+你可以使用SuiKit来质押SUI。
+
+```typescript
+/**
+ * 这是一个使用 SuiKit 质押 SUI 的示例
+ */
+import { SuiKit } from 'sui-kit';
+
+const secretKey = '<密钥>';
+const suiKit = new SuiKit({ secretyKey,  networkType: 'devnet' });
+const stakeAmount = 1000;
+const validatorAddress = '0x123';
+suiKit.stakeSui(stakeAmount, validatorAddress).then(() => {
+  console.log('质押成功');
+});
+
 ```
 
 ### 可编程交易

@@ -1,4 +1,4 @@
-import { TransactionBlock, JsonRpcProvider, TransactionArgument } from '@mysten/sui.js'
+import { TransactionBlock, JsonRpcProvider, SUI_SYSTEM_STATE_OBJECT_ID } from '@mysten/sui.js'
 
 interface BuildOptions {
   provider?: JsonRpcProvider;
@@ -51,5 +51,15 @@ export class SuiTxBlock {
       arguments: args.map(arg => tx.pure(arg)),
       typeArguments: typeArgs,
     });
+  }
+
+  stakeSui(amount: number, validatorAddr: string) {
+    const tx = this.txBlock;
+    const [stakeCoin] = tx.splitCoins(tx.gas, [tx.pure(amount)]);
+    tx.moveCall({
+      target: '0x3::sui_system::request_add_stake',
+      arguments: [tx.object(SUI_SYSTEM_STATE_OBJECT_ID), stakeCoin, tx.pure(validatorAddr)],
+    });
+    return tx;
   }
 }

@@ -108,16 +108,34 @@ export class SuiKit {
    * publish the move package at the given path
    * It starts a child process to call the "sui binary" to build the move package
    * The building process takes place in a tmp directory, which would be cleaned later
-   * @param packagePath
+   * @param packagePath the path to the move package
    */
   async publishPackage(packagePath: string, options?: PublishOptions, derivePathParams?: DerivePathParams) {
     const signer = this.getSigner(derivePathParams);
     return this.packagePublisher.publishPackage(packagePath, signer)
   }
 
+  /**
+   * Transfer the given amount of SUI to the recipient
+   * @param recipient
+   * @param amount
+   * @param derivePathParams
+   */
   async transferSui(recipient: string, amount: number, derivePathParams?: DerivePathParams) {
     const tx = new SuiTxBlock();
     tx.transferSui(recipient, amount);
+    return this.signAndSendTxn(tx, derivePathParams);
+  }
+
+  /**
+   * Transfer to mutliple recipients
+   * @param recipients the recipients addresses
+   * @param amounts the amounts of SUI to transfer to each recipient, the length of amounts should be the same as the length of recipients
+   * @param derivePathParams the derive path params for the current signer
+   */
+  async transferSuiToMany(recipients: string[], amounts: number[], derivePathParams?: DerivePathParams) {
+    const tx = new SuiTxBlock();
+    tx.transferSuiToMany(recipients, amounts);
     return this.signAndSendTxn(tx, derivePathParams);
   }
 
@@ -135,6 +153,18 @@ export class SuiKit {
     const [sendCoin, mergedCoin] = tx.takeAmountFromCoins(coins.map(c => c.objectId), amount);
     tx.txBlock.transferObjects([sendCoin], tx.txBlock.pure(recipient));
     tx.txBlock.transferObjects([mergedCoin], tx.txBlock.pure(owner));
+    return this.signAndSendTxn(tx, derivePathParams);
+  }
+
+  /**
+   * stake the given amount of SUI to the validator
+   * @param amount the amount of SUI to stake
+   * @param validatorAddr the validator address
+   * @param derivePathParams the derive path params for the current signer
+   */
+  async stakeSui(amount: number, validatorAddr: string, derivePathParams?: DerivePathParams) {
+    const tx = new SuiTxBlock();
+    tx.stakeSui(amount, validatorAddr);
     return this.signAndSendTxn(tx, derivePathParams);
   }
 }

@@ -1,7 +1,7 @@
 /**
  * This is an example of using SuiKit to transfer custom coin from one account to another.
  */
-import { SuiKit } from "../sui-kit";
+import { SuiKit } from "../src";
 import * as process from "process";
 import dotenv from "dotenv";
 dotenv.config();

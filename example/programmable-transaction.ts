@@ -3,7 +3,7 @@
  */
 
 import dotenv from 'dotenv';
-import { SuiKit, TransactionBlock } from '../sui-kit';
+import { SuiKit, TransactionBlock } from '../src';
 dotenv.config();
 
 (async () => {

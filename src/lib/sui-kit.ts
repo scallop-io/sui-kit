@@ -1,5 +1,5 @@
 /**
- * @file sui-kit.ts
+ * @file src.ts
  * @description This file is used to aggregate the tools that used to interact with SUI network.
  * @author IceFox
  * @version 0.1.0

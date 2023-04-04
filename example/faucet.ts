@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { SuiKit } from '../sui-kit';
+import { SuiKit } from '../src';
 dotenv.config();
 
 (async () => {

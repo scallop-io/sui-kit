@@ -15,7 +15,7 @@
 1, Install the package
 
 ```bash
-npm install
+npm install @scallop-dao/sui-kit
 ```
 
 2, Install SUI cli (optional: only needed for publishing packages)
@@ -33,7 +33,7 @@ You can use SuiKit to transfer SUI and other coins.
 /**
  * This is an example of using SuiKit to transfer coins from one account to another.
  */
-import { SuiKit } from 'sui-kit';
+import { SuiKit } from 'src';
 
 const secretKey = '<Secret key>';
 const suiKit = new SuiKit({ secretKey });
@@ -48,7 +48,7 @@ suiKit.transferCoin(recipient, 1000, '0xCOFFEE::coin::COIN').then(
 You can use SuiKit to request faucet from devnet or testnet.
 
 ```typescript
-import { SuiKit } from 'sui-kit';
+import { SuiKit } from 'src';
 
 const secretKey = '<Secret key>';
 const suiKit = new SuiKit({ secretyKey,  networkType: 'devnet' });
@@ -64,7 +64,7 @@ You can use SuiKit to stake SUI.
 /**
  * This is an example of using SuiKit to stake SUI
  */
-import { SuiKit } from 'sui-kit';
+import { SuiKit } from 'src';
 
 const secretKey = '<Secret key>';
 const suiKit = new SuiKit({ secretyKey,  networkType: 'devnet' });
@@ -85,7 +85,7 @@ The following example shows how to transfer SUI to multiple accounts in one tran
  * This example shows how to use programmable transaction with SuiKit
  */
 
-import { SuiKit, TransactionBlock } from 'sui-kit';
+import { SuiKit, TransactionBlock } from 'src';
 
 const secretKey = '<Secret key>';
 const suiKit = new SuiKit({ secretKey });
@@ -114,7 +114,7 @@ You can use SuiKit to publish move packages to the SUI network.
 /**
  * This is an example of using SuiKit to publish a move package
  */
-import { SuiKit } from "sui-kit";
+import { SuiKit } from "src";
 
 (async() => {
   const secretKey = '<Secret key>';
@@ -144,7 +144,7 @@ When init SuiKit, you can pass in your mnemonics to create a wallet with multipl
 /**
  * This is an example of using SuiKit to manage multiple accounts.
  */
-import { SuiKit } from 'sui-kit'
+import { SuiKit } from 'src'
 
 async function checkAccounts(suiKit: SuiKit) {
   const displayAccounts = async (suiKit: SuiKit, accountIndex: number) => {

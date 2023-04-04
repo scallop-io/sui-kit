@@ -1,14 +1,36 @@
 {
-  "name": "sui-toolkit",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "name": "@scallop-dao/sui-kit",
+  "author": "scallop-dao",
+  "version": "0.30.0",
+  "description": "Tookit for interacting with SUI network",
+  "keywords": ["sui", "scallop dao", "move", "blockchain"],
+  "license": "Apache-2.0",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "engines": {
+    "node": ">=16"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "publish": "pnpm run build && npm publish",
+    "build": "pnpm build:types && pnpm build:tsup",
+    "build:tsup": "tsup ./src/index.ts --format esm,cjs --sourcemap",
+    "build:types": "tsc --build"
+  },
   "dependencies": {
     "@mysten/bcs": "^0.7.0",
     "@mysten/sui.js": "^0.30.0",
@@ -24,6 +46,7 @@
     "@types/tmp": "^0.2.3",
     "dotenv": "^16.0.3",
     "ts-node": "^10.9.1",
+    "tsup": "^6.7.0",
     "typescript": "^5.0.2"
   }
 }

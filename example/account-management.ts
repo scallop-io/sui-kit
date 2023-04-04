@@ -1,9 +1,9 @@
 import dotenv from 'dotenv';
-import { SuiKit } from '../sui-kit';
-import {getShinamiFullNodeUrl} from "../sui-kit/lib/plugins/shinami";
+import { SuiKit } from '../src';
+import {getShinamiFullNodeUrl} from "../src/lib/plugins/shinami";
 dotenv.config();
 
-async function checkAccounts(suiKit: SuiKit) {
+async function checkAccounts(suiKit: SuiKit, start: number = 0, end: number = 10) {
   const displayAccounts = async (suiKit: SuiKit, accountIndex: number) => {
     const coinType = '0x2::sui::SUI';
     const addr = suiKit.getAddress({accountIndex});
@@ -11,8 +11,7 @@ async function checkAccounts(suiKit: SuiKit) {
     console.log(`Account ${accountIndex}: ${addr} has ${balance} SUI`);
   }
   // log the first 10 accounts
-  const numAccounts = 10;
-  for (let i = 0; i < numAccounts; i++) {
+  for (let i = start; i <= end; i++) {
     await displayAccounts(suiKit, i);
   }
 }
@@ -26,7 +25,7 @@ async function internalTransferSui(suiKit: SuiKit, fromAccountIndex: number, toA
 (async () => {
   const mnemonics = process.env.MNEMONICS;
   const suiKit = new SuiKit({ mnemonics, networkType: 'testnet' });
-  await checkAccounts(suiKit);
+  await checkAccounts(suiKit, 10, 20);
   // // transfer 0.05 SUI to accounts from 1 to 8
   // const range = (start: number, end: number) => Array.from({length: (end - start + 1)}, (v, k) => k + start);
   // const recipients = range(1, 8).map(i => suiKit.getAddress({accountIndex: i}));

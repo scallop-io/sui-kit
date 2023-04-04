@@ -1,7 +1,7 @@
-import { SuiKit } from "../sui-kit";
+import { SuiKit } from "../src";
 import * as process from "process";
 import dotenv from "dotenv";
-import {getShinamiFullNodeUrl} from "../sui-kit/lib/plugins/shinami";
+import {getShinamiFullNodeUrl} from "../src/lib/plugins/shinami";
 dotenv.config();
 
 (async() => {

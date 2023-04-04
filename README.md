@@ -35,6 +35,7 @@ You can use SuiKit to transfer SUI and other coins.
  */
 import { SuiKit } from '@scallop-dao/sui-kit';
 
+// Supports both hex and base64 secret key
 const secretKey = '<Secret key>';
 const suiKit = new SuiKit({ secretKey });
 const recipient = '0xCAFE';

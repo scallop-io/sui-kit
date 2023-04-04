@@ -1,7 +1,7 @@
 {
   "name": "@scallop-dao/sui-kit",
   "author": "scallop-dao",
-  "version": "0.30.02",
+  "version": "0.30.03",
   "description": "Tookit for interacting with SUI network",
   "keywords": ["sui", "scallop dao", "move", "blockchain"],
   "license": "Apache-2.0",

@@ -55,6 +55,7 @@ export class SuiKit {
    * if derivePathParams is not provided or mnemonics is empty, it will return the currentSigner.
    * else:
    * it will generate signer from the mnemonic with the given derivePathParams.
+   * @param derivePathParams, such as { accountIndex: 2, isExternal: false, addressIndex: 10 }, comply with the BIP44 standard
    */
   getSigner(derivePathParams?: DerivePathParams) {
     const keyPair = this.accountManager.getKeyPair(derivePathParams);
@@ -101,7 +102,11 @@ export class SuiKit {
   async signAndSendTxn(tx: Uint8Array | TransactionBlock | SuiTxBlock, derivePathParams?: DerivePathParams) {
     tx = tx instanceof SuiTxBlock ? tx.txBlock : tx;
     const signer = this.getSigner(derivePathParams);
-    return signer.signAndExecuteTransactionBlock({ transactionBlock: tx  })
+    return signer.signAndExecuteTransactionBlock({ transactionBlock: tx, options: {
+        showEffects: true,
+        showEvents: true,
+        showObjectChanges: true,
+    }})
   }
 
   /**
@@ -131,7 +136,7 @@ export class SuiKit {
    * Transfer to mutliple recipients
    * @param recipients the recipients addresses
    * @param amounts the amounts of SUI to transfer to each recipient, the length of amounts should be the same as the length of recipients
-   * @param derivePathParams the derive path params for the current signer
+   * @param derivePathParams
    */
   async transferSuiToMany(recipients: string[], amounts: number[], derivePathParams?: DerivePathParams) {
     const tx = new SuiTxBlock();
@@ -166,5 +171,17 @@ export class SuiKit {
     const tx = new SuiTxBlock();
     tx.stakeSui(amount, validatorAddr);
     return this.signAndSendTxn(tx, derivePathParams);
+  }
+
+  /**
+   * Execute the transaction with on-chain data but without really submitting. Useful for querying the effects of a transaction.
+   * Since the transaction is not submitted, its gas cost is not charged.
+   * @param tx the transaction to execute
+   * @param derivePathParams the derive path params
+   * @returns the effects and events of the transaction, such as object changes, gas cost, event emitted.
+   */
+  inspectTxn(tx: Uint8Array | TransactionBlock | SuiTxBlock, derivePathParams?: DerivePathParams) {
+    tx = tx instanceof SuiTxBlock ? tx.txBlock : tx;
+    return this.rpcProvider.provider.devInspectTransactionBlock({ transactionBlock: tx, sender: this.getAddress(derivePathParams) })
   }
 }

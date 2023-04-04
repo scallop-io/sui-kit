@@ -28,7 +28,7 @@ npm install @scallop-dao/sui-kit
 /**
  * 这是使用 SuiKit 将代币从一个账户转到另一个账户的示例。
  */
-import { SuiKit } from 'src';
+import { SuiKit } from '@scallop-dao/sui-kit';
 
 const secretKey = '<秘钥>';
 const suiKit = new SuiKit({ secretKey });
@@ -43,7 +43,7 @@ suiKit.transferCoin(recipient, 1000, '0xCOFFEE::coin::COIN').then(
 你可以使用SuiKit来从开发网络和测试网络请求水龙头。
 
 ```typescript
-import { SuiKit } from 'src';
+import { SuiKit } from '@scallop-dao/sui-kit';
 
 const secretKey = '<密钥>';
 const suiKit = new SuiKit({ secretyKey,  networkType: 'devnet' });
@@ -59,7 +59,7 @@ suiKit.requestFaucet().then(() => {
 /**
  * 这是一个使用 SuiKit 质押 SUI 的示例
  */
-import { SuiKit } from 'src';
+import { SuiKit } from '@scallop-dao/sui-kit';
 
 const secretKey = '<密钥>';
 const suiKit = new SuiKit({ secretyKey,  networkType: 'devnet' });
@@ -79,7 +79,7 @@ suiKit.stakeSui(stakeAmount, validatorAddress).then(() => {
  * 这个示例演示如何使用 SuiKit 进行可编程交易
  */
 
-import { SuiKit, TransactionBlock } from 'src';
+import { SuiKit, TransactionBlock } from '@scallop-dao/sui-kit';
 
 const secretKey = '<密钥>';
 const suiKit = new SuiKit({ secretKey });
@@ -107,6 +107,8 @@ suiKit.signAndSendTxn(tx).then(response => {
 /**
  * 这个示例演示如何使用 SuiKit 发布 move 模块
  */
+import { SuiKit } from '@scallop-dao/sui-kit';
+
 (async() => {
   const secretKey = '<密钥>';
   const suiKit = new SuiKit({ secretKey, networkType: 'devnet' });
@@ -138,7 +140,7 @@ SuiKit 遵循 bip32 和 bip39 标准，因此您可以使用它来管理多个�
 /**
  * 这是一个使用 SuiKit 管理多个账户的示例代码
  */
-import { SuiKit } from 'src'
+import { SuiKit } from '@scallop-dao/sui-kit';
 
 // 展示 SUI 在多个账户中的余额
 async function checkAccounts(suiKit: SuiKit) {
@@ -170,4 +172,3 @@ checkAccounts(suiKit).then(() => {})
 internalTransferSui(suiKit, 0, 1, 1000).then(() => {})
 
 ```
-

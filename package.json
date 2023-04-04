@@ -1,7 +1,7 @@
 {
   "name": "@scallop-dao/sui-kit",
   "author": "scallop-dao",
-  "version": "0.30.01",
+  "version": "0.30.02",
   "description": "Tookit for interacting with SUI network",
   "keywords": ["sui", "scallop dao", "move", "blockchain"],
   "license": "Apache-2.0",
@@ -26,7 +26,8 @@
     "access": "public"
   },
   "scripts": {
-    "publish": "pnpm run build && npm publish",
+    "publish": "npm run clean && npm run build && npm publish",
+    "clean": "rm -rf tsconfig.tsbuildinfo ./dist",
     "build": "npm run build:types && npm run build:tsup",
     "build:tsup": "tsup ./src/index.ts --format esm,cjs --sourcemap",
     "build:types": "tsc --build"

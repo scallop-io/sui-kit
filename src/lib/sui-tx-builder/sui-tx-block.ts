@@ -1,5 +1,7 @@
-import { TransactionBlock, SUI_SYSTEM_STATE_OBJECT_ID, normalizeSuiObjectId } from '@mysten/sui.js'
+import { TransactionBlock, SUI_SYSTEM_STATE_OBJECT_ID, normalizeSuiObjectId, TransactionArgument } from '@mysten/sui.js'
 import { SuiInputTypes, getDefaultSuiInputType } from './util'
+
+export type SuiTxArg = TransactionArgument | string | number | bigint | boolean;
 
 export class SuiTxBlock {
   public txBlock: TransactionBlock;
@@ -26,17 +28,18 @@ export class SuiTxBlock {
     return this.transferSuiToMany([recipient], [amount]);
   }
 
-  transferObjects(objects: string[], recipient: string) {
+  transferObjects(objects: SuiTxArg[], recipient: string) {
     const tx = this.txBlock;
-    tx.transferObjects(objects.map(obj => tx.object(obj)), tx.pure(recipient));
+    tx.transferObjects(this.#convertArgs(objects), tx.pure(recipient));
     return this;
   }
 
-  takeAmountFromCoins(coins: string[], amount: number) {
+  takeAmountFromCoins(coins: SuiTxArg[], amount: number) {
     const tx = this.txBlock;
+    const coinObjects = this.#convertArgs(coins);
     const mergedCoin = coins.length > 1
-      ? tx.mergeCoins(tx.object(coins[0]),  coins.slice(1).map(coin => tx.object(coin)))
-      : tx.object(coins[0])
+      ? tx.mergeCoins(coinObjects[0],  coinObjects.slice(1))
+      : coinObjects[0]
     const [sendCoin] = tx.splitCoins(mergedCoin, [tx.pure(amount)]);
     return [sendCoin, mergedCoin]
   }
@@ -52,10 +55,13 @@ export class SuiTxBlock {
     const regex = /(?<package>[a-zA-Z0-9]+)::(?<module>[a-zA-Z0-9_]+)::(?<function>[a-zA-Z0-9_]+)/;
     const match = target.match(regex);
     if (match === null) throw new Error('Invalid target format. Expected `${string}::${string}::${string}`');
+    console.log(`args: ${args}`.yellow)
+    const convertedArgs = this.#convertArgs(args);
+    console.log(`converted args: ${convertedArgs}`.yellow)
     const tx = this.txBlock;
     return tx.moveCall({
       target: target as `${string}::${string}::${string}`,
-      arguments: this.#convertArgs(args),
+      arguments: convertedArgs,
       typeArguments: typeArgs,
     });
   }
@@ -96,7 +102,7 @@ export class SuiTxBlock {
    * @param args
    * @param type 'address' | 'bool' | 'u8' | 'u16' | 'u32' | 'u64' | 'u128' | 'u256' | 'object'
    */
-  makeMoveVec(args: number[] | string[] | bigint[], type?: SuiInputTypes) {
+  makeMoveVec(args: SuiTxArg[], type?: SuiInputTypes) {
     if (args.length === 0) throw new Error('Transaction builder error: Empty array is not allowed');
     if (type === 'object' && args.some(arg => typeof arg !== 'string')) {
       throw new Error('Transaction builder error: Object id must be string');
@@ -115,7 +121,7 @@ export class SuiTxBlock {
     }
   }
 
-  #convertArgs(args: any[]) {
+  #convertArgs(args: any[]): TransactionArgument[] {
     return args.map(arg => {
       // We always treat string starting with `0x` as object id
       if (typeof arg === 'string' && arg.startsWith('0x')) {

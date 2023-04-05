@@ -3,12 +3,14 @@
 [中文文档](./README_cn.md)
 
 ## Features
+- [x] Much easier to use than the official SDK
 - [x] Transfer SUI & Custom Coin
 - [x] Request faucet from devnet, testnet
 - [x] Stake SUI
 - [x] Compatible with programmable transaction
 - [x] Publish move packages
-- [x] Advanced features: multi-accounts.
+- [x] Inspection of transaction (gasless transaction for inspection)
+- [x] Advanced features: multi-accounts
 
 ## Pre-requisites
 

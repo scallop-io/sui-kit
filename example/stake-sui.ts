@@ -1,6 +1,6 @@
 import { SuiKit } from "../src";
 import * as process from "process";
-import dotenv from "dotenv";
+import * as dotenv from "dotenv";
 import {getShinamiFullNodeUrl} from "../src/lib/plugins/shinami";
 dotenv.config();
 

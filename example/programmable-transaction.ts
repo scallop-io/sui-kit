@@ -2,7 +2,7 @@
  * This example shows how to use programmable transaction with SuiKit
  */
 
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 import { SuiKit, TransactionBlock } from '../src';
 dotenv.config();
 

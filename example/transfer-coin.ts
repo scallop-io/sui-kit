@@ -3,7 +3,7 @@
  */
 import { SuiKit } from "../src";
 import * as process from "process";
-import dotenv from "dotenv";
+import * as dotenv from "dotenv";
 dotenv.config();
 
 (async() => {

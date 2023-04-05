@@ -1,8 +1,8 @@
 /**
  * This is an example of using SuiKit to publish a move package
  */
-import path from "path";
-import dotenv from "dotenv";
+import * as path from "path";
+import * as dotenv from "dotenv";
 import { SuiKit } from "../src";
 dotenv.config();
 

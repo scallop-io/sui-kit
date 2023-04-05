@@ -5,13 +5,13 @@
  * @version 0.1.0
  */
 import 'colorts/lib/string'
-import { RawSigner, TransactionBlock } from '@mysten/sui.js'
+import { RawSigner, TransactionBlock, DevInspectResults, SuiTransactionBlockResponse } from '@mysten/sui.js'
 import { SuiAccountManager, DerivePathParams } from "./sui-account-manager";
 import { SuiRpcProvider, NetworkType } from './sui-rpc-provider';
 import { SuiPackagePublisher, PublishOptions } from "./sui-package-publisher";
 import {SuiTxBlock} from "./sui-tx-builder/sui-tx-block";
 
-type ToolKitParams = {
+export type SuiKitParams = {
   mnemonics?: string;
   secretKey?: string;
   fullnodeUrl?: string;
@@ -42,7 +42,7 @@ export class SuiKit {
    * @param faucetUrl, the faucet url, default is the preconfig faucet url for the given network type
    * @param suiBin, the path to sui cli binary, default to 'cargo run --bin sui'
    */
-  constructor({ mnemonics, secretKey, networkType, fullnodeUrl, faucetUrl, suiBin }: ToolKitParams = {}) {
+  constructor({ mnemonics, secretKey, networkType, fullnodeUrl, faucetUrl, suiBin }: SuiKitParams = {}) {
     // Init the account manager
     this.accountManager = new SuiAccountManager({ mnemonics, secretKey });
     // Init the rpc provider
@@ -99,7 +99,7 @@ export class SuiKit {
     return signer.signTransactionBlock({ transactionBlock: tx });
   }
 
-  async signAndSendTxn(tx: Uint8Array | TransactionBlock | SuiTxBlock, derivePathParams?: DerivePathParams) {
+  async signAndSendTxn(tx: Uint8Array | TransactionBlock | SuiTxBlock, derivePathParams?: DerivePathParams): Promise<SuiTransactionBlockResponse> {
     tx = tx instanceof SuiTxBlock ? tx.txBlock : tx;
     const signer = this.getSigner(derivePathParams);
     return signer.signAndExecuteTransactionBlock({ transactionBlock: tx, options: {
@@ -180,7 +180,7 @@ export class SuiKit {
    * @param derivePathParams the derive path params
    * @returns the effects and events of the transaction, such as object changes, gas cost, event emitted.
    */
-  inspectTxn(tx: Uint8Array | TransactionBlock | SuiTxBlock, derivePathParams?: DerivePathParams) {
+  async inspectTxn(tx: Uint8Array | TransactionBlock | SuiTxBlock, derivePathParams?: DerivePathParams): Promise<DevInspectResults> {
     tx = tx instanceof SuiTxBlock ? tx.txBlock : tx;
     return this.rpcProvider.provider.devInspectTransactionBlock({ transactionBlock: tx, sender: this.getAddress(derivePathParams) })
   }

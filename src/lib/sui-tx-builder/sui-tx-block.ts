@@ -1,9 +1,6 @@
-import { TransactionBlock, JsonRpcProvider, SUI_SYSTEM_STATE_OBJECT_ID } from '@mysten/sui.js'
+import { TransactionBlock, SUI_SYSTEM_STATE_OBJECT_ID, normalizeSuiObjectId } from '@mysten/sui.js'
+import { SuiInputTypes, getDefaultSuiInputType } from './util'
 
-interface BuildOptions {
-  provider?: JsonRpcProvider;
-  onlyTransactionKind?: boolean;
-}
 export class SuiTxBlock {
   public txBlock: TransactionBlock;
   constructor() {
@@ -14,8 +11,8 @@ export class SuiTxBlock {
    * @description Build the transaction block
    * @param onlyTransactionKind, if false, it will do a dry run to get the gas price.
    */
-  build(onlyTransactionKind: boolean = false) {
-    this.txBlock.build({ onlyTransactionKind });
+  async build(onlyTransactionKind: boolean = false) {
+    return this.txBlock.build({ onlyTransactionKind });
   }
   transferSuiToMany(recipients: string[], amounts: number[]) {
     const tx = this.txBlock;
@@ -44,11 +41,21 @@ export class SuiTxBlock {
     return [sendCoin, mergedCoin]
   }
 
-  moveCall(target: `${string}::${string}::${string}`, args: any[] = [], typeArgs: string[] = []) {
+  /**
+   * @description Move call
+   * @param target `${string}::${string}::${string}`, e.g. `0x3::sui_system::request_add_stake`
+   * @param args the arguments of the move call, such as `['0x1', '0x2']`
+   * @param typeArgs the type arguments of the move call, such as `['0x2::sui::SUI']`
+   */
+  moveCall(target: string, args: any[] = [], typeArgs: string[] = []) {
+    // a regex for pattern `${string}::${string}::${string}`
+    const regex = /(?<package>[a-zA-Z0-9]+)::(?<module>[a-zA-Z0-9_]+)::(?<function>[a-zA-Z0-9_]+)/;
+    const match = target.match(regex);
+    if (match === null) throw new Error('Invalid target format. Expected `${string}::${string}::${string}`');
     const tx = this.txBlock;
     return tx.moveCall({
-      target: target,
-      arguments: args.map(arg => tx.pure(arg)),
+      target: target as `${string}::${string}::${string}`,
+      arguments: this.#convertArgs(args),
       typeArguments: typeArgs,
     });
   }
@@ -61,5 +68,68 @@ export class SuiTxBlock {
       arguments: [tx.object(SUI_SYSTEM_STATE_OBJECT_ID), stakeCoin, tx.pure(validatorAddr)],
     });
     return tx;
+  }
+
+  address(value: string) {
+    return this.txBlock.pure(value)
+  }
+
+  pure(value: any) {
+    return this.txBlock.pure(value)
+  }
+
+  object(value: string) {
+    return this.txBlock.object(value)
+  }
+
+  /**
+   * Since we know the elements in the array are the same type
+   * If type is not provided, we will try to infer the type from the first element
+   * By default,
+   *
+   * string starting with `0x` =====> object id
+   * number, bigint ====> u64
+   * boolean =====> bool
+   *
+   *
+   * If type is provided, we will use the type to convert the array
+   * @param args
+   * @param type 'address' | 'bool' | 'u8' | 'u16' | 'u32' | 'u64' | 'u128' | 'u256' | 'object'
+   */
+  makeMoveVec(args: number[] | string[] | bigint[], type?: SuiInputTypes) {
+    if (args.length === 0) throw new Error('Transaction builder error: Empty array is not allowed');
+    if (type === 'object' && args.some(arg => typeof arg !== 'string')) {
+      throw new Error('Transaction builder error: Object id must be string');
+    }
+    const defaultSuiType = getDefaultSuiInputType(args[0])
+    if (type === 'object' || defaultSuiType === 'object') {
+      return this.txBlock.makeMoveVec({
+        type: 'object',
+        objects: args.map(arg => this.txBlock.object(normalizeSuiObjectId(arg as string)))
+      })
+    } else {
+      return this.txBlock.makeMoveVec({
+        type: type || defaultSuiType,
+        objects: args.map(arg => this.txBlock.pure(arg))
+      })
+    }
+  }
+
+  #convertArgs(args: any[]) {
+    return args.map(arg => {
+      // We always treat string starting with `0x` as object id
+      if (typeof arg === 'string' && arg.startsWith('0x')) {
+        return this.txBlock.object(normalizeSuiObjectId(arg))
+      // Other basic types such as string, number, boolean are converted to pure value
+      } else if (typeof arg !== 'object') {
+        return this.txBlock.pure(arg)
+      // if it's an array, we will convert it to move vec
+      } else if (Array.isArray(arg)) {
+        return this.makeMoveVec(arg)
+      } else {
+        // We do nothing, because it's most likely already a move value
+        return arg
+      }
+    })
   }
 }

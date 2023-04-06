@@ -167,7 +167,8 @@ export class SuiKit {
    * @param coinType
    * @param owner
    */
-  async selectCoinsWithAmount(amount: number, coinType: string, owner: string) {
+  async selectCoinsWithAmount(amount: number, coinType: string, owner?: string) {
+    owner = owner || this.accountManager.currentAddress;
     const coins = await this.rpcProvider.selectCoins(owner, amount, coinType);
     return coins.map(c => c.objectId)
   }

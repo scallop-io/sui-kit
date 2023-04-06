@@ -1,6 +1,14 @@
-import { Connection, JsonRpcProvider } from "@mysten/sui.js";
+import { Connection, JsonRpcProvider, getObjectType, getObjectId, getObjectFields, getObjectDisplay, getObjectVersion } from "@mysten/sui.js";
 import { requestFaucet } from './faucet'
 import { NetworkType, getDefaultNetworkParams } from "./default-chain-configs";
+
+type ObjectData = {
+  objectId: string;
+  objectType: string;
+  objectVersion: number;
+  objectDisplay: Record<string, string> | undefined;
+  objectFields: Record<string, any> | undefined;
+}
 
 type Params = {
   fullnodeUrl?: string;
@@ -43,6 +51,20 @@ export class SuiRpcProvider {
 
   async getBalance(addr: string, coinType?: string) {
     return this.provider.getBalance({ owner: addr, coinType });
+  }
+
+  async getObjects(ids: string[]) {
+    const options = { showContent: true, showDisplay: true, showType: true };
+    const objects = await this.provider.multiGetObjects({ ids, options });
+    const parsedObjects = objects.map((object) => {
+      const objectId = getObjectId(object);
+      const objectType = getObjectType(object);
+      const objectVersion = getObjectVersion(object);
+      const objectFields = getObjectFields(object);
+      const objectDisplay = getObjectDisplay(object);
+      return { objectId, objectType, objectVersion, objectFields, objectDisplay };
+    });
+    return parsedObjects as ObjectData[]
   }
 
   /**

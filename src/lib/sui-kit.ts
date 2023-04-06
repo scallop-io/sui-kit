@@ -93,6 +93,10 @@ export class SuiKit {
     return this.rpcProvider.getBalance(owner, coinType);
   }
 
+  async getObjects(objectIds: string[]) {
+    return this.rpcProvider.getObjects(objectIds);
+  }
+
   async signTxn(tx: Uint8Array | TransactionBlock | SuiTxBlock, derivePathParams?: DerivePathParams) {
     tx = tx instanceof SuiTxBlock ? tx.txBlock : tx;
     const signer = this.getSigner(derivePathParams);

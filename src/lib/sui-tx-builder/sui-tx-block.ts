@@ -1,4 +1,4 @@
-import { TransactionBlock, SUI_SYSTEM_STATE_OBJECT_ID, normalizeSuiObjectId, TransactionArgument } from '@mysten/sui.js'
+import { TransactionBlock, SUI_SYSTEM_STATE_OBJECT_ID, normalizeSuiObjectId, TransactionArgument, JsonRpcProvider } from '@mysten/sui.js'
 import { SuiInputTypes, getDefaultSuiInputType } from './util'
 
 export type SuiTxArg = TransactionArgument | string | number | bigint | boolean;
@@ -9,13 +9,6 @@ export class SuiTxBlock {
     this.txBlock = new TransactionBlock();
   }
 
-  /**
-   * @description Build the transaction block
-   * @param onlyTransactionKind, if false, it will do a dry run to get the gas price.
-   */
-  async build(onlyTransactionKind: boolean = false) {
-    return this.txBlock.build({ onlyTransactionKind });
-  }
   transferSuiToMany(recipients: string[], amounts: number[]) {
     const tx = this.txBlock;
     const coins = tx.splitCoins(tx.gas, amounts.map(amount => tx.pure(amount)));

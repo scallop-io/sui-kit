@@ -51,7 +51,7 @@ export class SuiRpcProvider {
    * @param amount the amount that is needed for the coin
    * @param coinType the coin type, default is '0x2::SUI::SUI'
    */
-  async selectCoins(addr: string, amount: number, coinType: `${string}::${string}::${string}` = '0x2::SUI::SUI') {
+  async selectCoins(addr: string, amount: number, coinType: string = '0x2::SUI::SUI') {
     const coins = await this.provider.getCoins({ owner: addr, coinType });
     let selectedCoins: {objectId: string, digest: string, version: number}[] = [];
     let totalAmount = 0;

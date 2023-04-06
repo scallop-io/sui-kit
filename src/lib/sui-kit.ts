@@ -151,7 +151,7 @@ export class SuiKit {
    * @param coinType any custom coin type but not SUI
    * @param derivePathParams the derive path params for the current signer
    */
-  async transferCoin(recipient: string, amount: number, coinType: `${string}::${string}::${string}`, derivePathParams?: DerivePathParams) {
+  async transferCoin(recipient: string, amount: number, coinType: string, derivePathParams?: DerivePathParams) {
     const tx = new SuiTxBlock();
     const owner = this.accountManager.getAddress(derivePathParams);
     const coins = await this.rpcProvider.selectCoins(owner, amount, coinType);
@@ -159,6 +159,17 @@ export class SuiKit {
     tx.txBlock.transferObjects([sendCoin], tx.txBlock.pure(recipient));
     tx.txBlock.transferObjects([mergedCoin], tx.txBlock.pure(owner));
     return this.signAndSendTxn(tx, derivePathParams);
+  }
+
+  /**
+   * Select coins with the given amount and coin type, the total amount is greater than or equal to the given amount
+   * @param amount
+   * @param coinType
+   * @param owner
+   */
+  async selectCoinsWithAmount(amount: number, coinType: string, owner: string) {
+    const coins = await this.rpcProvider.selectCoins(owner, amount, coinType);
+    return coins.map(c => c.objectId)
   }
 
   /**

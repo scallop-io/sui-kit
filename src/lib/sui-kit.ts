@@ -9,7 +9,7 @@ import { RawSigner, TransactionBlock, DevInspectResults, SuiTransactionBlockResp
 import { SuiAccountManager, DerivePathParams } from "./sui-account-manager";
 import { SuiRpcProvider, NetworkType } from './sui-rpc-provider';
 import { SuiPackagePublisher, PublishOptions } from "./sui-package-publisher";
-import {SuiTxBlock} from "./sui-tx-builder/sui-tx-block";
+import { SuiTxBlock } from "./sui-tx-builder/sui-tx-block";
 
 export type SuiKitParams = {
   mnemonics?: string;

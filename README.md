@@ -117,7 +117,7 @@ You can use SuiKit to publish move packages to the SUI network.
 /**
  * This is an example of using SuiKit to publish a move package
  */
-import { SuiKit } from '@scallop-dao/sui-kit';
+import { SuiKit, SuiPackagePublisher } from '@scallop-dao/sui-kit';
 
 (async() => {
   const secretKey = '<Secret key>';
@@ -130,7 +130,8 @@ import { SuiKit } from '@scallop-dao/sui-kit';
   await new Promise(resolve => setTimeout(() => resolve(true), 3000));
 
   const packagePath = path.join(__dirname, './example/sample_move/custom_coin');
-  const result = await suiKit.publishPackage(packagePath);
+  const publisher = new SuiPackagePublisher();
+  const result = await publisher.publishPackage(packagePath, suiKit.getSigner());
   console.log('packageId: ' + result.packageId);
 })();
 

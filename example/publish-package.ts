@@ -3,12 +3,12 @@
  */
 import * as path from "path";
 import * as dotenv from "dotenv";
-import { SuiKit } from "../src";
+import { SuiKit, SuiPackagePublisher } from "../src";
 dotenv.config();
 
 (async() => {
   const mnemonics = process.env.MNEMONICS;
-  const suiKit = new SuiKit({ mnemonics, networkType: 'testnet' });
+  const suiKit = new SuiKit({ mnemonics, networkType: 'devnet' });
   const balance = await suiKit.getBalance();
   if (balance.totalBalance <= 3000) {
     await suiKit.requestFaucet();
@@ -17,6 +17,7 @@ dotenv.config();
   await new Promise(resolve => setTimeout(() => resolve(true), 3000));
 
   const packagePath = path.join(__dirname, './sample_move/custom_coin');
-  const result = await suiKit.publishPackage(packagePath);
+  const publisher = new SuiPackagePublisher();
+  const result = await publisher.publishPackage(packagePath, suiKit.getSigner());
   console.log('packageId: ' + result.packageId);
 })();

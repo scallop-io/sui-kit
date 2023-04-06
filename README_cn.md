@@ -109,7 +109,7 @@ suiKit.signAndSendTxn(tx).then(response => {
 /**
  * 这个示例演示如何使用 SuiKit 发布 move 模块
  */
-import { SuiKit } from '@scallop-dao/sui-kit';
+import { SuiKit, SuiPackagePublisher } from '@scallop-dao/sui-kit';
 
 (async() => {
   const secretKey = '<密钥>';
@@ -124,7 +124,8 @@ import { SuiKit } from '@scallop-dao/sui-kit';
 
   // 发布包
   const packagePath = path.join(__dirname, './example/sample_move/custom_coin');
-  const result = await suiKit.publishPackage(packagePath);
+  const publisher = new SuiPackagePublisher();
+  const result = await publisher.publishPackage(packagePath, suiKit.getSigner());
   console.log('包ID: ' + result.packageId);
 })();
 ```

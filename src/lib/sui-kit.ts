@@ -4,11 +4,9 @@
  * @author IceFox
  * @version 0.1.0
  */
-import 'colorts/lib/string'
 import { RawSigner, TransactionBlock, DevInspectResults, SuiTransactionBlockResponse } from '@mysten/sui.js'
 import { SuiAccountManager, DerivePathParams } from "./sui-account-manager";
 import { SuiRpcProvider, NetworkType } from './sui-rpc-provider';
-import { SuiPackagePublisher, PublishOptions } from "./sui-package-publisher";
 import { SuiTxBlock } from "./sui-tx-builder/sui-tx-block";
 
 export type SuiKitParams = {
@@ -27,7 +25,6 @@ export class SuiKit {
 
   public accountManager: SuiAccountManager;
   public rpcProvider: SuiRpcProvider;
-  public packagePublisher: SuiPackagePublisher;
 
   /**
    * Support the following ways to init the SuiToolkit:
@@ -47,8 +44,6 @@ export class SuiKit {
     this.accountManager = new SuiAccountManager({ mnemonics, secretKey });
     // Init the rpc provider
     this.rpcProvider = new SuiRpcProvider({ fullnodeUrl, faucetUrl, networkType });
-    // Init the package publisher
-    this.packagePublisher = new SuiPackagePublisher(suiBin);
   }
 
   /**
@@ -111,17 +106,6 @@ export class SuiKit {
         showEvents: true,
         showObjectChanges: true,
     }})
-  }
-
-  /**
-   * publish the move package at the given path
-   * It starts a child process to call the "sui binary" to build the move package
-   * The building process takes place in a tmp directory, which would be cleaned later
-   * @param packagePath the path to the move package
-   */
-  async publishPackage(packagePath: string, options?: PublishOptions, derivePathParams?: DerivePathParams) {
-    const signer = this.getSigner(derivePathParams);
-    return this.packagePublisher.publishPackage(packagePath, signer)
   }
 
   /**

@@ -1,4 +1,5 @@
 import tmp from 'tmp';
+import 'colorts/lib/string';
 import { execSync } from 'child_process';
 import {
   TransactionBlock,

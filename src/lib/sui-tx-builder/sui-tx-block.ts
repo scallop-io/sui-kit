@@ -103,12 +103,10 @@ export class SuiTxBlock {
     const defaultSuiType = getDefaultSuiInputType(args[0])
     if (type === 'object' || defaultSuiType === 'object') {
       return this.txBlock.makeMoveVec({
-        type: 'object',
         objects: args.map(arg => this.txBlock.object(normalizeSuiObjectId(arg as string)))
       })
     } else {
       return this.txBlock.makeMoveVec({
-        type: type || defaultSuiType,
         objects: args.map(arg => this.txBlock.pure(arg))
       })
     }

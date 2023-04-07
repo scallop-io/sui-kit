@@ -16,7 +16,7 @@ dotenv.config();
   // Wait for 3 seconds before publish package
   await new Promise(resolve => setTimeout(() => resolve(true), 3000));
 
-  const packagePath = path.join(__dirname, './sample_move/custom_coin');
+  const packagePath = path.join(__dirname, './sample_move/package_a');
   const publisher = new SuiPackagePublisher();
   const result = await publisher.publishPackage(packagePath, suiKit.getSigner());
   console.log('packageId: ' + result.packageId);

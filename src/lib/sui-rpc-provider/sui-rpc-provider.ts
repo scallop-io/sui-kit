@@ -1,4 +1,4 @@
-import { Connection, JsonRpcProvider, getObjectType, getObjectId, getObjectFields, getObjectDisplay, getObjectVersion } from "@mysten/sui.js";
+import { Connection, JsonRpcProvider, getObjectType, getObjectId, getObjectFields, getObjectDisplay, getObjectVersion, DisplayFieldsResponse, ObjectContentFields } from "@mysten/sui.js";
 import { requestFaucet } from './faucet'
 import { NetworkType, getDefaultNetworkParams } from "./default-chain-configs";
 
@@ -6,8 +6,8 @@ type ObjectData = {
   objectId: string;
   objectType: string;
   objectVersion: number;
-  objectDisplay: Record<string, string> | undefined;
-  objectFields: Record<string, any> | undefined;
+  objectDisplay: DisplayFieldsResponse;
+  objectFields: ObjectContentFields;
 }
 
 type Params = {

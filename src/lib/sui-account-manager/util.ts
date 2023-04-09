@@ -3,7 +3,7 @@ import { fromB64 } from '@mysten/sui.js'
  * @description This regular expression matches any string that contains only hexadecimal digits (0-9, A-F, a-f).
  * @param str
  */
-export const isHex = (str: string) => /^[0-9A-Fa-f]+$/g.test(str);
+export const isHex = (str: string) => /^0x[0-9a-fA-F]+$|^[0-9a-fA-F]+$/.test(str);
 
 /**
  * @description This regular expression matches any string that contains only base64 digits (0-9, A-Z, a-z, +, /, =).
@@ -29,7 +29,6 @@ export function fromHEX(hexStr: string): Uint8Array {
   }
   return Uint8Array.from(intArr);
 }
-
 
 /**
  * @description Convert a hex or base64 string to Uint8Array

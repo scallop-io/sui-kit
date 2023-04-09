@@ -1,7 +1,6 @@
 import { SuiKit } from "../src";
 import * as process from "process";
 import * as dotenv from "dotenv";
-import {getShinamiFullNodeUrl} from "../src/lib/plugins/shinami";
 dotenv.config();
 
 (async() => {
@@ -10,26 +9,26 @@ dotenv.config();
   }
 
   const mnemonics = process.env.MNEMONICS;
-  const SHINAMI_KEY = process.env.SHINAMI_KEY || '';
-  const shinamiFullnode = getShinamiFullNodeUrl(SHINAMI_KEY);
-  const suiKit = new SuiKit({ mnemonics, fullnodeUrl: shinamiFullnode, networkType: 'testnet' });
+  const suiKit = new SuiKit({ mnemonics, networkType: 'testnet' });
   const stakeSui = async (accountIndex: number) => {
     suiKit.switchAccount({ accountIndex })
     await displayBalance(suiKit );
     const amountToStake = 10**9;
     // NodeReal address
-    const validatorAddress = '0xc64c306856aa14ad8a281e2b54a9a02b742d4485cd677527c377f48a9d12b332';
+    const validatorAddress = '0xf941ae3cbe5645dccc15da8346b533f7f91f202089a5521653c062b2ff10b304';
     console.log(`Stake ${amountToStake} SUI to ${validatorAddress}...`)
     await suiKit.stakeSui(amountToStake, validatorAddress);
     console.log('Stake transaction sent.')
 
-    console.log('Wait 3 seconds for the transaction to be confirmed...');
+    console.log('Wait 10 seconds for the transaction to be confirmed...');
     await new Promise(resolve => setTimeout(resolve, 3000));
 
     console.log('After stake:');
     await displayBalance(suiKit);
   }
-  for(let i = 6; i < 10; i++) {
+  // Stake SUI for accounts from 1 to 9
+  for(let i = 0; i < 10; i++) {
+    console.log(`Stake SUI for account ${i}`);
     await stakeSui(i);
   }
 })();

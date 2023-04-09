@@ -1,6 +1,5 @@
 import * as dotenv from 'dotenv';
 import { SuiKit } from '../src';
-import {getShinamiFullNodeUrl} from "../src/lib/plugins/shinami";
 dotenv.config();
 
 async function checkAccounts(suiKit: SuiKit, start: number = 0, end: number = 10) {
@@ -25,16 +24,5 @@ async function internalTransferSui(suiKit: SuiKit, fromAccountIndex: number, toA
 (async () => {
   const mnemonics = process.env.MNEMONICS;
   const suiKit = new SuiKit({ mnemonics, networkType: 'testnet' });
-  await checkAccounts(suiKit, 0, 10);
-  // // transfer 0.05 SUI to accounts from 1 to 8
-  // const range = (start: number, end: number) => Array.from({length: (end - start + 1)}, (v, k) => k + start);
-  // const recipients = range(1, 8).map(i => suiKit.getAddress({accountIndex: i}));
-  // const amounts = range(1, 8).map(i => 5 * 10**7);
-  // console.log('Transfer 0.05 SUI to accounts from 1 to 8');
-  // await suiKit.transferSuiToMany(recipients, amounts, {accountIndex: 0});
-  // console.log('Transfer done'.green);
-  // // wait for the transaction to be confirmed
-  // console.log('Wait 3 seconds for the transaction to be confirmed...');
-  // await new Promise(resolve => setTimeout(resolve, 3000));
-  // await checkAccounts(suiKit);
+  await checkAccounts(suiKit, 50, 55);
 })();

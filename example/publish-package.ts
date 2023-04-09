@@ -3,7 +3,8 @@
  */
 import * as path from "path";
 import * as dotenv from "dotenv";
-import { SuiKit, SuiPackagePublisher } from "../src";
+import { SuiKit } from "../src";
+import { SuiPackagePublisher } from "../src/lib/sui-package-publisher";
 dotenv.config();
 
 (async() => {

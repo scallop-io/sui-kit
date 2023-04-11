@@ -1,5 +1,13 @@
 import {
-  Connection, JsonRpcProvider, getObjectType, getObjectId, getObjectFields, getObjectDisplay, getObjectVersion, DisplayFieldsResponse, ObjectContentFields
+  Connection,
+  JsonRpcProvider,
+  getObjectType,
+  getObjectId,
+  getObjectFields,
+  getObjectDisplay,
+  getObjectVersion,
+  DisplayFieldsResponse,
+  ObjectContentFields,
 } from "@mysten/sui.js";
 import { requestFaucet } from './faucet'
 import { NetworkType, getDefaultNetworkParams } from "./default-chain-configs";

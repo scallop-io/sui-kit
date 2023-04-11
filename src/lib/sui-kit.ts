@@ -4,10 +4,10 @@
  * @author IceFox
  * @version 0.1.0
  */
-import { RawSigner, TransactionBlock, DevInspectResults, SuiTransactionBlockResponse } from '@mysten/sui.js'
+import { RawSigner, TransactionBlock, DevInspectResults, SuiTransactionBlockResponse } from '@mysten/sui.js';
 import { SuiAccountManager, DerivePathParams } from "./sui-account-manager";
 import { SuiRpcProvider, NetworkType } from './sui-rpc-provider';
-import { SuiTxBlock } from "./sui-tx-builder/sui-tx-block";
+import { SuiTxBlock } from "./sui-tx-builder";
 
 export type SuiKitParams = {
   mnemonics?: string;
@@ -15,7 +15,6 @@ export type SuiKitParams = {
   fullnodeUrl?: string;
   faucetUrl?: string;
   networkType?: NetworkType;
-  suiBin?: string;
 }
 /**
  * @class SuiKit
@@ -37,9 +36,8 @@ export class SuiKit {
    * @param networkType, 'testnet' | 'mainnet' | 'devnet', default is 'devnet'
    * @param fullnodeUrl, the fullnode url, default is the preconfig fullnode url for the given network type
    * @param faucetUrl, the faucet url, default is the preconfig faucet url for the given network type
-   * @param suiBin, the path to sui cli binary, default to 'cargo run --bin sui'
    */
-  constructor({ mnemonics, secretKey, networkType, fullnodeUrl, faucetUrl, suiBin }: SuiKitParams = {}) {
+  constructor({ mnemonics, secretKey, networkType, fullnodeUrl, faucetUrl }: SuiKitParams = {}) {
     // Init the account manager
     this.accountManager = new SuiAccountManager({ mnemonics, secretKey });
     // Init the rpc provider
@@ -133,19 +131,28 @@ export class SuiKit {
   }
 
   /**
-   * Transfer the given amount of coin to the recipient
-   * @param recipient the recipient address
-   * @param amount the amount of coin to transfer
+   * Transfer the given amounts of coin to multiple recipients
+   * @param recipients the list of recipient address
+   * @param amounts the amounts to transfer for each recipient
    * @param coinType any custom coin type but not SUI
    * @param derivePathParams the derive path params for the current signer
    */
-  async transferCoin(recipient: string, amount: number, coinType: string, derivePathParams?: DerivePathParams) {
+  async transferCoinToMany(recipients: string[], amounts: number[], coinType: string, derivePathParams?: DerivePathParams) {
     const tx = new SuiTxBlock();
     const owner = this.accountManager.getAddress(derivePathParams);
-    const coins = await this.rpcProvider.selectCoins(owner, amount, coinType);
-    const [sendCoin, mergedCoin] = tx.takeAmountFromCoins(coins.map(c => c.objectId), amount);
-    tx.txBlock.transferObjects([sendCoin], tx.txBlock.pure(recipient));
-    tx.txBlock.transferObjects([mergedCoin], tx.txBlock.pure(owner));
+    const totalAmount = amounts.reduce((a, b) => a + b, 0);
+    const coins = await this.rpcProvider.selectCoins(owner, totalAmount, coinType);
+    tx.transferCoinToMany(coins.map(c => c.objectId), owner, recipients, amounts);
+    return this.signAndSendTxn(tx, derivePathParams);
+  }
+  
+  async transferCoin(recipient: string, amount: number, coinType: string, derivePathParams?: DerivePathParams) {
+    return this.transferCoinToMany([recipient], [amount], coinType, derivePathParams)
+  }
+  
+  async transferObjects(objects: string[], recipient: string, derivePathParams?: DerivePathParams) {
+    const tx = new SuiTxBlock();
+    tx.transferObjects(objects, recipient);
     return this.signAndSendTxn(tx, derivePathParams);
   }
 

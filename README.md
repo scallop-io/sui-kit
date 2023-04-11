@@ -3,61 +3,81 @@
 [中文文档](./README_cn.md)
 
 ## Features
-- [x] Much easier to use than the official SDK
 - [x] Transfer SUI & Custom Coin
-- [x] Request faucet from devnet, testnet
 - [x] Stake SUI
 - [x] Compatible with programmable transaction
-- [x] Publish move packages
 - [x] Inspection of transaction (gasless transaction for inspection)
 - [x] Advanced features: multi-accounts
 
 ## Pre-requisites
 
-1, Install the package
-
 ```bash
 npm install @scallop-dao/sui-kit
 ```
 
-2, Install SUI cli (optional: only needed for publishing packages)
-
-Please refer to the official documentation: [How to install SUI cli](https://docs.sui.io/devnet/build/install)
-
 
 ## How to use
 
-### Transfer coins
-You can use SuiKit to transfer SUI and other coins.
+### Init SuiKit
 
 ```typescript
-
-/**
- * This is an example of using SuiKit to transfer coins from one account to another.
- */
 import { SuiKit } from '@scallop-dao/sui-kit';
 
-// Supports both hex and base64 secret key
+// The following types of secret key are supported:
+// 1. base64 key from SUI cli keystore file
+// 2. 32 bytes hex key
+// 3. 64 bytes legacy hex key
 const secretKey = '<Secret key>';
-const suiKit = new SuiKit({ secretKey });
-const recipient = '0xCAFE';
-suiKit.transferSui(recipient, 1000).then(() => console.log('transfered 1000 SUI'));
-suiKit.transferCoin(recipient, 1000, '0xCOFFEE::coin::COIN').then(
-  () => console.log('transfered 1000 COIN')
-);
+const suiKit1 = new SuiKit({ secretKey });
+
+
+// 12 or 24 words mnemonics
+const mnemonics = '<Mnemonics>';
+const suiKit2 = new SuiKit({ mnemonics });
+
+
+// It will create a HD wallet with a random mnemonics 
+const suiKit3 = new SuiKit();
+
+
+// Override options
+const suiKit = new SuiKit({
+  mnemonics: '<Mnemonics>',
+  // 'testnet' | 'mainnet' | 'devnet', default is 'devnet'
+  networkType: 'testnet',
+  // the fullnode url, default is the preconfig fullnode url for the given network type
+  fullnodeUrl: '<SUI fullnode>',
+  // the faucet url, default is the preconfig faucet url for the given network type
+  faucetUrl: '<SUI faucet url>' 
+});
 ```
 
-### Request faucet
-You can use SuiKit to request faucet from devnet or testnet.
+
+### Transfer 
+You can use SuiKit to transfer SUI, custom coins, and any objects.
 
 ```typescript
-import { SuiKit } from '@scallop-dao/sui-kit';
 
-const secretKey = '<Secret key>';
-const suiKit = new SuiKit({ secretyKey,  networkType: 'devnet' });
-suiKit.requestFaucet().then(() => {
-  console.log('Faucet request success');
-});
+const recipient1 = '0x123'; // repace with real address
+const recipient2 = '0x456'; // repace with real address
+
+// transfer SUI to single recipient
+await suiKit.transferSui(recipient1, 1000);
+// transfer SUI to multiple recipients
+await suiKit.transferSuiToMany([recipient1, recipient2], [1000, 2000]);
+
+const coinType = '0xfb03984967f0390a426c16257d35f4a14811eefc32d648d2c66d603a9354f256::custom_coin::CUSTOM_COIN';
+// Transfer custom coin to single recipient
+await suiKit.transferCoin(recipient1, 1000, coinType);
+// Transfer custom coin to multiple recipients
+await suiKit.transferCoinToMany([recipient1, recipient2], [1000, 2000], coinType);
+
+// Transfer objects
+const objectIds = [
+  '0xd09e2415f74a6b090387951a0297fdae72745fb0249e7e7029a9d0eafe2cab23',
+  '0x7f7cfaaa3c95e38282ae2bf038bce5ea0482da3395155031c6c6f77a6f1d367b'
+];
+await suiKit.transferObjects(objectIds, recipient1);
 ```
 
 ### Stake SUI
@@ -67,12 +87,8 @@ You can use SuiKit to stake SUI.
 /**
  * This is an example of using SuiKit to stake SUI
  */
-import { SuiKit } from '@scallop-dao/sui-kit';
-
-const secretKey = '<Secret key>';
-const suiKit = new SuiKit({ secretyKey,  networkType: 'devnet' });
 const stakeAmount = 1000;
-const validatorAddress = '0x123';
+const validatorAddress = '0x123'; // replace with real address
 suiKit.stakeSui(stakeAmount, validatorAddress).then(() => {
   console.log('Stake SUI success');
 });
@@ -106,34 +122,6 @@ recipients.forEach(recipient => {
 suiKit.signAndSendTxn(tx).then(response => {
   console.log('Transaction digest: ' + response.digest);
 });
-
-```
-
-### Publish move packages
-You can use SuiKit to publish move packages to the SUI network.
-**Notice: you need to install SUI cli first.** (see [Pre-requisites](#pre-requisites))
-
-```typescript
-/**
- * This is an example of using SuiKit to publish a move package
- */
-import { SuiKit, SuiPackagePublisher } from '@scallop-dao/sui-kit';
-
-(async() => {
-  const secretKey = '<Secret key>';
-  const suiKit = new SuiKit({ secretKey, networkType: 'devnet' });
-  const balance = await suiKit.getBalance();
-  if (balance.totalBalance <= 3000) {
-    await suiKit.requestFaucet();
-  }
-  // Wait for 3 seconds before publish package
-  await new Promise(resolve => setTimeout(() => resolve(true), 3000));
-
-  const packagePath = path.join(__dirname, './example/sample_move/custom_coin');
-  const publisher = new SuiPackagePublisher();
-  const result = await publisher.publishPackage(packagePath, suiKit.getSigner());
-  console.log('packageId: ' + result.packageId);
-})();
 
 ```
 

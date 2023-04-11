@@ -1,4 +1,9 @@
-import { TransactionBlock, SUI_SYSTEM_STATE_OBJECT_ID, normalizeSuiObjectId, TransactionArgument, JsonRpcProvider } from '@mysten/sui.js'
+import {
+  TransactionBlock,
+  SUI_SYSTEM_STATE_OBJECT_ID,
+  normalizeSuiObjectId,
+  TransactionArgument,
+} from '@mysten/sui.js'
 import { SuiInputTypes, getDefaultSuiInputType } from './util'
 
 export type SuiTxArg = TransactionArgument | string | number | bigint | boolean;
@@ -10,6 +15,10 @@ export class SuiTxBlock {
   }
 
   transferSuiToMany(recipients: string[], amounts: number[]) {
+    // require recipients.length === amounts.length
+    if (recipients.length !== amounts.length) {
+      throw new Error('transferSuiToMany: recipients.length !== amounts.length');
+    }
     const tx = this.txBlock;
     const coins = tx.splitCoins(tx.gas, amounts.map(amount => tx.pure(amount)));
     recipients.forEach((recipient, index) => {
@@ -27,6 +36,7 @@ export class SuiTxBlock {
     return this;
   }
 
+  // TODO: refactor this to take a list of coins
   takeAmountFromCoins(coins: SuiTxArg[], amount: number) {
     const tx = this.txBlock;
     const coinObjects = this.#convertArgs(coins);
@@ -36,7 +46,35 @@ export class SuiTxBlock {
     const [sendCoin] = tx.splitCoins(mergedCoin, [tx.pure(amount)]);
     return [sendCoin, mergedCoin]
   }
-
+  
+  splitMultiCoins(coins: SuiTxArg[], amounts: number[]) {
+    const tx = this.txBlock;
+    const coinObjects = this.#convertArgs(coins);
+    const mergedCoin = coins.length > 1
+      ? tx.mergeCoins(coinObjects[0],  coinObjects.slice(1))
+      : coinObjects[0]
+    const splitedCoins = tx.splitCoins(mergedCoin, amounts.map(m => tx.pure(m)));
+    return { splitedCoins, mergedCoin }
+  }
+  
+  transferCoinToMany(inputCoins: SuiTxArg[], sender: string, recipients: string[], amounts: number[]) {
+    // require recipients.length === amounts.length
+    if (recipients.length !== amounts.length) {
+      throw new Error('transferSuiToMany: recipients.length !== amounts.length');
+    }
+    const tx = this.txBlock;
+    const { splitedCoins, mergedCoin } = this.splitMultiCoins(inputCoins, amounts);
+    recipients.forEach((recipient, index) => {
+      tx.transferObjects([splitedCoins[index]], tx.pure(recipient));
+    });
+    tx.transferObjects([mergedCoin], tx.pure(sender))
+    return this;
+  }
+  
+  transferCoin(inputCoins: SuiTxArg[], sender: string, recipient: string, amount: number) {
+    return this.transferCoinToMany(inputCoins, sender, [recipient], [amount]);
+  }
+  
   /**
    * @description Move call
    * @param target `${string}::${string}::${string}`, e.g. `0x3::sui_system::request_add_stake`

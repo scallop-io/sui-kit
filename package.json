@@ -33,8 +33,9 @@
   "scripts": {
     "publish": "npm run clean && npm run build && npm publish --registry https://registry.npmjs.org",
     "clean": "rm -rf tsconfig.tsbuildinfo ./dist",
-    "build": "npm run build:types && npm run build:tsup",
+    "build": "npm run build:types && npm run build:tsup && npm run build:tsup:packagePublisher",
     "build:tsup": "tsup ./src/index.ts --format esm,cjs --sourcemap",
+    "build:tsup:packagePublisher": "tsup ./src/lib/sui-package-publisher --format esm,cjs --sourcemap -d ./dist/packagePublisher",
     "build:types": "tsc --build"
   },
   "dependencies": {

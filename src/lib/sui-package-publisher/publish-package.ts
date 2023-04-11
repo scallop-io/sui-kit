@@ -1,34 +1,17 @@
-import tmp from 'tmp';
 import 'colorts/lib/string';
-import { execSync } from 'child_process';
 import {
   TransactionBlock,
   fromB64,
-  normalizeSuiObjectId,
-  ObjectId,
   RawSigner,
   getExecutionStatusType,
 } from "@mysten/sui.js";
 import {parsePublishTxn} from './sui-response-parser';
-
-/**
- * Options for build & publish packages
- */
-type BuildOptions = {
-  // Also publish transitive dependencies that are not published yet
-  withUnpublishedDependencies?: boolean
-  // Skip fetching the latest git dependencies
-  skipFetchLatestGitDeps?: boolean
-}
+import { BuildOptions, defaultBuildOptions, buildPackage } from './build-package'
 
 export type PublishOptions = BuildOptions & {
   // The gas budget for the publish transaction
   gasBudget?: number
 } 
-const defaultBuildOptions: BuildOptions = {
-  withUnpublishedDependencies: true,
-  skipFetchLatestGitDeps: true,
-}
 const defaultPublishOptions: PublishOptions = {
   ...defaultBuildOptions,
   gasBudget: 10**8,
@@ -84,41 +67,5 @@ export const publishPackage = async (suiBinPath: string, packagePath: string, si
   } else {
     console.error('Publish package failed!'.red)
     return { packageId: '', publishTxn };
-  }
-}
-
-type BuildPackageResult = {
-  modules: string[]; // base64 encoded compiled modules
-  dependencies: ObjectId[]; // dependencies of the package
-}
-/**
- * builds a package and returns the compiled modules and dependencies
- * the package is built in a temporary directory, which is cleaned up after the build
- * @param suiBinPath, the path to the sui client binary
- * @param packagePath, the path to the package to be built
- * @returns {BuildPackageResult}, the compiled modules and dependencies
- */
-export const buildPackage = (suiBinPath: string, packagePath: string, options: BuildOptions = defaultBuildOptions) => {
-  // remove all controlled temp objects on process exit
-  tmp.setGracefulCleanup()
-
-  const tmpDir = tmp.dirSync({ unsafeCleanup: true });
-  try {
-    const withUnpublishedDep = options.withUnpublishedDependencies ? '--with-unpublished-dependencies' : '';
-    const skipDepFetch = options.skipFetchLatestGitDeps ? '--skip-fetch-latest-git-deps' : '';
-    const buildCmd =
-      `${suiBinPath} move build --dump-bytecode-as-base64 --path ${packagePath} ${skipDepFetch} ${withUnpublishedDep}`;
-    console.log('Running build package command')
-    console.log(buildCmd.cyan.bold)
-    const buildCommandOutput = execSync(`${buildCmd} --install-dir ${tmpDir.name}`, {encoding: 'utf-8'});
-    const compiledModulesAndDeps = JSON.parse(buildCommandOutput);
-    console.log('Build package success'.green)
-    return {
-      modules: compiledModulesAndDeps.modules,
-      dependencies: compiledModulesAndDeps.dependencies.map((dependencyId: string) => normalizeSuiObjectId(dependencyId))
-    } as BuildPackageResult;
-  } catch (e) {
-    console.error('Build package failed!'.red);
-    throw new Error(`error building package at ${packagePath}, error: ${e}`);
   }
 }

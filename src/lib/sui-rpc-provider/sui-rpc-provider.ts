@@ -75,17 +75,17 @@ export class SuiRpcProvider {
    */
   async selectCoins(addr: string, amount: number, coinType: string = '0x2::SUI::SUI') {
     const coins = await this.provider.getCoins({ owner: addr, coinType });
-    let selectedCoins: {objectId: string, digest: string, version: number}[] = [];
+    let selectedCoins: {objectId: string, digest: string, version: string}[] = [];
     let totalAmount = 0;
     // Sort the coins by balance in descending order
-    const coinsData = coins.data.sort((a, b) => b.balance - a.balance)
+    const coinsData = coins.data.sort((a, b) => parseInt(b.balance) - parseInt(a.balance))
     for(const coinData of coins.data) {
       selectedCoins.push({
         objectId: coinData.coinObjectId,
         digest: coinData.digest,
         version: coinData.version,
       });
-      totalAmount = totalAmount + coinData.balance;
+      totalAmount = totalAmount + parseInt(coinData.balance);
       if (totalAmount >= amount) {
         break;
       }

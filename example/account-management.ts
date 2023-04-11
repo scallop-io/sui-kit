@@ -23,6 +23,6 @@ async function internalTransferSui(suiKit: SuiKit, fromAccountIndex: number, toA
 
 (async () => {
   const mnemonics = process.env.MNEMONICS;
-  const suiKit = new SuiKit({ mnemonics, networkType: 'testnet' });
-  await checkAccounts(suiKit, 50, 55);
+  const suiKit = new SuiKit({ mnemonics, networkType: 'devnet' });
+  await checkAccounts(suiKit, 0, 10);
 })();

@@ -87,9 +87,7 @@ export class SuiTxBlock {
     const regex = /(?<package>[a-zA-Z0-9]+)::(?<module>[a-zA-Z0-9_]+)::(?<function>[a-zA-Z0-9_]+)/;
     const match = target.match(regex);
     if (match === null) throw new Error('Invalid target format. Expected `${string}::${string}::${string}`');
-    console.log(`args: ${args}`)
     const convertedArgs = this.#convertArgs(args);
-    console.log(`converted args: ${convertedArgs}`)
     const tx = this.txBlock;
     return tx.moveCall({
       target: target as `${string}::${string}::${string}`,

@@ -155,6 +155,13 @@ export class SuiKit {
     tx.transferObjects(objects, recipient);
     return this.signAndSendTxn(tx, derivePathParams);
   }
+  
+  async moveCall(callParams: {target: string, arguments?: any[], typeArguments?: string[], derivePathParams?: DerivePathParams}) {
+    const { target, arguments: args = [], typeArguments = [], derivePathParams } = callParams;
+    const tx = new SuiTxBlock();
+    tx.moveCall(target, args, typeArguments);
+    return this.signAndSendTxn(tx, derivePathParams);
+  }
 
   /**
    * Select coins with the given amount and coin type, the total amount is greater than or equal to the given amount

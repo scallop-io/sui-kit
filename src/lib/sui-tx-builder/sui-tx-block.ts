@@ -50,9 +50,10 @@ export class SuiTxBlock {
   splitMultiCoins(coins: SuiTxArg[], amounts: number[]) {
     const tx = this.txBlock;
     const coinObjects = this.#convertArgs(coins);
-    const mergedCoin = coins.length > 1
-      ? tx.mergeCoins(coinObjects[0],  coinObjects.slice(1))
-      : coinObjects[0]
+    const mergedCoin = coinObjects[0];
+    if (coins.length > 1) {
+      tx.mergeCoins(mergedCoin,  coinObjects.slice(1));
+    }
     const splitedCoins = tx.splitCoins(mergedCoin, amounts.map(m => tx.pure(m)));
     return { splitedCoins, mergedCoin }
   }

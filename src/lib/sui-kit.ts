@@ -71,6 +71,8 @@ export class SuiKit {
     return this.accountManager.getAddress(derivePathParams);
   }
   currentAddress() { return this.accountManager.currentAddress }
+  
+  provider() { return this.rpcProvider.provider }
 
   /**
    * Request some SUI from faucet

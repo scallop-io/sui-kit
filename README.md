@@ -3,11 +3,12 @@
 [中文文档](./README_cn.md)
 
 ## Features
-- [x] Transfer SUI & Custom Coin
-- [x] Stake SUI
-- [x] Compatible with programmable transaction
-- [x] Inspection of transaction (gasless transaction for inspection)
-- [x] Advanced features: multi-accounts
+- [x] Transfer SUI, Custom Coin and objects.
+- [x] Move call
+- [x] Programmable transaction
+- [x] Query on-chain data 
+- [x] HD wallet multi-accounts
+- [x] Publish & upgrade Move packages
 
 ## Pre-requisites
 
@@ -66,17 +67,14 @@ await suiKit.transferSui(recipient1, 1000);
 // transfer SUI to multiple recipients
 await suiKit.transferSuiToMany([recipient1, recipient2], [1000, 2000]);
 
-const coinType = '0xfb03984967f0390a426c16257d35f4a14811eefc32d648d2c66d603a9354f256::custom_coin::CUSTOM_COIN';
+const coinType = '<pkgId>::custom_coin::CUSTOM_COIN';
 // Transfer custom coin to single recipient
 await suiKit.transferCoin(recipient1, 1000, coinType);
 // Transfer custom coin to multiple recipients
 await suiKit.transferCoinToMany([recipient1, recipient2], [1000, 2000], coinType);
 
 // Transfer objects
-const objectIds = [
-  '0xd09e2415f74a6b090387951a0297fdae72745fb0249e7e7029a9d0eafe2cab23',
-  '0x7f7cfaaa3c95e38282ae2bf038bce5ea0482da3395155031c6c6f77a6f1d367b'
-];
+const objectIds = ['<objId1>', '<objId2>'];
 await suiKit.transferObjects(objectIds, recipient1);
 ```
 
@@ -94,38 +92,72 @@ suiKit.stakeSui(stakeAmount, validatorAddress).then(() => {
 });
 ```
 
+### Move call
+You can use SuiKit to call move functions.
+
+```typescript
+const res = await suiKit.moveCall({
+  target: '0x2::coin::join',
+  arguments: [coin0, coin1],
+  typeArguments: [coinType],
+});
+console.log(res)
+```
 
 ### Programmable transaction
 With programmable transaction, you can send a transaction with multiple actions.
-The following example shows how to transfer SUI to multiple accounts in one transaction.
+The following is an example using flashloan to make arbitrage.
+(check [here](./examples/sample_move/custom_coin/sources/dex.move) for the corresponding Move contract code)
+
 
 ```typescript
-/**
- * This example shows how to use programmable transaction with SuiKit
- */
+import { SuiKit, SuiTxBlock } from "@scallop-dao/sui-kit";
+import * as process from "process";
+import * as dotenv from "dotenv";
+dotenv.config();
 
-import { SuiKit, TransactionBlock } from '@scallop-dao/sui-kit';
+const treasuryA = '0xe5042357d2c2bb928f37e4d12eac594e6d02327d565e801eaf9aca4c7340c28c';
+const treasuryB = '0xdd2f53171b8c886fad20e0bfecf1d4eede9d6c75762f169a9f3c3022e5ce7293';
+const dexPool = '0x8a13859a8d930f3238ddd31180a5f0914e5b8dbaa31e18387066b61a563fedf9';
 
-const secretKey = '<Secret key>';
-const suiKit = new SuiKit({ secretKey });
+const pkgId = '0x3c316b6af0586343ce8e6b4be890305a1f83b7e196366f6435b22b6e3fc8e3d9';
 
-// build a transaction block to send coins to multiple accounts
-const tx = new TransactionBlock();
-
-const recipients = ['0x123', '0x456', '0x789'];
-recipients.forEach(recipient => {
-  const [coin] = tx.splitCoins(tx.gas, [tx.pure(1000)]);
-  tx.transferObjects([coin], tx.pure(recipient));
-});
-
-// send the transaction block
-suiKit.signAndSendTxn(tx).then(response => {
-  console.log('Transaction digest: ' + response.digest);
-});
+(async() => {
+  const mnemonics = process.env.MNEMONICS;
+  const suiKit = new SuiKit({ mnemonics });
+  const sender = suiKit.currentAddress();
+  
+  const tx = new SuiTxBlock();
+  // 1. Make a flash loan for coinB
+  const[coinB, loan] = tx.moveCall(
+    `${pkgId}::custom_coin_b::flash_loan`,
+    [treasuryB, 10 ** 9],
+  );
+  // 2. Swap from coinB to coinA, ratio is 1:1
+  const coinA = tx.moveCall(
+    `${pkgId}::dex::swap_a`,
+    [dexPool, coinB],
+  );
+  // 3. Swap from coinA back to coinB, ratio is 1:2
+  const coinB2 = tx.moveCall(
+    `${pkgId}::dex::swap_b`,
+    [dexPool, coinA]
+  );
+  // 4. Repay flash loan
+  const [paybackCoinB] = tx.splitCoins(coinB2, [10 ** 9]);
+  tx.moveCall(
+    `${pkgId}::custom_coin_b::payback_loan`,
+    [treasuryB, paybackCoinB, loan],
+  );
+  // 4. Transfer profits to sender
+  tx.transferObjects([coinB2], sender);
+  
+  // 5. Execute transaction
+  const res = await suiKit.signAndSendTxn(tx);
+  console.log(res);
+})();
 
 ```
-
-## Advanced features
 
 ### Multi-accounts
 
@@ -163,4 +195,53 @@ const suiKit = new SuiKit({ mnemonics })
 checkAccounts(suiKit).then(() => {})
 // transfer 1000 SUI from account 0 to account 1
 internalTransferSui(suiKit, 0, 1, 1000).then(() => {})
+```
+
+### Publish & upgrade Move package
+We have a standalone npm package to help you publish and upgrade Move package with typescript.
+
+1. Install the package
+```bash
+npm install @scallop-dao/sui-package-kit
+```
+
+2. Install SUI cli
+Please refer to the official documentation: [How to install SUI cli](https://docs.sui.io/devnet/build/install)
+
+```typescript
+/**
+ * This is an example of using SuiKit to publish a move package
+ */
+import { SuiKit } from "@scallop-dao/sui-kit";
+import { SuiPackagePublisher } from "@scallop-dao/sui-package-kit";
+
+(async() => {
+  const mnemonics = '<Your mnemonics>';
+  const suiKit = new SuiKit({ mnemonics, networkType: 'devnet' });
+  
+  const packagePath = path.join(__dirname, './sample_move/package_a');
+  const publisher = new SuiPackagePublisher();
+  const result = await publisher.publishPackage(packagePath, suiKit.getSigner());
+  console.log('packageId: ' + result.packageId);
+})();
+```
+
+```typescript
+/**
+ * This is an example of using SuiKit to upgrade a move package
+ */
+import { SuiKit } from "@scallop-dao/sui-kit";
+import { SuiPackagePublisher } from "@scallop-dao/sui-package-kit";
+
+(async() => {
+  const mnemonics = '<Your mnemonics>';
+  const suiKit = new SuiKit({ mnemonics, networkType: 'devnet' });
+
+  const upgradeCapId = '<Package upgrade cap id>';
+  // Rember to set the 'published-at' in the package manifest
+  const packagePath = path.join(__dirname, './sample_move/package_a_upgrade');
+  const publisher = new SuiPackagePublisher();
+  const result = await publisher.upgradePackage(packagePath, upgradeCapId, { skipFetchLatestGitDeps: true });
+  console.log(result);
+})();
 ```

@@ -47,6 +47,12 @@ export class SuiTxBlock {
     return [sendCoin, mergedCoin]
   }
   
+  splitCoins(coin: SuiTxArg, amounts: number[]) {
+    const tx = this.txBlock;
+    const coinObject = this.#convertArgs([coin])[0];
+    return tx.splitCoins(coinObject, amounts.map(m => tx.pure(m)));
+  }
+  
   splitMultiCoins(coins: SuiTxArg[], amounts: number[]) {
     const tx = this.txBlock;
     const coinObjects = this.#convertArgs(coins);

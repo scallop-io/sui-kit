@@ -1,7 +1,7 @@
 {
   "name": "@scallop-dao/sui-kit",
   "author": "scallop-dao",
-  "version": "0.32.6",
+  "version": "0.32.7",
   "description": "Tookit for interacting with SUI network",
   "keywords": [
     "sui",
@@ -38,7 +38,7 @@
     "build:types": "tsc --build"
   },
   "dependencies": {
-    "@mysten/sui.js": "^0.32.0",
+    "@mysten/sui.js": "^0.32.1",
     "@scure/bip39": "^1.2.0",
     "assert": "^2.0.0",
     "colorts": "^0.1.63",
@@ -47,7 +47,7 @@
     "ts-retry-promise": "^0.7.0"
   },
   "peerDependencies": {
-    "@mysten/sui.js": "^0.32.0"
+    "@mysten/sui.js": "^0.32.1"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",

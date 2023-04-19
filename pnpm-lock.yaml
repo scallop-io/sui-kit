@@ -2,8 +2,8 @@ lockfileVersion: '6.0'
 
 dependencies:
   '@mysten/sui.js':
-    specifier: ^0.32.0
-    version: registry.npmmirror.com/@mysten/sui.js@0.32.0(typescript@5.0.2)
+    specifier: ^0.32.1
+    version: registry.npmmirror.com/@mysten/sui.js@0.32.1(typescript@5.0.2)
   '@scure/bip39':
     specifier: ^1.2.0
     version: 1.2.0
@@ -1269,11 +1269,11 @@ packages:
       bs58: registry.npmmirror.com/bs58@5.0.0
     dev: false
 
-  registry.npmmirror.com/@mysten/sui.js@0.32.0(typescript@5.0.2):
-    resolution: {integrity: sha512-HuvV+oKxkhVvdeVnDacApS+ga5VPUWMHPuDofepsynGibe2Ho1GKt5bcn047CXpBy0sloR9slY1oXvs44v9FHQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@mysten/sui.js/-/sui.js-0.32.0.tgz}
-    id: registry.npmmirror.com/@mysten/sui.js/0.32.0
+  registry.npmmirror.com/@mysten/sui.js@0.32.1(typescript@5.0.2):
+    resolution: {integrity: sha512-HD3D/3g//dx5e/1W42krEv4+Zl5PP0faH229jFOhnOktIRGxRrDfb6eU2+juclTug2e68JseTiX2QulIh+2/FQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@mysten/sui.js/-/sui.js-0.32.1.tgz}
+    id: registry.npmmirror.com/@mysten/sui.js/0.32.1
     name: '@mysten/sui.js'
-    version: 0.32.0
+    version: 0.32.1
     engines: {node: '>=16'}
     dependencies:
       '@mysten/bcs': registry.npmmirror.com/@mysten/bcs@0.7.0

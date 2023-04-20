@@ -104,6 +104,53 @@ const res = await suiKit.moveCall({
 console.log(res)
 ```
 
+How to pass arguments? 
+Suppose you have a move function like this:
+```move
+public entry fun test_args(
+  addrs: vector<address>,
+  name: vector<u8>,
+  numbers: vector<u64>,
+  bools: vector<bool>,
+  coins: vector<Coin<SUI>>,
+  ctx: &mut TxContext,
+) {
+  // ...
+}
+```
+You can pass the arguments like this:
+```typescript
+const addr1 = '0x656b875c9c072a465048fc10643470a39ba331727719df46c004973fcfb53c95';
+const addr2 = '0x10651e50cdbb4944a8fd77665d5af27f8abde6eb76a12b97444809ae4ddb1aad';
+const coin1 = '0xd4a01b597b87986b04b65e04049499b445c0ee901fe8ba310b1cf29feaa86876';
+const coin2 = '0x4d4a01b597b87986b04b65e04049499b445c0ee901fe8ba310b1cf29feaa8687';
+suiKit.moveCall({
+  target: `${pkgId}::module::test_args`,
+  arguments: [
+    // pass vector<address>, need to specify the vecType as 'address'
+    {value: [addr1, addr2], vecType: 'address'},
+    // pass vector<u8>, need to specify the vecType as 'u8'
+    {value: [10, 20], vecType: 'u8'},
+    // pass vector<u64>, default vecType for number array is 'u64', so no need to specify
+    [34324, 234234],
+    // pass vector<bool>, default vecType for boolean array is 'bool', so no need to specify
+    [true, false],
+    // pass vector<Coin<SUI>>, no need to specify the vecType for object array
+    [coin1, coin2],
+  ]
+});
+```
+All the supported types are:
+- address
+- u8
+- u16
+- u32
+- u64
+- u128
+- u256
+- bool
+- object
+
 ### Programmable transaction
 With programmable transaction, you can send a transaction with multiple actions.
 The following is an example using flashloan to make arbitrage.

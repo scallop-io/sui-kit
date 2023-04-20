@@ -7,7 +7,7 @@
 import { RawSigner, TransactionBlock, DevInspectResults, SuiTransactionBlockResponse } from '@mysten/sui.js';
 import { SuiAccountManager, DerivePathParams } from "./sui-account-manager";
 import { SuiRpcProvider, NetworkType } from './sui-rpc-provider';
-import { SuiTxBlock } from "./sui-tx-builder";
+import { SuiTxBlock, SuiTxArg, SuiVecTxArg } from "./sui-tx-builder";
 
 export type SuiKitParams = {
   mnemonics?: string;
@@ -158,7 +158,7 @@ export class SuiKit {
     return this.signAndSendTxn(tx, derivePathParams);
   }
   
-  async moveCall(callParams: {target: string, arguments?: any[], typeArguments?: string[], derivePathParams?: DerivePathParams}) {
+  async moveCall(callParams: {target: string, arguments?: (SuiTxArg | SuiVecTxArg)[], typeArguments?: string[], derivePathParams?: DerivePathParams}) {
     const { target, arguments: args = [], typeArguments = [], derivePathParams } = callParams;
     const tx = new SuiTxBlock();
     tx.moveCall(target, args, typeArguments);

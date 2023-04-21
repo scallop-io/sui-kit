@@ -35,7 +35,10 @@
     "clean": "rm -rf tsconfig.tsbuildinfo ./dist",
     "build": "npm run build:types && npm run build:tsup",
     "build:tsup": "tsup ./src/index.ts --format esm,cjs --sourcemap",
-    "build:types": "tsc --build"
+    "build:types": "tsc --build",
+    "watch:tsup": "tsup ./src/index.ts --format esm,cjs --clean --splitting --watch",
+    "watch:types": "tsc --watch",
+    "watch": "pnpm run clean & pnpm run watch:types & pnpm run watch:tsup"
   },
   "dependencies": {
     "@mysten/sui.js": "^0.32.1",

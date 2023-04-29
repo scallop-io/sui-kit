@@ -37,15 +37,15 @@ export class SuiTxBlock {
     return this;
   }
 
-  // TODO: refactor this to take a list of coins
   takeAmountFromCoins(coins: SuiTxArg[], amount: number) {
     const tx = this.txBlock;
     const coinObjects = this.#convertArgs(coins);
-    const mergedCoin = coins.length > 1
-      ? tx.mergeCoins(coinObjects[0],  coinObjects.slice(1))
-      : coinObjects[0]
+    const mergedCoin = coinObjects[0];
+    if (coins.length > 1) {
+      tx.mergeCoins(mergedCoin, coinObjects.slice(1));
+    }
     const [sendCoin] = tx.splitCoins(mergedCoin, [tx.pure(amount)]);
-    return [sendCoin, mergedCoin]
+    return [sendCoin, mergedCoin];
   }
 
   splitSUIFromGas(amounts: number[]) {

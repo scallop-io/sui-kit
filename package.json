@@ -1,7 +1,7 @@
 {
   "name": "@scallop-dao/sui-kit",
   "author": "scallop-dao",
-  "version": "0.32.11",
+  "version": "0.32.12",
   "description": "Tookit for interacting with SUI network",
   "keywords": [
     "sui",

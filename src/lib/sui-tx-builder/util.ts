@@ -21,6 +21,6 @@ export const getDefaultSuiInputType = (value: any): SuiInputTypes => {
   } else if (typeof value === 'boolean') {
     return 'bool'
   } else {
-    throw new Error(`Unknown type for value: ${value}`)
+    return 'object'
   }
 }

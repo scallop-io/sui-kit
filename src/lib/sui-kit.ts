@@ -7,7 +7,7 @@
 import { RawSigner, TransactionBlock, DevInspectResults, SuiTransactionBlockResponse } from '@mysten/sui.js';
 import { SuiAccountManager, DerivePathParams } from "./sui-account-manager";
 import { SuiRpcProvider, NetworkType } from './sui-rpc-provider';
-import { SuiTxBlock } from "./sui-tx-builder";
+import { SuiTxBlock, SuiTxArg, SuiVecTxArg } from "./sui-tx-builder";
 
 export type SuiKitParams = {
   mnemonics?: string;
@@ -33,7 +33,7 @@ export class SuiKit {
    *
    * @param mnemonics, 12 or 24 mnemonics words, separated by space
    * @param secretKey, base64 or hex string, when mnemonics is provided, secretKey will be ignored
-   * @param networkType, 'testnet' | 'mainnet' | 'devnet', default is 'devnet'
+   * @param networkType, 'testnet' | 'mainnet' | 'devnet' | 'localhost', default is 'devnet'
    * @param fullnodeUrl, the fullnode url, default is the preconfig fullnode url for the given network type
    * @param faucetUrl, the faucet url, default is the preconfig faucet url for the given network type
    */
@@ -71,6 +71,8 @@ export class SuiKit {
     return this.accountManager.getAddress(derivePathParams);
   }
   currentAddress() { return this.accountManager.currentAddress }
+  
+  provider() { return this.rpcProvider.provider }
 
   /**
    * Request some SUI from faucet
@@ -153,6 +155,13 @@ export class SuiKit {
   async transferObjects(objects: string[], recipient: string, derivePathParams?: DerivePathParams) {
     const tx = new SuiTxBlock();
     tx.transferObjects(objects, recipient);
+    return this.signAndSendTxn(tx, derivePathParams);
+  }
+  
+  async moveCall(callParams: {target: string, arguments?: (SuiTxArg | SuiVecTxArg)[], typeArguments?: string[], derivePathParams?: DerivePathParams}) {
+    const { target, arguments: args = [], typeArguments = [], derivePathParams } = callParams;
+    const tx = new SuiTxBlock();
+    tx.moveCall(target, args, typeArguments);
     return this.signAndSendTxn(tx, derivePathParams);
   }
 

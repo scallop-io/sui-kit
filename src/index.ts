@@ -5,3 +5,6 @@ export { SuiAccountManager } from './lib/sui-account-manager'
 export type { DerivePathParams } from './lib/sui-account-manager'
 export { SuiTxBlock } from './lib/sui-tx-builder'
 export type { SuiTxArg } from './lib/sui-tx-builder'
+
+export { SuiRpcProvider } from './lib/sui-rpc-provider'
+export type { NetworkType } from './lib/sui-rpc-provider'

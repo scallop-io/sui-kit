@@ -32,7 +32,7 @@ export class SuiRpcProvider {
   public provider: JsonRpcProvider;
   /**
    *
-   * @param networkType, 'testnet' | 'mainnet' | 'devnet', default is 'devnet'
+   * @param networkType, 'testnet' | 'mainnet' | 'devnet' | 'localhost', default is 'devnet'
    * @param fullnodeUrl, the fullnode url, default is the preconfig fullnode url for the given network type
    * @param faucetUrl, the faucet url, default is the preconfig faucet url for the given network type
    */

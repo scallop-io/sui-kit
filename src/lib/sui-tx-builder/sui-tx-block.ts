@@ -7,6 +7,7 @@ import {
 import { SuiInputTypes, getDefaultSuiInputType } from './util'
 
 export type SuiTxArg = TransactionArgument | string | number | bigint | boolean;
+export type SuiVecTxArg = { value: SuiTxArg[], vecType: SuiInputTypes } | SuiTxArg[];
 
 export class SuiTxBlock {
   public txBlock: TransactionBlock;
@@ -46,13 +47,25 @@ export class SuiTxBlock {
     const [sendCoin] = tx.splitCoins(mergedCoin, [tx.pure(amount)]);
     return [sendCoin, mergedCoin]
   }
+
+  splitSUIFromGas(amounts: number[]) {
+    const tx = this.txBlock;
+    return tx.splitCoins(tx.gas, amounts.map(m => tx.pure(m)));
+  }
+  
+  splitCoins(coin: SuiTxArg, amounts: number[]) {
+    const tx = this.txBlock;
+    const coinObject = this.#convertArgs([coin])[0];
+    return tx.splitCoins(coinObject, amounts.map(m => tx.pure(m)));
+  }
   
   splitMultiCoins(coins: SuiTxArg[], amounts: number[]) {
     const tx = this.txBlock;
     const coinObjects = this.#convertArgs(coins);
-    const mergedCoin = coins.length > 1
-      ? tx.mergeCoins(coinObjects[0],  coinObjects.slice(1))
-      : coinObjects[0]
+    const mergedCoin = coinObjects[0];
+    if (coins.length > 1) {
+      tx.mergeCoins(mergedCoin,  coinObjects.slice(1));
+    }
     const splitedCoins = tx.splitCoins(mergedCoin, amounts.map(m => tx.pure(m)));
     return { splitedCoins, mergedCoin }
   }
@@ -81,14 +94,12 @@ export class SuiTxBlock {
    * @param args the arguments of the move call, such as `['0x1', '0x2']`
    * @param typeArgs the type arguments of the move call, such as `['0x2::sui::SUI']`
    */
-  moveCall(target: string, args: any[] = [], typeArgs: string[] = []) {
+  moveCall(target: string, args: (SuiTxArg | SuiVecTxArg)[] = [], typeArgs: string[] = []) {
     // a regex for pattern `${string}::${string}::${string}`
     const regex = /(?<package>[a-zA-Z0-9]+)::(?<module>[a-zA-Z0-9_]+)::(?<function>[a-zA-Z0-9_]+)/;
     const match = target.match(regex);
     if (match === null) throw new Error('Invalid target format. Expected `${string}::${string}::${string}`');
-    console.log(`args: ${args}`)
     const convertedArgs = this.#convertArgs(args);
-    console.log(`converted args: ${convertedArgs}`)
     const tx = this.txBlock;
     return tx.moveCall({
       target: target as `${string}::${string}::${string}`,
@@ -135,32 +146,38 @@ export class SuiTxBlock {
    */
   makeMoveVec(args: SuiTxArg[], type?: SuiInputTypes) {
     if (args.length === 0) throw new Error('Transaction builder error: Empty array is not allowed');
-    if (type === 'object' && args.some(arg => typeof arg !== 'string')) {
-      throw new Error('Transaction builder error: Object id must be string');
-    }
     const defaultSuiType = getDefaultSuiInputType(args[0])
-    if (type === 'object' || defaultSuiType === 'object') {
-      return this.txBlock.makeMoveVec({
-        objects: args.map(arg => this.txBlock.object(normalizeSuiObjectId(arg as string)))
-      })
+    if (type === 'object' || (!type && defaultSuiType === 'object')) {
+      const objects = args.map(arg =>
+        typeof arg === 'string' ? this.txBlock.object(normalizeSuiObjectId(arg)) : (arg as any)
+      );
+      return this.txBlock.makeMoveVec({ objects })
     } else {
-      return this.txBlock.makeMoveVec({
-        objects: args.map(arg => this.txBlock.pure(arg))
-      })
+      const vecType = type || defaultSuiType;
+      return this.txBlock.pure(args, `vector<${vecType}>`)
     }
+  }
+
+  #isMoveVecArg(arg: any) {
+    const isFullMoveVecArg = arg && arg.value && Array.isArray(arg.value) && arg.vecType;
+    const isSimpleMoveVecArg = Array.isArray(arg);
+    return isFullMoveVecArg || isSimpleMoveVecArg;
   }
 
   #convertArgs(args: any[]): TransactionArgument[] {
     return args.map(arg => {
-      // We always treat string starting with `0x` as object id
       if (typeof arg === 'string' && arg.startsWith('0x')) {
+        // We always treat string starting with `0x` as object id
         return this.txBlock.object(normalizeSuiObjectId(arg))
-      // Other basic types such as string, number, boolean are converted to pure value
+      } else if (this.#isMoveVecArg(arg)) {
+        // if it's an array arg, we will convert it to move vec
+        const vecType = arg.vecType || undefined;
+        return vecType
+          ? this.makeMoveVec(arg.value, vecType)
+          : this.makeMoveVec(arg)
       } else if (typeof arg !== 'object') {
+        // Other basic types such as string, number, boolean are converted to pure value
         return this.txBlock.pure(arg)
-      // if it's an array, we will convert it to move vec
-      } else if (Array.isArray(arg)) {
-        return this.makeMoveVec(arg)
       } else {
         // We do nothing, because it's most likely already a move value
         return arg

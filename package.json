@@ -40,10 +40,13 @@
     "clean": "rm -rf tsconfig.tsbuildinfo ./dist",
     "build": "npm run build:types && npm run build:tsup",
     "build:tsup": "tsup ./src/index.ts --format esm,cjs --sourcemap",
-    "build:types": "tsc --build"
+    "build:types": "tsc --build",
+    "watch:tsup": "tsup ./src/index.ts --format esm,cjs --clean --splitting --watch",
+    "watch:types": "tsc --watch",
+    "watch": "pnpm run clean & pnpm run watch:types & pnpm run watch:tsup"
   },
   "dependencies": {
-    "@mysten/sui.js": "^0.32.0",
+    "@mysten/sui.js": "^0.32.2",
     "@scure/bip39": "^1.2.0",
     "assert": "^2.0.0",
     "colorts": "^0.1.63",
@@ -52,7 +55,7 @@
     "ts-retry-promise": "^0.7.0"
   },
   "peerDependencies": {
-    "@mysten/sui.js": "^0.32.0"
+    "@mysten/sui.js": "^0.32.2"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",

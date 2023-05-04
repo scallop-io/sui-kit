@@ -3,7 +3,7 @@
  */
 import * as path from "path";
 import * as dotenv from "dotenv";
-import { SuiKit } from "@scallop-dao/sui-kit";
+import { SuiKit } from "@scallop-io/sui-kit";
 import { SuiPackagePublisher } from "@scallop-dao/sui-package-kit";
 dotenv.config();
 

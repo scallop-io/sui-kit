@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-import { SuiKit } from '@scallop-dao/sui-kit';
+import { SuiKit } from '@scallop-io/sui-kit';
 dotenv.config();
 
 const displayAccounts = async (suiKit: SuiKit, accountIndex: number) => {

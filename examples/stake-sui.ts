@@ -1,4 +1,4 @@
-import { SuiKit } from "@scallop-dao/sui-kit";
+import { SuiKit } from "@scallop-io/sui-kit";
 import * as process from "process";
 import * as dotenv from "dotenv";
 dotenv.config();

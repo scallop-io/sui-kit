@@ -13,7 +13,7 @@
 ## Pre-requisites
 
 ```bash
-npm install @scallop-dao/sui-kit
+npm install @scallop-io/sui-kit
 ```
 
 
@@ -22,7 +22,7 @@ npm install @scallop-dao/sui-kit
 ### Init SuiKit
 
 ```typescript
-import { SuiKit } from '@scallop-dao/sui-kit';
+import { SuiKit } from '@scallop-io/sui-kit';
 
 // The following types of secret key are supported:
 // 1. base64 key from SUI cli keystore file
@@ -158,7 +158,7 @@ The following is an example using flashloan to make arbitrage.
 
 
 ```typescript
-import { SuiKit, SuiTxBlock } from "@scallop-dao/sui-kit";
+import { SuiKit, SuiTxBlock } from "@scallop-io/sui-kit";
 import * as process from "process";
 import * as dotenv from "dotenv";
 dotenv.config();
@@ -215,7 +215,7 @@ When init SuiKit, you can pass in your mnemonics to create a wallet with multipl
 /**
  * This is an example of using SuiKit to manage multiple accounts.
  */
-import { SuiKit } from '@scallop-dao/sui-kit';
+import { SuiKit } from '@scallop-io/sui-kit';
 
 async function checkAccounts(suiKit: SuiKit) {
   const displayAccounts = async (suiKit: SuiKit, accountIndex: number) => {
@@ -259,7 +259,7 @@ Please refer to the official documentation: [How to install SUI cli](https://doc
 /**
  * This is an example of using SuiKit to publish a move package
  */
-import { SuiKit } from "@scallop-dao/sui-kit";
+import { SuiKit } from "@scallop-io/sui-kit";
 import { SuiPackagePublisher } from "@scallop-dao/sui-package-kit";
 
 (async() => {
@@ -277,7 +277,7 @@ import { SuiPackagePublisher } from "@scallop-dao/sui-package-kit";
 /**
  * This is an example of using SuiKit to upgrade a move package
  */
-import { SuiKit } from "@scallop-dao/sui-kit";
+import { SuiKit } from "@scallop-io/sui-kit";
 import { SuiPackagePublisher } from "@scallop-dao/sui-package-kit";
 
 (async() => {

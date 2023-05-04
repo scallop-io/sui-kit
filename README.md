@@ -249,7 +249,7 @@ We have a standalone npm package to help you publish and upgrade Move package wi
 
 1. Install the package
 ```bash
-npm install @scallop-dao/sui-package-kit
+npm install @scallop-io/sui-package-kit
 ```
 
 2. Install SUI cli

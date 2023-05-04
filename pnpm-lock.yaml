@@ -2,8 +2,8 @@ lockfileVersion: '6.0'
 
 dependencies:
   '@mysten/sui.js':
-    specifier: ^0.32.2
-    version: 0.32.2
+    specifier: ^0.33.0
+    version: 0.33.0
   '@scure/bip39':
     specifier: ^1.2.0
     version: 1.2.0
@@ -279,8 +279,8 @@ packages:
       bs58: 5.0.0
     dev: false
 
-  /@mysten/sui.js@0.32.2:
-    resolution: {integrity: sha512-/Hm4xkGolJhqj8FvQr7QSHDTlxIvL52mtbOao9f75YjrBh7y1Uh9kbJSY7xiTF1NY9sv6p5hUVlYRJuM0Hvn9A==}
+  /@mysten/sui.js@0.33.0:
+    resolution: {integrity: sha512-vPswzowPoxYmexN+jKrSQ5uKWv8AoX30c11t8VAODCCXeCziq7Y27TEcYFsQmWJBIMU/hYw75kGj9oorJyXyKw==}
     engines: {node: '>=16'}
     dependencies:
       '@mysten/bcs': 0.7.1

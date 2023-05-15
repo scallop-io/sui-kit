@@ -33,7 +33,7 @@ export class SuiKit {
    *
    * @param mnemonics, 12 or 24 mnemonics words, separated by space
    * @param secretKey, base64 or hex string, when mnemonics is provided, secretKey will be ignored
-   * @param networkType, 'testnet' | 'mainnet' | 'devnet' | 'localhost', default is 'devnet'
+   * @param networkType, 'testnet' | 'mainnet' | 'devnet' | 'localnet', default is 'devnet'
    * @param fullnodeUrl, the fullnode url, default is the preconfig fullnode url for the given network type
    * @param faucetUrl, the faucet url, default is the preconfig faucet url for the given network type
    */

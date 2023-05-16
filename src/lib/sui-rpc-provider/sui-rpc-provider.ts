@@ -28,7 +28,7 @@ type Params = {
 
 export class SuiRpcProvider {
   public fullnodeUrl: string;
-  public faucetUrl: string;
+  public faucetUrl?: string;
   public provider: JsonRpcProvider;
   /**
    *
@@ -40,7 +40,7 @@ export class SuiRpcProvider {
     // Get the default fullnode url and faucet url for the given network type, default is 'testnet'
     const defaultNetworkParams = getDefaultNetworkParams(networkType || 'devnet');
     // Set fullnodeUrl and faucetUrl, if they are not provided, use the default value.
-    this.fullnodeUrl = fullnodeUrl || defaultNetworkParams.fullNode;
+    this.fullnodeUrl = fullnodeUrl || defaultNetworkParams.fullnode;
     this.faucetUrl = faucetUrl || defaultNetworkParams.faucet;
 
     // Init the provider

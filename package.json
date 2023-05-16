@@ -1,6 +1,6 @@
 {
   "name": "@scallop-io/sui-kit",
-  "version": "0.33.2",
+  "version": "0.34.0",
   "description": "Tookit for interacting with SUI network",
   "keywords": [
     "sui",
@@ -58,11 +58,11 @@
     "@mysten/sui.js": "^0.34.0"
   },
   "devDependencies": {
-    "@types/node": "^18.15.11",
+    "@types/node": "^20.1.5",
     "@types/tmp": "^0.2.3",
     "dotenv": "^16.0.3",
     "ts-node": "^10.9.1",
     "tsup": "^6.7.0",
-    "typescript": "^5.0.2"
+    "typescript": "^5.0.4"
   }
 }

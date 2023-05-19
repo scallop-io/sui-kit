@@ -46,7 +46,7 @@
     "watch": "pnpm run clean & pnpm run watch:types & pnpm run watch:tsup"
   },
   "dependencies": {
-    "@mysten/sui.js": "^0.34.0",
+    "@mysten/sui.js": "^0.34.1",
     "@scure/bip39": "^1.2.0",
     "assert": "^2.0.0",
     "colorts": "^0.1.63",
@@ -55,10 +55,10 @@
     "ts-retry-promise": "^0.7.0"
   },
   "peerDependencies": {
-    "@mysten/sui.js": "^0.34.0"
+    "@mysten/sui.js": "^0.34.1"
   },
   "devDependencies": {
-    "@types/node": "^20.1.5",
+    "@types/node": "^20.2.1",
     "@types/tmp": "^0.2.3",
     "dotenv": "^16.0.3",
     "ts-node": "^10.9.1",

@@ -3,6 +3,7 @@ import {
   SUI_SYSTEM_STATE_OBJECT_ID,
   normalizeSuiObjectId,
   TransactionArgument,
+  SuiObjectRef,
 } from '@mysten/sui.js'
 import { SuiInputTypes, getDefaultSuiInputType } from './util'
 
@@ -156,6 +157,13 @@ export class SuiTxBlock {
       const vecType = type || defaultSuiType;
       return this.txBlock.pure(args, `vector<${vecType}>`)
     }
+  }
+  
+  // ==== for gas control ===
+  setGas(gas: {budget?: number, price?: number, payment?: SuiObjectRef[]}) {
+    gas.budget && this.txBlock.setGasBudget(gas.budget);
+    gas.price && this.txBlock.setGasPrice(gas.price);
+    gas.payment && this.txBlock.setGasPayment(gas.payment);
   }
 
   #isMoveVecArg(arg: any) {

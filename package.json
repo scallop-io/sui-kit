@@ -62,6 +62,7 @@
     "@types/tmp": "^0.2.3",
     "dotenv": "^16.0.3",
     "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
     "tsup": "^6.7.0",
     "typescript": "^5.0.4"
   }

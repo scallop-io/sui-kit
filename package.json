@@ -1,6 +1,6 @@
 {
   "name": "@scallop-io/sui-kit",
-  "version": "0.34.1",
+  "version": "0.35.1",
   "description": "Tookit for interacting with SUI network",
   "keywords": [
     "sui",
@@ -46,7 +46,7 @@
     "watch": "pnpm run clean & pnpm run watch:types & pnpm run watch:tsup"
   },
   "dependencies": {
-    "@mysten/sui.js": "^0.34.1",
+    "@mysten/sui.js": "^0.35.1",
     "@scure/bip39": "^1.2.0",
     "assert": "^2.0.0",
     "colorts": "^0.1.63",

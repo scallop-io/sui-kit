@@ -1,4 +1,4 @@
-# Tookit for interacting with SUI network
+# Toolkit for interacting with SUI network
 
 [中文文档](./README_cn.md)
 
@@ -24,6 +24,7 @@ npm install @scallop-io/sui-kit
 ```typescript
 import { SuiKit } from '@scallop-io/sui-kit';
 
+// create a keypair using a private key
 // The following types of secret key are supported:
 // 1. base64 key from SUI cli keystore file
 // 2. 32 bytes hex key
@@ -32,12 +33,12 @@ const secretKey = '<Secret key>';
 const suiKit1 = new SuiKit({ secretKey });
 
 
-// 12 or 24 words mnemonics
+// create a keypair using mnemonics (12 or 24 words)
 const mnemonics = '<Mnemonics>';
 const suiKit2 = new SuiKit({ mnemonics });
 
 
-// It will create a HD wallet with a random mnemonics 
+// create a keypair using random mnemonics 
 const suiKit3 = new SuiKit();
 
 

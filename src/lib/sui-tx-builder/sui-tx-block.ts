@@ -1,8 +1,6 @@
 import {
   TransactionBlock,
   SUI_SYSTEM_STATE_OBJECT_ID,
-  normalizeSuiObjectId,
-  TransactionArgument,
   TransactionExpiration,
   SuiObjectRef,
   SharedObjectRef,
@@ -10,12 +8,10 @@ import {
   TransactionType,
   Transactions,
   ObjectCallArg,
-} from '@mysten/sui.js'
-import { SuiInputTypes, getDefaultSuiInputType } from './util'
+} from '@mysten/sui.js';
+import { convertArgs } from './util';
+import type { SuiTxArg, SuiObjectArg, SuiVecTxArg } from './types';
 
-export type SuiTxArg = TransactionArgument | string | number | bigint | boolean;
-export type SuiObjectArg = SharedObjectRef | SuiObjectRef | string | TransactionArgument;
-export type SuiVecTxArg = { value: SuiTxArg[], vecType: SuiInputTypes } | SuiTxArg[];
 interface BuildOptions {
   provider?: JsonRpcProvider;
   onlyTransactionKind?: boolean;
@@ -33,7 +29,7 @@ export class SuiTxBlock {
     return this.txBlock.pure(value, 'address')
   }
   pure(value: unknown, type?: string) {
-    return this.txBlock.pure(value)
+    return this.txBlock.pure(value, type)
   }
   object(value: string | ObjectCallArg) {
     return this.txBlock.object(value)
@@ -88,19 +84,19 @@ export class SuiTxBlock {
 
   transferObjects(objects: SuiObjectArg[], recipient: string) {
     const tx = this.txBlock;
-    tx.transferObjects(this.#convertArgs(objects), tx.pure(recipient));
+    tx.transferObjects(convertArgs(this.txBlock, objects), tx.pure(recipient));
     return this;
   }
   splitCoins(coin: SuiObjectArg, amounts: number[]) {
     const tx = this.txBlock;
-    const coinObject = this.#convertArgs([coin])[0];
+    const coinObject = convertArgs(this.txBlock,[coin])[0];
     const res = tx.splitCoins(coinObject, amounts.map(m => tx.pure(m)));
     return amounts.map((_, i) => res[i]);
   }
   mergeCoins(destination: SuiObjectArg, sources: SuiObjectArg[]) {
-    const destionationObject = this.#convertArgs([destination])[0];
-    const sourceObjects = this.#convertArgs(sources);
-    return this.txBlock.mergeCoins(destionationObject, sourceObjects);
+    const destinationObject = convertArgs(this.txBlock, [destination])[0];
+    const sourceObjects = convertArgs(this.txBlock, sources);
+    return this.txBlock.mergeCoins(destinationObject, sourceObjects);
   }
   publish(...args: Parameters<(typeof Transactions)['Publish']>) {
     return this.txBlock.publish(...args);
@@ -123,7 +119,7 @@ export class SuiTxBlock {
     const regex = /(?<package>[a-zA-Z0-9]+)::(?<module>[a-zA-Z0-9_]+)::(?<function>[a-zA-Z0-9_]+)/;
     const match = target.match(regex);
     if (match === null) throw new Error('Invalid target format. Expected `${string}::${string}::${string}`');
-    const convertedArgs = this.#convertArgs(args);
+    const convertedArgs = convertArgs(this.txBlock, args);
     const tx = this.txBlock;
     return tx.moveCall({
       target: target as `${string}::${string}::${string}`,
@@ -154,7 +150,7 @@ export class SuiTxBlock {
 
   takeAmountFromCoins(coins: SuiObjectArg[], amount: number) {
     const tx = this.txBlock;
-    const coinObjects = this.#convertArgs(coins);
+    const coinObjects = convertArgs(this.txBlock, coins);
     const mergedCoin = coinObjects[0];
     if (coins.length > 1) {
       tx.mergeCoins(mergedCoin, coinObjects.slice(1));
@@ -171,7 +167,7 @@ export class SuiTxBlock {
   
   splitMultiCoins(coins: SuiObjectArg[], amounts: number[]) {
     const tx = this.txBlock;
-    const coinObjects = this.#convertArgs(coins);
+    const coinObjects = convertArgs(this.txBlock, coins);
     const mergedCoin = coinObjects[0];
     if (coins.length > 1) {
       tx.mergeCoins(mergedCoin,  coinObjects.slice(1));
@@ -206,60 +202,5 @@ export class SuiTxBlock {
       arguments: [tx.object(SUI_SYSTEM_STATE_OBJECT_ID), stakeCoin, tx.pure(validatorAddr)],
     });
     return tx;
-  }
-
-  /**
-   * Since we know the elements in the array are the same type
-   * If type is not provided, we will try to infer the type from the first element
-   * By default,
-   *
-   * string starting with `0x` =====> object id
-   * number, bigint ====> u64
-   * boolean =====> bool
-   *
-   *
-   * If type is provided, we will use the type to convert the array
-   * @param args
-   * @param type 'address' | 'bool' | 'u8' | 'u16' | 'u32' | 'u64' | 'u128' | 'u256' | 'object'
-   */
-  #makeVecParam(args: SuiTxArg[], type?: SuiInputTypes) {
-    if (args.length === 0) throw new Error('Transaction builder error: Empty array is not allowed');
-    const defaultSuiType = getDefaultSuiInputType(args[0])
-    if (type === 'object' || (!type && defaultSuiType === 'object')) {
-      const objects = args.map(arg =>
-        typeof arg === 'string' ? this.txBlock.object(normalizeSuiObjectId(arg)) : (arg as any)
-      );
-      return this.txBlock.makeMoveVec({ objects })
-    } else {
-      const vecType = type || defaultSuiType;
-      return this.txBlock.pure(args, `vector<${vecType}>`)
-    }
-  }
-  
-  #isMoveVecArg(arg: any) {
-    const isFullMoveVecArg = arg && arg.value && Array.isArray(arg.value) && arg.vecType;
-    const isSimpleMoveVecArg = Array.isArray(arg);
-    return isFullMoveVecArg || isSimpleMoveVecArg;
-  }
-
-  #convertArgs(args: any[]): TransactionArgument[] {
-    return args.map(arg => {
-      if (typeof arg === 'string' && arg.startsWith('0x')) {
-        // We always treat string starting with `0x` as object id
-        return this.txBlock.object(normalizeSuiObjectId(arg))
-      } else if (this.#isMoveVecArg(arg)) {
-        // if it's an array arg, we will convert it to move vec
-        const vecType = arg.vecType || undefined;
-        return vecType
-          ? this.#makeVecParam(arg.value, vecType)
-          : this.#makeVecParam(arg)
-      } else if (typeof arg !== 'object') {
-        // Other basic types such as string, number, boolean are converted to pure value
-        return this.txBlock.pure(arg)
-      } else {
-        // We do nothing, because it's most likely already a move value
-        return arg
-      }
-    })
   }
 }

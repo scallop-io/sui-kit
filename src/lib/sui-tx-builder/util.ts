@@ -1,5 +1,5 @@
 import { normalizeSuiObjectId, TransactionArgument, TransactionBlock } from "@mysten/sui.js";
-import { SuiTxArg } from "./sui-tx-block";
+import { SuiTxArg } from "./types";
 
 /**
  * These are the basics types that can be used in the SUI

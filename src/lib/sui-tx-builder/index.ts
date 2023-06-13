@@ -1,2 +1,2 @@
-export type { SuiTxArg, SuiVecTxArg, SuiObjectArg } from './sui-tx-block'
+export type { SuiTxArg, SuiVecTxArg, SuiObjectArg } from './types'
 export { SuiTxBlock } from './sui-tx-block'

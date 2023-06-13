@@ -1,6 +1,6 @@
 {
   "name": "@scallop-io/sui-kit",
-  "version": "0.35.2",
+  "version": "0.35.3",
   "description": "Tookit for interacting with SUI network",
   "keywords": [
     "sui",

@@ -3,22 +3,7 @@ import {
   TransactionArgument,
   TransactionBlock,
 } from '@mysten/sui.js';
-import { SuiTxArg } from './types';
-
-/**
- * These are the basics types that can be used in the SUI
- */
-export type SuiBasicTypes =
-  | 'address'
-  | 'bool'
-  | 'u8'
-  | 'u16'
-  | 'u32'
-  | 'u64'
-  | 'u128'
-  | 'u256';
-
-export type SuiInputTypes = 'object' | SuiBasicTypes;
+import { SuiTxArg, SuiInputTypes } from './types';
 
 export const getDefaultSuiInputType = (value: any): SuiInputTypes => {
   if (typeof value === 'string' && value.startsWith('0x')) {

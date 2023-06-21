@@ -12,11 +12,6 @@ import {
 import { convertArgs } from './util';
 import type { SuiTxArg, SuiObjectArg, SuiVecTxArg } from './types';
 
-interface BuildOptions {
-  provider?: JsonRpcProvider;
-  onlyTransactionKind?: boolean;
-}
-
 export class SuiTxBlock {
   public txBlock: TransactionBlock;
   constructor(transaction?: TransactionBlock) {
@@ -68,7 +63,12 @@ export class SuiTxBlock {
   serialize() {
     return this.txBlock.serialize();
   }
-  build(params: BuildOptions = {}) {
+  build(
+    params: {
+      provider?: JsonRpcProvider;
+      onlyTransactionKind?: boolean;
+    } = {}
+  ) {
     return this.txBlock.build(params);
   }
   getDigest({ provider }: { provider?: JsonRpcProvider } = {}) {

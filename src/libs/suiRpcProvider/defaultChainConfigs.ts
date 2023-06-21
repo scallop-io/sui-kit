@@ -5,8 +5,7 @@ import {
   mainnetConnection,
 } from '@mysten/sui.js';
 import type { Connection } from '@mysten/sui.js';
-
-export type NetworkType = 'testnet' | 'mainnet' | 'devnet' | 'localnet';
+import type { NetworkType } from './types';
 
 /**
  * @description Get the default fullnode url and faucet url for the given network type

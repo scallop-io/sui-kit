@@ -1,10 +1,6 @@
 import { Ed25519Keypair } from '@mysten/sui.js';
+import type { DerivePathParams } from './types';
 
-export type DerivePathParams = {
-  accountIndex?: number;
-  isExternal?: boolean;
-  addressIndex?: number;
-};
 /**
  * @description Get ed25519 derive path for SUI
  * @param derivePathParams

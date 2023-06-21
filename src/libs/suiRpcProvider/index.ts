@@ -6,25 +6,10 @@ import {
   getObjectFields,
   getObjectDisplay,
   getObjectVersion,
-  DisplayFieldsResponse,
-  ObjectContentFields,
 } from '@mysten/sui.js';
 import { requestFaucet } from './faucet';
-import { NetworkType, getDefaultNetworkParams } from './default-chain-configs';
-
-type ObjectData = {
-  objectId: string;
-  objectType: string;
-  objectVersion: number;
-  objectDisplay: DisplayFieldsResponse;
-  objectFields: ObjectContentFields;
-};
-
-type Params = {
-  fullnodeUrl?: string;
-  faucetUrl?: string;
-  networkType?: NetworkType;
-};
+import { getDefaultNetworkParams } from './defaultChainConfigs';
+import type { ObjectData, SuiRpcProviderParams } from './types';
 
 export class SuiRpcProvider {
   public fullnodeUrl: string;
@@ -36,7 +21,11 @@ export class SuiRpcProvider {
    * @param fullnodeUrl, the fullnode url, default is the preconfig fullnode url for the given network type
    * @param faucetUrl, the faucet url, default is the preconfig faucet url for the given network type
    */
-  constructor({ fullnodeUrl, faucetUrl, networkType }: Params = {}) {
+  constructor({
+    fullnodeUrl,
+    faucetUrl,
+    networkType,
+  }: SuiRpcProviderParams = {}) {
     // Get the default fullnode url and faucet url for the given network type, default is 'testnet'
     const defaultNetworkParams = getDefaultNetworkParams(
       networkType || 'devnet'

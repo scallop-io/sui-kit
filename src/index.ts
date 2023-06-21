@@ -3,11 +3,8 @@ export {
   SUI_CLOCK_OBJECT_ID,
   SUI_SYSTEM_STATE_OBJECT_ID,
 } from '@mysten/sui.js';
-export { SuiKit } from './lib/sui-kit';
-export type { SuiKitParams } from './lib/sui-kit';
-export { SuiAccountManager } from './lib/sui-account-manager';
-export type { DerivePathParams } from './lib/sui-account-manager';
-export { SuiTxBlock } from './lib/sui-tx-builder';
-export type { SuiTxArg, SuiObjectArg } from './lib/sui-tx-builder';
-export { SuiRpcProvider } from './lib/sui-rpc-provider';
-export type { NetworkType } from './lib/sui-rpc-provider';
+export { SuiKit } from './suiKit';
+export { SuiAccountManager } from './libs/suiAccountManager';
+export { SuiTxBlock } from './libs/suiTxBuilder';
+export { SuiRpcProvider } from './libs/suiRpcProvider';
+export type * from './types';

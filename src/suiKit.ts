@@ -10,17 +10,11 @@ import {
   DevInspectResults,
   SuiTransactionBlockResponse,
 } from '@mysten/sui.js';
-import { SuiAccountManager, DerivePathParams } from './sui-account-manager';
-import { SuiRpcProvider, NetworkType } from './sui-rpc-provider';
-import { SuiTxBlock, SuiTxArg, SuiVecTxArg } from './sui-tx-builder';
+import { SuiAccountManager } from './libs/suiAccountManager';
+import { SuiRpcProvider } from './libs/suiRpcProvider';
+import { SuiTxBlock } from './libs/suiTxBuilder';
+import { SuiKitParams, DerivePathParams, SuiTxArg, SuiVecTxArg } from './types';
 
-export type SuiKitParams = {
-  mnemonics?: string;
-  secretKey?: string;
-  fullnodeUrl?: string;
-  faucetUrl?: string;
-  networkType?: NetworkType;
-};
 /**
  * @class SuiKit
  * @description This class is used to aggregate the tools that used to interact with SUI network.

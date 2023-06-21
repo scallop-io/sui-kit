@@ -1,42 +1,31 @@
 {
   "ts-node": {
-    "require": [
-      "tsconfig-paths/register"
-    ]
+    "require": ["tsconfig-paths/register"]
   },
   "compilerOptions": {
-    "target": "es2020",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "allowJs": true,
+    "target": "ES2020",
+    "lib": ["dom", "dom.iterable", "esnext"],
     "baseUrl": ".",
-    // output .d.ts declaration files for consumers
-    "declaration": true,
-    "emitDeclarationOnly": true,
-    // output .js.map sourcemap files for consumers
-    "sourceMap": true,
-    // match output dir to input dir. e.g. dist/index instead of dist/src/index
+    "downlevelIteration": true,
     "rootDir": "src",
     "outDir": "dist",
-    "preserveSymlinks": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noEmit": false,
-    "esModuleInterop": true,
-    "module": "commonjs",
+    "module": "CommonJS",
     "moduleResolution": "node",
+    "strict": true,
+    "sourceMap": true,
+    "declaration": true,
+    "esModuleInterop": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true
+    "skipLibCheck": true,
+    "preserveSymlinks": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowJs": true,
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "incremental": true,
+    "typeRoots": ["./src/types", "./node_modules/@types"]
   },
-  "exclude": [
-    "node_modules",
-    "examples",
-    "dist",
-  ]
+  "include": ["./src/**/*"],
+  "exclude": ["node_modules", "examples", "dist"]
 }

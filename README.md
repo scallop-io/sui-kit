@@ -1,6 +1,6 @@
 # Tookit for interacting with SUI network
 
-[中文文档](./README_cn.md)
+[中文文档](./document/README_cn.md)
 
 ## Features
 - [x] Transfer SUI, Custom Coin and objects.

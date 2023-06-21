@@ -1,9 +1,10 @@
-import { fromB64 } from '@mysten/sui.js'
+import { fromB64 } from '@mysten/sui.js';
 /**
  * @description This regular expression matches any string that contains only hexadecimal digits (0-9, A-F, a-f).
  * @param str
  */
-export const isHex = (str: string) => /^0x[0-9a-fA-F]+$|^[0-9a-fA-F]+$/.test(str);
+export const isHex = (str: string) =>
+  /^0x[0-9a-fA-F]+$|^[0-9a-fA-F]+$/.test(str);
 
 /**
  * @description This regular expression matches any string that contains only base64 digits (0-9, A-Z, a-z, +, /, =).
@@ -18,11 +19,12 @@ export const isBase64 = (str: string) => /^[a-zA-Z0-9+/]+={0,2}$/g.test(str);
  */
 export function fromHEX(hexStr: string): Uint8Array {
   if (!hexStr) {
-    throw new Error('cannot parse empty string to Uint8Array')
+    throw new Error('cannot parse empty string to Uint8Array');
   }
-  let intArr = hexStr
+  const intArr = hexStr
     .replace('0x', '')
-    .match(/.{1,2}/g)?.map(byte => parseInt(byte, 16));
+    .match(/.{1,2}/g)
+    ?.map((byte) => parseInt(byte, 16));
 
   if (!intArr || intArr.length === 0) {
     throw new Error(`Unable to parse HEX: ${hexStr}`);
@@ -35,13 +37,13 @@ export function fromHEX(hexStr: string): Uint8Array {
  */
 export const hexOrBase64ToUint8Array = (str: string): Uint8Array => {
   if (isHex(str)) {
-    return fromHEX(str)
+    return fromHEX(str);
   } else if (isBase64(str)) {
-    return fromB64(str)
+    return fromB64(str);
   } else {
     throw new Error('The string is not a valid hex or base64 string.');
   }
-}
+};
 
 const PRIVATE_KEY_SIZE = 32;
 const LEGACY_PRIVATE_KEY_SIZE = 64;
@@ -64,4 +66,4 @@ export const normalizePrivateKey = (key: Uint8Array): Uint8Array => {
     return key;
   }
   throw new Error('invalid secret key');
-}
+};

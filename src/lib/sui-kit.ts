@@ -4,10 +4,15 @@
  * @author IceFox
  * @version 0.1.0
  */
-import { RawSigner, TransactionBlock, DevInspectResults, SuiTransactionBlockResponse } from '@mysten/sui.js';
-import { SuiAccountManager, DerivePathParams } from "./sui-account-manager";
+import {
+  RawSigner,
+  TransactionBlock,
+  DevInspectResults,
+  SuiTransactionBlockResponse,
+} from '@mysten/sui.js';
+import { SuiAccountManager, DerivePathParams } from './sui-account-manager';
 import { SuiRpcProvider, NetworkType } from './sui-rpc-provider';
-import { SuiTxBlock, SuiTxArg, SuiVecTxArg } from "./sui-tx-builder";
+import { SuiTxBlock, SuiTxArg, SuiVecTxArg } from './sui-tx-builder';
 
 export type SuiKitParams = {
   mnemonics?: string;
@@ -15,13 +20,12 @@ export type SuiKitParams = {
   fullnodeUrl?: string;
   faucetUrl?: string;
   networkType?: NetworkType;
-}
+};
 /**
  * @class SuiKit
  * @description This class is used to aggregate the tools that used to interact with SUI network.
  */
 export class SuiKit {
-
   public accountManager: SuiAccountManager;
   public rpcProvider: SuiRpcProvider;
 
@@ -37,11 +41,21 @@ export class SuiKit {
    * @param fullnodeUrl, the fullnode url, default is the preconfig fullnode url for the given network type
    * @param faucetUrl, the faucet url, default is the preconfig faucet url for the given network type
    */
-  constructor({ mnemonics, secretKey, networkType, fullnodeUrl, faucetUrl }: SuiKitParams = {}) {
+  constructor({
+    mnemonics,
+    secretKey,
+    networkType,
+    fullnodeUrl,
+    faucetUrl,
+  }: SuiKitParams = {}) {
     // Init the account manager
     this.accountManager = new SuiAccountManager({ mnemonics, secretKey });
     // Init the rpc provider
-    this.rpcProvider = new SuiRpcProvider({ fullnodeUrl, faucetUrl, networkType });
+    this.rpcProvider = new SuiRpcProvider({
+      fullnodeUrl,
+      faucetUrl,
+      networkType,
+    });
   }
 
   /**
@@ -70,9 +84,13 @@ export class SuiKit {
   getAddress(derivePathParams?: DerivePathParams) {
     return this.accountManager.getAddress(derivePathParams);
   }
-  currentAddress() { return this.accountManager.currentAddress }
-  
-  provider() { return this.rpcProvider.provider }
+  currentAddress() {
+    return this.accountManager.currentAddress;
+  }
+
+  provider() {
+    return this.rpcProvider.provider;
+  }
 
   /**
    * Request some SUI from faucet
@@ -92,20 +110,29 @@ export class SuiKit {
     return this.rpcProvider.getObjects(objectIds);
   }
 
-  async signTxn(tx: Uint8Array | TransactionBlock | SuiTxBlock, derivePathParams?: DerivePathParams) {
+  async signTxn(
+    tx: Uint8Array | TransactionBlock | SuiTxBlock,
+    derivePathParams?: DerivePathParams
+  ) {
     tx = tx instanceof SuiTxBlock ? tx.txBlock : tx;
     const signer = this.getSigner(derivePathParams);
     return signer.signTransactionBlock({ transactionBlock: tx });
   }
 
-  async signAndSendTxn(tx: Uint8Array | TransactionBlock | SuiTxBlock, derivePathParams?: DerivePathParams): Promise<SuiTransactionBlockResponse> {
+  async signAndSendTxn(
+    tx: Uint8Array | TransactionBlock | SuiTxBlock,
+    derivePathParams?: DerivePathParams
+  ): Promise<SuiTransactionBlockResponse> {
     tx = tx instanceof SuiTxBlock ? tx.txBlock : tx;
     const signer = this.getSigner(derivePathParams);
-    return signer.signAndExecuteTransactionBlock({ transactionBlock: tx, options: {
+    return signer.signAndExecuteTransactionBlock({
+      transactionBlock: tx,
+      options: {
         showEffects: true,
         showEvents: true,
         showObjectChanges: true,
-    }})
+      },
+    });
   }
 
   /**
@@ -114,7 +141,11 @@ export class SuiKit {
    * @param amount
    * @param derivePathParams
    */
-  async transferSui(recipient: string, amount: number, derivePathParams?: DerivePathParams) {
+  async transferSui(
+    recipient: string,
+    amount: number,
+    derivePathParams?: DerivePathParams
+  ) {
     const tx = new SuiTxBlock();
     tx.transferSui(recipient, amount);
     return this.signAndSendTxn(tx, derivePathParams);
@@ -126,7 +157,11 @@ export class SuiKit {
    * @param amounts the amounts of SUI to transfer to each recipient, the length of amounts should be the same as the length of recipients
    * @param derivePathParams
    */
-  async transferSuiToMany(recipients: string[], amounts: number[], derivePathParams?: DerivePathParams) {
+  async transferSuiToMany(
+    recipients: string[],
+    amounts: number[],
+    derivePathParams?: DerivePathParams
+  ) {
     const tx = new SuiTxBlock();
     tx.transferSuiToMany(recipients, amounts);
     return this.signAndSendTxn(tx, derivePathParams);
@@ -139,27 +174,65 @@ export class SuiKit {
    * @param coinType any custom coin type but not SUI
    * @param derivePathParams the derive path params for the current signer
    */
-  async transferCoinToMany(recipients: string[], amounts: number[], coinType: string, derivePathParams?: DerivePathParams) {
+  async transferCoinToMany(
+    recipients: string[],
+    amounts: number[],
+    coinType: string,
+    derivePathParams?: DerivePathParams
+  ) {
     const tx = new SuiTxBlock();
     const owner = this.accountManager.getAddress(derivePathParams);
     const totalAmount = amounts.reduce((a, b) => a + b, 0);
-    const coins = await this.rpcProvider.selectCoins(owner, totalAmount, coinType);
-    tx.transferCoinToMany(coins.map(c => c.objectId), owner, recipients, amounts);
+    const coins = await this.rpcProvider.selectCoins(
+      owner,
+      totalAmount,
+      coinType
+    );
+    tx.transferCoinToMany(
+      coins.map((c) => c.objectId),
+      owner,
+      recipients,
+      amounts
+    );
     return this.signAndSendTxn(tx, derivePathParams);
   }
-  
-  async transferCoin(recipient: string, amount: number, coinType: string, derivePathParams?: DerivePathParams) {
-    return this.transferCoinToMany([recipient], [amount], coinType, derivePathParams)
+
+  async transferCoin(
+    recipient: string,
+    amount: number,
+    coinType: string,
+    derivePathParams?: DerivePathParams
+  ) {
+    return this.transferCoinToMany(
+      [recipient],
+      [amount],
+      coinType,
+      derivePathParams
+    );
   }
-  
-  async transferObjects(objects: string[], recipient: string, derivePathParams?: DerivePathParams) {
+
+  async transferObjects(
+    objects: string[],
+    recipient: string,
+    derivePathParams?: DerivePathParams
+  ) {
     const tx = new SuiTxBlock();
     tx.transferObjects(objects, recipient);
     return this.signAndSendTxn(tx, derivePathParams);
   }
-  
-  async moveCall(callParams: {target: string, arguments?: (SuiTxArg | SuiVecTxArg)[], typeArguments?: string[], derivePathParams?: DerivePathParams}) {
-    const { target, arguments: args = [], typeArguments = [], derivePathParams } = callParams;
+
+  async moveCall(callParams: {
+    target: string;
+    arguments?: (SuiTxArg | SuiVecTxArg)[];
+    typeArguments?: string[];
+    derivePathParams?: DerivePathParams;
+  }) {
+    const {
+      target,
+      arguments: args = [],
+      typeArguments = [],
+      derivePathParams,
+    } = callParams;
     const tx = new SuiTxBlock();
     tx.moveCall(target, args, typeArguments);
     return this.signAndSendTxn(tx, derivePathParams);
@@ -171,10 +244,14 @@ export class SuiKit {
    * @param coinType
    * @param owner
    */
-  async selectCoinsWithAmount(amount: number, coinType: string, owner?: string) {
+  async selectCoinsWithAmount(
+    amount: number,
+    coinType: string,
+    owner?: string
+  ) {
     owner = owner || this.accountManager.currentAddress;
     const coins = await this.rpcProvider.selectCoins(owner, amount, coinType);
-    return coins.map(c => c.objectId)
+    return coins.map((c) => c.objectId);
   }
 
   /**
@@ -183,7 +260,11 @@ export class SuiKit {
    * @param validatorAddr the validator address
    * @param derivePathParams the derive path params for the current signer
    */
-  async stakeSui(amount: number, validatorAddr: string, derivePathParams?: DerivePathParams) {
+  async stakeSui(
+    amount: number,
+    validatorAddr: string,
+    derivePathParams?: DerivePathParams
+  ) {
     const tx = new SuiTxBlock();
     tx.stakeSui(amount, validatorAddr);
     return this.signAndSendTxn(tx, derivePathParams);
@@ -196,8 +277,14 @@ export class SuiKit {
    * @param derivePathParams the derive path params
    * @returns the effects and events of the transaction, such as object changes, gas cost, event emitted.
    */
-  async inspectTxn(tx: Uint8Array | TransactionBlock | SuiTxBlock, derivePathParams?: DerivePathParams): Promise<DevInspectResults> {
+  async inspectTxn(
+    tx: Uint8Array | TransactionBlock | SuiTxBlock,
+    derivePathParams?: DerivePathParams
+  ): Promise<DevInspectResults> {
     tx = tx instanceof SuiTxBlock ? tx.txBlock : tx;
-    return this.rpcProvider.provider.devInspectTransactionBlock({ transactionBlock: tx, sender: this.getAddress(derivePathParams) })
+    return this.rpcProvider.provider.devInspectTransactionBlock({
+      transactionBlock: tx,
+      sender: this.getAddress(derivePathParams),
+    });
   }
 }

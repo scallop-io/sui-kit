@@ -48,8 +48,8 @@
     "test:typecheck": "tsc -p ./test",
     "test:unit": "vitest run --test-timeout=60000",
     "test:watch": "vitest",
-    "format:fix": "prettier  --ignore-path 'dist/* docs/*' --write '**/*.{ts,json,md}'",
-    "lint:fix": "eslint . --ext .ts --fix",
+    "format:fix": "prettier --ignore-path 'dist/* docs/*' --write '**/*.{ts,json,md}'",
+    "lint:fix": "eslint . --ignore-pattern dist --ext .ts --fix",
     "prepare": "husky install",
     "commit": "commit",
     "doc": "typedoc --out docs src/index.ts"

@@ -8,9 +8,9 @@ import {
   getObjectVersion,
   DisplayFieldsResponse,
   ObjectContentFields,
-} from "@mysten/sui.js";
-import { requestFaucet } from './faucet'
-import { NetworkType, getDefaultNetworkParams } from "./default-chain-configs";
+} from '@mysten/sui.js';
+import { requestFaucet } from './faucet';
+import { NetworkType, getDefaultNetworkParams } from './default-chain-configs';
 
 type ObjectData = {
   objectId: string;
@@ -18,13 +18,13 @@ type ObjectData = {
   objectVersion: number;
   objectDisplay: DisplayFieldsResponse;
   objectFields: ObjectContentFields;
-}
+};
 
 type Params = {
   fullnodeUrl?: string;
   faucetUrl?: string;
   networkType?: NetworkType;
-}
+};
 
 export class SuiRpcProvider {
   public fullnodeUrl: string;
@@ -38,7 +38,9 @@ export class SuiRpcProvider {
    */
   constructor({ fullnodeUrl, faucetUrl, networkType }: Params = {}) {
     // Get the default fullnode url and faucet url for the given network type, default is 'testnet'
-    const defaultNetworkParams = getDefaultNetworkParams(networkType || 'devnet');
+    const defaultNetworkParams = getDefaultNetworkParams(
+      networkType || 'devnet'
+    );
     // Set fullnodeUrl and faucetUrl, if they are not provided, use the default value.
     this.fullnodeUrl = fullnodeUrl || defaultNetworkParams.fullnode;
     this.faucetUrl = faucetUrl || defaultNetworkParams.faucet;
@@ -56,7 +58,7 @@ export class SuiRpcProvider {
    * @Returns {Promise<boolean>}, true if the request is successful, false otherwise.
    */
   async requestFaucet(addr: string) {
-    return requestFaucet(addr, this.provider)
+    return requestFaucet(addr, this.provider);
   }
 
   async getBalance(addr: string, coinType?: string) {
@@ -72,9 +74,15 @@ export class SuiRpcProvider {
       const objectVersion = getObjectVersion(object);
       const objectFields = getObjectFields(object);
       const objectDisplay = getObjectDisplay(object);
-      return { objectId, objectType, objectVersion, objectFields, objectDisplay };
+      return {
+        objectId,
+        objectType,
+        objectVersion,
+        objectFields,
+        objectDisplay,
+      };
     });
-    return parsedObjects as ObjectData[]
+    return parsedObjects as ObjectData[];
   }
 
   /**
@@ -83,13 +91,21 @@ export class SuiRpcProvider {
    * @param amount the amount that is needed for the coin
    * @param coinType the coin type, default is '0x2::SUI::SUI'
    */
-  async selectCoins(addr: string, amount: number, coinType: string = '0x2::SUI::SUI') {
+  async selectCoins(
+    addr: string,
+    amount: number,
+    coinType: string = '0x2::SUI::SUI'
+  ) {
     const coins = await this.provider.getCoins({ owner: addr, coinType });
-    let selectedCoins: {objectId: string, digest: string, version: string}[] = [];
+    const selectedCoins: {
+      objectId: string;
+      digest: string;
+      version: string;
+    }[] = [];
     let totalAmount = 0;
     // Sort the coins by balance in descending order
-    const coinsData = coins.data.sort((a, b) => parseInt(b.balance) - parseInt(a.balance))
-    for(const coinData of coins.data) {
+    coins.data.sort((a, b) => parseInt(b.balance) - parseInt(a.balance));
+    for (const coinData of coins.data) {
       selectedCoins.push({
         objectId: coinData.coinObjectId,
         digest: coinData.digest,

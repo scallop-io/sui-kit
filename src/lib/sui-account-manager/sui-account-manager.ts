@@ -1,12 +1,12 @@
-import { Ed25519Keypair } from '@mysten/sui.js'
-import { getKeyPair, DerivePathParams } from "./keypair";
-import {hexOrBase64ToUint8Array, normalizePrivateKey} from "./util";
+import { Ed25519Keypair } from '@mysten/sui.js';
+import { getKeyPair, DerivePathParams } from './keypair';
+import { hexOrBase64ToUint8Array, normalizePrivateKey } from './util';
 import { generateMnemonic } from './crypto';
 
 type AccountMangerParams = {
   mnemonics?: string;
   secretKey?: string;
-}
+};
 export class SuiAccountManager {
   private mnemonics: string;
   private secretKey: string;
@@ -25,17 +25,17 @@ export class SuiAccountManager {
   constructor({ mnemonics, secretKey }: AccountMangerParams = {}) {
     // If the mnemonics or secretKey is provided, use it
     // Otherwise, generate a random mnemonics with 24 words
-    this.mnemonics = mnemonics || "";
-    this.secretKey = secretKey || "";
+    this.mnemonics = mnemonics || '';
+    this.secretKey = secretKey || '';
     if (!this.mnemonics && !this.secretKey) {
-      this.mnemonics = generateMnemonic(24)
+      this.mnemonics = generateMnemonic(24);
     }
 
     // Init the current account
     this.currentKeyPair = this.secretKey
       ? Ed25519Keypair.fromSecretKey(
-        normalizePrivateKey(hexOrBase64ToUint8Array(this.secretKey))
-      )
+          normalizePrivateKey(hexOrBase64ToUint8Array(this.secretKey))
+        )
       : getKeyPair(this.mnemonics);
     this.currentAddress = this.currentKeyPair.getPublicKey().toSuiAddress();
   }
@@ -57,7 +57,9 @@ export class SuiAccountManager {
    */
   getAddress(derivePathParams?: DerivePathParams) {
     if (!derivePathParams || !this.mnemonics) return this.currentAddress;
-    return getKeyPair(this.mnemonics, derivePathParams).getPublicKey().toSuiAddress();
+    return getKeyPair(this.mnemonics, derivePathParams)
+      .getPublicKey()
+      .toSuiAddress();
   }
 
   /**

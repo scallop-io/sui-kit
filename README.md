@@ -9,7 +9,6 @@
 - [x] Programmable transaction
 - [x] Query on-chain data
 - [x] HD wallet multi-accounts
-- [x] Publish & upgrade Move packages
 
 ## Pre-requisites
 
@@ -265,56 +264,6 @@ internalTransferSui(suiKit, 0, 1, 1000).then(() => {});
 
 ### Publish & upgrade Move package
 
-We have a standalone npm package to help you publish and upgrade Move package with typescript.
+We have a standalone npm package to help you publish and upgrade Move package based on sui-kit.
 
-1. Install the package
-
-```bash
-npm install @scallop-io/sui-package-kit
-```
-
-2. Install SUI cli
-   Please refer to the official documentation: [How to install SUI cli](https://docs.sui.io/devnet/build/install)
-
-```typescript
-/**
- * This is an example of using SuiKit to publish a move package
- */
-import { SuiKit } from '@scallop-io/sui-kit';
-import { SuiPackagePublisher } from '@scallop-dao/sui-package-kit';
-
-(async () => {
-  const mnemonics = '<Your mnemonics>';
-  const suiKit = new SuiKit({ mnemonics, networkType: 'devnet' });
-
-  const packagePath = path.join(__dirname, './sample_move/package_a');
-  const publisher = new SuiPackagePublisher();
-  const result = await publisher.publishPackage(
-    packagePath,
-    suiKit.getSigner()
-  );
-  console.log('packageId: ' + result.packageId);
-})();
-```
-
-```typescript
-/**
- * This is an example of using SuiKit to upgrade a move package
- */
-import { SuiKit } from '@scallop-io/sui-kit';
-import { SuiPackagePublisher } from '@scallop-dao/sui-package-kit';
-
-(async () => {
-  const mnemonics = '<Your mnemonics>';
-  const suiKit = new SuiKit({ mnemonics, networkType: 'devnet' });
-
-  const upgradeCapId = '<Package upgrade cap id>';
-  // Rember to set the 'published-at' in the package manifest
-  const packagePath = path.join(__dirname, './sample_move/package_a_upgrade');
-  const publisher = new SuiPackagePublisher();
-  const result = await publisher.upgradePackage(packagePath, upgradeCapId, {
-    skipFetchLatestGitDeps: true,
-  });
-  console.log(result);
-})();
-```
+Please refer to the repository: [sui-package-kit](https://docs.sui.io/devnet/build/install)

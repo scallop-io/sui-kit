@@ -7,7 +7,6 @@
 - [x] 从开发网络和测试网络请求水龙头
 - [x] 质押 SUI
 - [x] 兼容可编程交易
-- [x] 发布 move 包
 - [x] 交易检查（无需 gas 的交易检查）
 - [x] 高级特性：新增多账户支持
 
@@ -103,39 +102,6 @@ recipients.forEach((recipient) => {
 suiKit.signAndSendTxn(tx).then((response) => {
   console.log('交易摘要: ' + response.digest);
 });
-```
-
-### 发布 move 模块
-
-您可以使用 SuiKit 将 move 包发布到 SUI 网络中。
-注意：您需要先安装 SUI cli。（[请参见先决条件](#先决条件)）
-
-```typescript
-/**
- * 这个示例演示如何使用 SuiKit 发布 move 模块
- */
-import { SuiKit, SuiPackagePublisher } from '@scallop-io/sui-kit';
-
-(async () => {
-  const secretKey = '<密钥>';
-  const suiKit = new SuiKit({ secretKey, networkType: 'devnet' });
-  // 如果余额不足，则请求水龙头
-  const balance = await suiKit.getBalance();
-  if (balance.totalBalance <= 3000) {
-    await suiKit.requestFaucet();
-  }
-  // 等待 3 秒后再发布包
-  await new Promise((resolve) => setTimeout(() => resolve(true), 3000));
-
-  // 发布包
-  const packagePath = path.join(__dirname, './example/sample_move/custom_coin');
-  const publisher = new SuiPackagePublisher();
-  const result = await publisher.publishPackage(
-    packagePath,
-    suiKit.getSigner()
-  );
-  console.log('包ID: ' + result.packageId);
-})();
 ```
 
 ## 高级特性

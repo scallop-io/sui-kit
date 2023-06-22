@@ -1,6 +1,6 @@
 {
   "name": "@scallop-io/sui-kit",
-  "version": "0.36.0",
+  "version": "0.36.1",
   "description": "Tookit for interacting with SUI network",
   "keywords": [
     "sui",
@@ -64,7 +64,7 @@
     "ts-retry-promise": "^0.7.0"
   },
   "peerDependencies": {
-    "@mysten/sui.js": "^0.35.1"
+    "@mysten/sui.js": "^0.36.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.6.5",

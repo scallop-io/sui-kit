@@ -1,6 +1,6 @@
 {
   "name": "@scallop-io/sui-kit",
-  "version": "0.35.3",
+  "version": "0.36.0",
   "description": "Tookit for interacting with SUI network",
   "keywords": [
     "sui",
@@ -43,10 +43,19 @@
     "build:types": "tsc --build",
     "watch:tsup": "tsup ./src/index.ts --format esm,cjs --clean --splitting --watch",
     "watch:types": "tsc --watch",
-    "watch": "pnpm run clean & pnpm run watch:types & pnpm run watch:tsup"
+    "watch": "pnpm run clean & pnpm run watch:types & pnpm run watch:tsup",
+    "test": "pnpm test:typecheck && pnpm test:unit",
+    "test:typecheck": "tsc -p ./test",
+    "test:unit": "vitest run --test-timeout=60000",
+    "test:watch": "vitest",
+    "format:fix": "prettier --ignore-path 'dist/* docs/*' --write '**/*.{ts,json,md}'",
+    "lint:fix": "eslint . --ignore-pattern dist --ext .ts --fix",
+    "prepare": "husky install",
+    "commit": "commit",
+    "doc": "typedoc --out docs src/index.ts"
   },
   "dependencies": {
-    "@mysten/sui.js": "^0.35.1",
+    "@mysten/sui.js": "^0.36.0",
     "@scure/bip39": "^1.2.0",
     "assert": "^2.0.0",
     "colorts": "^0.1.63",
@@ -58,12 +67,86 @@
     "@mysten/sui.js": "^0.35.1"
   },
   "devDependencies": {
-    "@types/node": "^20.2.1",
+    "@commitlint/cli": "^17.6.5",
+    "@commitlint/config-conventional": "^17.6.5",
+    "@commitlint/prompt-cli": "^17.6.5",
+    "@types/node": "^20.3.1",
+    "@typescript-eslint/eslint-plugin": "^5.60.0",
+    "@typescript-eslint/parser": "^5.60.0",
     "@types/tmp": "^0.2.3",
-    "dotenv": "^16.0.3",
-    "ts-node": "^10.9.1",
+    "dotenv": "^16.3.1",
+    "eslint": "^8.43.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.2",
+    "prettier": "^2.8.8",
     "tsconfig-paths": "^4.2.0",
-    "tsup": "^6.7.0",
-    "typescript": "^5.0.4"
+    "ts-node": "^10.9.1",
+    "tsup": "^7.0.0",
+    "typedoc": "^0.24.8",
+    "typescript": "^5.0.4",
+    "vitest": "^0.32.2"
+  },
+  "lint-staged": {
+    "**/*.ts": [
+      "pnpm run format:fix",
+      "pnpm run lint:fix"
+    ],
+    "**/*.json|md": [
+      "pnpm run format:fix"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "prettier": {
+    "trailingComma": "es5",
+    "tabWidth": 2,
+    "semi": true,
+    "singleQuote": true,
+    "useTabs": false,
+    "quoteProps": "as-needed",
+    "bracketSpacing": true,
+    "arrowParens": "always",
+    "endOfLine": "lf"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "browser": true,
+      "node": true,
+      "es2022": true
+    },
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/eslint-recommended",
+      "plugin:prettier/recommended"
+    ],
+    "plugins": [
+      "@typescript-eslint",
+      "prettier"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "rules": {
+      "prettier/prettier": "warn",
+      "@typescript-eslint/no-explicit-any": "off",
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          "argsIgnorePattern": "^_",
+          "varsIgnorePattern": "^_",
+          "caughtErrorsIgnorePattern": "^_"
+        }
+      ]
+    }
   }
 }

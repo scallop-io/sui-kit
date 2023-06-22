@@ -55,7 +55,7 @@
     "doc": "typedoc --out docs src/index.ts"
   },
   "dependencies": {
-    "@mysten/sui.js": "^0.35.1",
+    "@mysten/sui.js": "^0.36.0",
     "@scure/bip39": "^1.2.0",
     "assert": "^2.0.0",
     "colorts": "^0.1.63",
@@ -83,7 +83,7 @@
     "prettier": "^2.8.8",
     "tsconfig-paths": "^4.2.0",
     "ts-node": "^10.9.1",
-    "tsup": "^6.7.0",
+    "tsup": "^7.0.0",
     "typedoc": "^0.24.8",
     "typescript": "^5.0.4",
     "vitest": "^0.32.2"

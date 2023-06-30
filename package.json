@@ -1,6 +1,6 @@
 {
   "name": "@scallop-io/sui-kit",
-  "version": "0.37.0",
+  "version": "0.37.1",
   "description": "Tookit for interacting with SUI network",
   "keywords": [
     "sui",
@@ -55,7 +55,7 @@
     "doc": "typedoc --out docs src/index.ts"
   },
   "dependencies": {
-    "@mysten/sui.js": "^0.37.0",
+    "@mysten/sui.js": "^0.37.1",
     "@scure/bip39": "^1.2.1",
     "assert": "^2.0.0",
     "colorts": "^0.1.63",
@@ -64,7 +64,7 @@
     "ts-retry-promise": "^0.7.0"
   },
   "peerDependencies": {
-    "@mysten/sui.js": "^0.37.0"
+    "@mysten/sui.js": "^0.37.1"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.6.6",

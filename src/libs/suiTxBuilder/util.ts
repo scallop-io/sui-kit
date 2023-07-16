@@ -3,7 +3,7 @@ import {
   TransactionArgument,
   TransactionBlock,
 } from '@mysten/sui.js';
-import { SuiTxArg, SuiInputTypes } from './types';
+import { SuiTxArg, SuiInputTypes } from 'src/types';
 
 export const getDefaultSuiInputType = (value: any): SuiInputTypes => {
   if (typeof value === 'string' && value.startsWith('0x')) {

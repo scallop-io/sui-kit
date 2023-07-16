@@ -6,5 +6,4 @@ export {
 export { SuiKit } from './suiKit';
 export { SuiAccountManager } from './libs/suiAccountManager';
 export { SuiTxBlock } from './libs/suiTxBuilder';
-export { SuiRpcProvider } from './libs/suiRpcProvider';
 export type * from './types';

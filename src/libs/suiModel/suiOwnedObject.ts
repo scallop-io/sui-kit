@@ -27,7 +27,7 @@ export class SuiOwnedObject {
     return !!this.version && !!this.digest;
   }
 
-8  asCallArg(): Infer<typeof ObjectCallArg> | Infer<typeof ObjectId>  {
+   asCallArg(): Infer<typeof ObjectCallArg> | Infer<typeof ObjectId>  {
     if (!this.version || !this.digest) {
       return this.objectId;
     }

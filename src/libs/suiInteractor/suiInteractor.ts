@@ -52,7 +52,7 @@ export class SuiInteractor {
 
     for (const provider of providers) {
       try {
-        const res = this.currentProvider.executeTransactionBlock({
+        const res = await this.currentProvider.executeTransactionBlock({
           transactionBlock,
           signature,
           options: txResOptions
@@ -66,28 +66,47 @@ export class SuiInteractor {
     throw new Error('Failed to send transaction with all fullnodes');
   }
   async getObjects(ids: string[]) {
-    const options = { showContent: true, showDisplay: true, showType: true };
-    const objects = await this.currentProvider.multiGetObjects({ ids, options });
+    const options = { showContent: true, showDisplay: true, showType: true, showOwner: true };
 
-    const parsedObjects = objects.map((object) => {
-      const objectId = getObjectId(object);
-      const objectType = getObjectType(object);
-      const objectVersion = getObjectVersion(object);
-      const objectDigest = object.data ? object.data.digest : undefined;
-      const initialSharedVersion = getSharedObjectInitialVersion(object);
-      const objectFields = getObjectFields(object);
-      const objectDisplay = getObjectDisplay(object);
-      return {
-        objectId,
-        objectType,
-        objectVersion,
-        objectDigest,
-        objectFields,
-        objectDisplay,
-        initialSharedVersion,
-      };
-    });
-    return parsedObjects as ObjectData[];
+    const currentProviderIdx = this.providers.indexOf(this.currentProvider);
+    const providers = [
+      ...this.providers.slice(currentProviderIdx, this.providers.length),
+      ...this.providers.slice(0, currentProviderIdx),
+    ]
+
+    for (const provider of providers) {
+      try {
+        const objects = await this.currentProvider.multiGetObjects({ ids, options });
+        this.currentProvider = provider;
+        const parsedObjects = objects.map((object) => {
+          const objectId = getObjectId(object);
+          const objectType = getObjectType(object);
+          const objectVersion = getObjectVersion(object);
+          const objectDigest = object.data ? object.data.digest : undefined;
+          const initialSharedVersion = getSharedObjectInitialVersion(object);
+          const objectFields = getObjectFields(object);
+          const objectDisplay = getObjectDisplay(object);
+          return {
+            objectId,
+            objectType,
+            objectVersion,
+            objectDigest,
+            objectFields,
+            objectDisplay,
+            initialSharedVersion,
+          };
+        });
+        return parsedObjects as ObjectData[];
+      } catch (err) {
+        console.warn(`Failed to get objects with fullnode ${provider.connection.fullnode}: ${err}`);
+      }
+    }
+    throw new Error('Failed to get objects with all fullnodes');
+  }
+
+  async getObject(id: string) {
+    const objects = await this.getObjects([id]);
+    return objects[0];
   }
 
   /**

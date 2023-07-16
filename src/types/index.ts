@@ -1,10 +1,11 @@
+import { Infer } from 'superstruct';
 import {
-  DisplayFieldsResponse,
+  DisplayFieldsResponse, ObjectCallArg,
   ObjectContentFields,
   SharedObjectRef,
   SuiObjectRef,
   TransactionArgument
-} from "@mysten/sui.js/src";
+} from "@mysten/sui.js";
 
 export type AccountMangerParams = {
   mnemonics?: string;
@@ -37,13 +38,20 @@ export type ObjectData = {
   objectFields: ObjectContentFields;
 };
 
-export type SuiTxArg = TransactionArgument | string | number | bigint | boolean;
+export type SuiTxArg =
+  | Infer<typeof TransactionArgument>
+  | Infer<typeof ObjectCallArg>
+  | string
+  | number
+  | bigint
+  | boolean;
 
 export type SuiObjectArg =
   | SharedObjectRef
-  | SuiObjectRef
+  | Infer<typeof SuiObjectRef>
   | string
-  | TransactionArgument;
+  | Infer<typeof ObjectCallArg>
+  | Infer<typeof TransactionArgument>;
 
 export type SuiVecTxArg =
   | { value: SuiTxArg[]; vecType: SuiInputTypes }

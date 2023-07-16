@@ -1,8 +1,5 @@
 /**
- * @file src.ts
  * @description This file is used to aggregate the tools that used to interact with SUI network.
- * @author IceFox
- * @version 0.1.0
  */
 import {
   RawSigner,
@@ -11,8 +8,9 @@ import {
   SuiTransactionBlockResponse,
 } from '@mysten/sui.js';
 import { SuiAccountManager } from './libs/suiAccountManager';
-import { SuiRpcProvider } from './libs/suiRpcProvider';
 import { SuiTxBlock } from './libs/suiTxBuilder';
+import { SuiInteractor, getDefaultConnection } from './libs/suiInteractor';
+import { SuiSharedObject, SuiOwnedObject } from './libs/suiModel';
 import { SuiKitParams, DerivePathParams, SuiTxArg, SuiVecTxArg } from './types';
 
 /**
@@ -21,7 +19,7 @@ import { SuiKitParams, DerivePathParams, SuiTxArg, SuiVecTxArg } from './types';
  */
 export class SuiKit {
   public accountManager: SuiAccountManager;
-  public rpcProvider: SuiRpcProvider;
+  public suiInteractor: SuiInteractor;
 
   /**
    * Support the following ways to init the SuiToolkit:
@@ -33,23 +31,18 @@ export class SuiKit {
    * @param secretKey, base64 or hex string, when mnemonics is provided, secretKey will be ignored
    * @param networkType, 'testnet' | 'mainnet' | 'devnet' | 'localnet', default is 'devnet'
    * @param fullnodeUrl, the fullnode url, default is the preconfig fullnode url for the given network type
-   * @param faucetUrl, the faucet url, default is the preconfig faucet url for the given network type
    */
   constructor({
     mnemonics,
     secretKey,
     networkType,
-    fullnodeUrl,
-    faucetUrl,
+    fullnodeUrls,
   }: SuiKitParams = {}) {
     // Init the account manager
     this.accountManager = new SuiAccountManager({ mnemonics, secretKey });
     // Init the rpc provider
-    this.rpcProvider = new SuiRpcProvider({
-      fullnodeUrl,
-      faucetUrl,
-      networkType,
-    });
+    fullnodeUrls = fullnodeUrls || [getDefaultConnection(networkType).fullnode];
+    this.suiInteractor = new SuiInteractor(fullnodeUrls);
   }
 
   /**
@@ -60,7 +53,7 @@ export class SuiKit {
    */
   getSigner(derivePathParams?: DerivePathParams) {
     const keyPair = this.accountManager.getKeyPair(derivePathParams);
-    return new RawSigner(keyPair, this.rpcProvider.provider);
+    return new RawSigner(keyPair, this.suiInteractor.currentProvider);
   }
 
   /**
@@ -83,25 +76,24 @@ export class SuiKit {
   }
 
   provider() {
-    return this.rpcProvider.provider;
-  }
-
-  /**
-   * Request some SUI from faucet
-   * @Returns {Promise<boolean>}, true if the request is successful, false otherwise.
-   */
-  async requestFaucet(derivePathParams?: DerivePathParams) {
-    const addr = this.accountManager.getAddress(derivePathParams);
-    return this.rpcProvider.requestFaucet(addr);
+    return this.suiInteractor.currentProvider;
   }
 
   async getBalance(coinType?: string, derivePathParams?: DerivePathParams) {
     const owner = this.accountManager.getAddress(derivePathParams);
-    return this.rpcProvider.getBalance(owner, coinType);
+    return this.suiInteractor.currentProvider.getBalance({ owner, coinType });
   }
 
   async getObjects(objectIds: string[]) {
-    return this.rpcProvider.getObjects(objectIds);
+    return this.suiInteractor.getObjects(objectIds);
+  }
+
+  /**
+   * @description Update objects in a batch
+   * @param suiObjects
+   */
+  async updateObjects(suiObjects: (SuiSharedObject | SuiOwnedObject)[]) {
+    return this.suiInteractor.updateObjects(suiObjects);
   }
 
   async signTxn(
@@ -117,16 +109,8 @@ export class SuiKit {
     tx: Uint8Array | TransactionBlock | SuiTxBlock,
     derivePathParams?: DerivePathParams
   ): Promise<SuiTransactionBlockResponse> {
-    tx = tx instanceof SuiTxBlock ? tx.txBlock : tx;
-    const signer = this.getSigner(derivePathParams);
-    return signer.signAndExecuteTransactionBlock({
-      transactionBlock: tx,
-      options: {
-        showEffects: true,
-        showEvents: true,
-        showObjectChanges: true,
-      },
-    });
+    const { transactionBlockBytes, signature } = await this.signTxn(tx, derivePathParams);
+    return this.suiInteractor.sendTx(transactionBlockBytes, signature);
   }
 
   /**
@@ -177,7 +161,7 @@ export class SuiKit {
     const tx = new SuiTxBlock();
     const owner = this.accountManager.getAddress(derivePathParams);
     const totalAmount = amounts.reduce((a, b) => a + b, 0);
-    const coins = await this.rpcProvider.selectCoins(
+    const coins = await this.suiInteractor.selectCoins(
       owner,
       totalAmount,
       coinType
@@ -244,7 +228,7 @@ export class SuiKit {
     owner?: string
   ) {
     owner = owner || this.accountManager.currentAddress;
-    const coins = await this.rpcProvider.selectCoins(owner, amount, coinType);
+    const coins = await this.suiInteractor.selectCoins(owner, amount, coinType);
     return coins.map((c) => c.objectId);
   }
 
@@ -276,7 +260,7 @@ export class SuiKit {
     derivePathParams?: DerivePathParams
   ): Promise<DevInspectResults> {
     tx = tx instanceof SuiTxBlock ? tx.txBlock : tx;
-    return this.rpcProvider.provider.devInspectTransactionBlock({
+    return this.suiInteractor.currentProvider.devInspectTransactionBlock({
       transactionBlock: tx,
       sender: this.getAddress(derivePathParams),
     });

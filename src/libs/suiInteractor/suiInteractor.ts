@@ -12,6 +12,7 @@ import {
 } from '@mysten/sui.js';
 import { ObjectData } from "src/types";
 import { SuiOwnedObject, SuiSharedObject } from "../suiModel";
+import { delay } from "./util";
 
 /**
  * `SuiTransactionSender` is used to send transaction with a given gas coin.
@@ -44,23 +45,23 @@ export class SuiInteractor {
       showBalanceChanges: true,
     }
 
-    const currentProviderIdx = this.providers.indexOf(this.currentProvider);
-    const providers = [
-      ...this.providers.slice(currentProviderIdx, this.providers.length),
-      ...this.providers.slice(0, currentProviderIdx),
-    ]
+    // const currentProviderIdx = this.providers.indexOf(this.currentProvider);
+    // const providers = [
+    //   ...this.providers.slice(currentProviderIdx, this.providers.length),
+    //   ...this.providers.slice(0, currentProviderIdx),
+    // ]
 
-    for (const provider of providers) {
+    for (const provider of this.providers) {
       try {
-        const res = await this.currentProvider.executeTransactionBlock({
+        const res = await provider.executeTransactionBlock({
           transactionBlock,
           signature,
           options: txResOptions
         });
-        this.currentProvider = provider;
         return res;
       } catch (err) {
         console.warn(`Failed to send transaction with fullnode ${provider.connection.fullnode}: ${err}`);
+        await delay(2000);
       }
     }
     throw new Error('Failed to send transaction with all fullnodes');
@@ -68,16 +69,15 @@ export class SuiInteractor {
   async getObjects(ids: string[]) {
     const options = { showContent: true, showDisplay: true, showType: true, showOwner: true };
 
-    const currentProviderIdx = this.providers.indexOf(this.currentProvider);
-    const providers = [
-      ...this.providers.slice(currentProviderIdx, this.providers.length),
-      ...this.providers.slice(0, currentProviderIdx),
-    ]
+    // const currentProviderIdx = this.providers.indexOf(this.currentProvider);
+    // const providers = [
+    //   ...this.providers.slice(currentProviderIdx, this.providers.length),
+    //   ...this.providers.slice(0, currentProviderIdx),
+    // ]
 
-    for (const provider of providers) {
+    for (const provider of this.providers) {
       try {
-        const objects = await this.currentProvider.multiGetObjects({ ids, options });
-        this.currentProvider = provider;
+        const objects = await provider.multiGetObjects({ ids, options });
         const parsedObjects = objects.map((object) => {
           const objectId = getObjectId(object);
           const objectType = getObjectType(object);
@@ -98,6 +98,7 @@ export class SuiInteractor {
         });
         return parsedObjects as ObjectData[];
       } catch (err) {
+        await delay(2000);
         console.warn(`Failed to get objects with fullnode ${provider.connection.fullnode}: ${err}`);
       }
     }

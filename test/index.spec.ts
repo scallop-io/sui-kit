@@ -11,9 +11,8 @@ dotenv.config();
 describe('Test Scallop Kit', async () => {
   const fullnodeUrls = [
     'https://api.shinami.com/node/v1/sui_mainnet_af69715eb5088e2eb2000069999a65d8',
-    'http://sui-mainnet-rpc.allthatnode.com',
-    'https://sui-mainnet-rpc.nodereal.io',
-    'https://fullnode.mainnet.sui.io:443/',
+    'https://sui-mainnet.blockvision.org/v1/2Sf0z3YB6WWNOcn8HuUWHjdp4Sb',
+    'https://fullnode.mainnet.sui.io:443',
   ]
   const suiKit = new SuiKit({
     // secretKey: process.env.SECRET_KEY,

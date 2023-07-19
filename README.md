@@ -1,7 +1,5 @@
 # Tookit for interacting with SUI network
 
-[中文文档](./document/README_cn.md)
-
 ## Features
 
 - [x] Transfer SUI, Custom Coin and objects.
@@ -43,7 +41,8 @@ const suiKit = new SuiKit({
   // 'testnet' | 'mainnet' | 'devnet', default is 'devnet'
   networkType: 'testnet',
   // the fullnode url, default is the preconfig fullnode url for the given network type
-  fullnodeUrl: '<SUI fullnode>',
+  // It will rotate the fullnode when the current fullnode is not available
+  fullnodeUrls: '[<SUI fullnode1>, <SUI fullnode2>]',
   // the faucet url, default is the preconfig faucet url for the given network type
   faucetUrl: '<SUI faucet url>',
 });

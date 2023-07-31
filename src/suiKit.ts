@@ -109,7 +109,10 @@ export class SuiKit {
     tx: Uint8Array | TransactionBlock | SuiTxBlock,
     derivePathParams?: DerivePathParams
   ): Promise<SuiTransactionBlockResponse> {
-    const { transactionBlockBytes, signature } = await this.signTxn(tx, derivePathParams);
+    const { transactionBlockBytes, signature } = await this.signTxn(
+      tx,
+      derivePathParams
+    );
     return this.suiInteractor.sendTx(transactionBlockBytes, signature);
   }
 

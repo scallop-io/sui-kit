@@ -4,7 +4,6 @@ import {
   SuiTransactionBlockResponse,
   ObjectCallArg,
   ObjectId,
-  Inputs
 } from '@mysten/sui.js';
 
 export class SuiOwnedObject {
@@ -12,7 +11,7 @@ export class SuiOwnedObject {
   public version?: number | string;
   public digest?: string;
 
-  constructor(param: {objectId: string, version?: string, digest?: string}) {
+  constructor(param: { objectId: string; version?: string; digest?: string }) {
     this.objectId = param.objectId;
     this.version = param.version;
     this.digest = param.digest;
@@ -27,7 +26,7 @@ export class SuiOwnedObject {
     return !!this.version && !!this.digest;
   }
 
-   asCallArg(): Infer<typeof ObjectCallArg> | Infer<typeof ObjectId>  {
+  asCallArg(): Infer<typeof ObjectCallArg> | Infer<typeof ObjectId> {
     if (!this.version || !this.digest) {
       return this.objectId;
     }
@@ -37,9 +36,9 @@ export class SuiOwnedObject {
           objectId: this.objectId,
           version: this.version,
           digest: this.digest,
-        }
-      }
-    }
+        },
+      },
+    };
   }
 
   /**

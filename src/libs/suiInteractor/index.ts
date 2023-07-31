@@ -1,2 +1,2 @@
 export { SuiInteractor } from './suiInteractor';
-export { getDefaultConnection } from'./defaultConfig';
+export { getDefaultConnection } from './defaultConfig';

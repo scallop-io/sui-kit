@@ -8,11 +8,11 @@ import {
   getObjectId,
   getObjectType,
   getObjectVersion,
-  getSharedObjectInitialVersion
+  getSharedObjectInitialVersion,
 } from '@mysten/sui.js';
-import { ObjectData } from "src/types";
-import { SuiOwnedObject, SuiSharedObject } from "../suiModel";
-import { delay } from "./util";
+import { ObjectData } from 'src/types';
+import { SuiOwnedObject, SuiSharedObject } from '../suiModel';
+import { delay } from './util';
 
 /**
  * `SuiTransactionSender` is used to send transaction with a given gas coin.
@@ -23,27 +23,30 @@ export class SuiInteractor {
   public readonly providers: JsonRpcProvider[];
   public currentProvider: JsonRpcProvider;
   constructor(fullNodeUrls: string[]) {
-    if (fullNodeUrls.length === 0) throw new Error('fullNodeUrls must not be empty');
-    this.providers = fullNodeUrls.map(url => new JsonRpcProvider(new Connection({ fullnode: url })));
+    if (fullNodeUrls.length === 0)
+      throw new Error('fullNodeUrls must not be empty');
+    this.providers = fullNodeUrls.map(
+      (url) => new JsonRpcProvider(new Connection({ fullnode: url }))
+    );
     this.currentProvider = this.providers[0];
   }
 
   switchToNextProvider() {
     const currentProviderIdx = this.providers.indexOf(this.currentProvider);
-    this.currentProvider = this.providers[(currentProviderIdx + 1) % this.providers.length];
+    this.currentProvider =
+      this.providers[(currentProviderIdx + 1) % this.providers.length];
   }
 
   async sendTx(
     transactionBlock: Uint8Array | string,
-    signature: string | string[],
+    signature: string | string[]
   ): Promise<SuiTransactionBlockResponse> {
-
     const txResOptions: SuiTransactionBlockResponseOptions = {
       showEvents: true,
       showEffects: true,
       showObjectChanges: true,
       showBalanceChanges: true,
-    }
+    };
 
     // const currentProviderIdx = this.providers.indexOf(this.currentProvider);
     // const providers = [
@@ -56,18 +59,25 @@ export class SuiInteractor {
         const res = await provider.executeTransactionBlock({
           transactionBlock,
           signature,
-          options: txResOptions
+          options: txResOptions,
         });
         return res;
       } catch (err) {
-        console.warn(`Failed to send transaction with fullnode ${provider.connection.fullnode}: ${err}`);
+        console.warn(
+          `Failed to send transaction with fullnode ${provider.connection.fullnode}: ${err}`
+        );
         await delay(2000);
       }
     }
     throw new Error('Failed to send transaction with all fullnodes');
   }
   async getObjects(ids: string[]) {
-    const options = { showContent: true, showDisplay: true, showType: true, showOwner: true };
+    const options = {
+      showContent: true,
+      showDisplay: true,
+      showType: true,
+      showOwner: true,
+    };
 
     // const currentProviderIdx = this.providers.indexOf(this.currentProvider);
     // const providers = [
@@ -99,7 +109,9 @@ export class SuiInteractor {
         return parsedObjects as ObjectData[];
       } catch (err) {
         await delay(2000);
-        console.warn(`Failed to get objects with fullnode ${provider.connection.fullnode}: ${err}`);
+        console.warn(
+          `Failed to get objects with fullnode ${provider.connection.fullnode}: ${err}`
+        );
       }
     }
     throw new Error('Failed to get objects with all fullnodes');
@@ -117,9 +129,11 @@ export class SuiInteractor {
   async updateObjects(suiObjects: (SuiOwnedObject | SuiSharedObject)[]) {
     const objectIds = suiObjects.map((obj) => obj.objectId);
     const objects = await this.getObjects(objectIds);
-    for(const object of objects) {
-      const suiObject = suiObjects.find((obj) => obj.objectId === object.objectId);
-      if(suiObject instanceof SuiSharedObject) {
+    for (const object of objects) {
+      const suiObject = suiObjects.find(
+        (obj) => obj.objectId === object.objectId
+      );
+      if (suiObject instanceof SuiSharedObject) {
         suiObject.initialSharedVersion = object.initialSharedVersion;
       } else if (suiObject instanceof SuiOwnedObject) {
         suiObject.version = object.objectVersion;
@@ -139,25 +153,36 @@ export class SuiInteractor {
     amount: number,
     coinType: string = '0x2::SUI::SUI'
   ) {
-    const coins = await this.currentProvider.getCoins({ owner: addr, coinType });
     const selectedCoins: {
       objectId: string;
       digest: string;
       version: string;
     }[] = [];
     let totalAmount = 0;
-    // Sort the coins by balance in descending order
-    coins.data.sort((a, b) => parseInt(b.balance) - parseInt(a.balance));
-    for (const coinData of coins.data) {
-      selectedCoins.push({
-        objectId: coinData.coinObjectId,
-        digest: coinData.digest,
-        version: coinData.version,
+    let hasNext = true,
+      nextCursor: string | null = null;
+    while (hasNext && totalAmount < amount) {
+      const coins = await this.currentProvider.getCoins({
+        owner: addr,
+        coinType: coinType,
+        cursor: nextCursor,
       });
-      totalAmount = totalAmount + parseInt(coinData.balance);
-      if (totalAmount >= amount) {
-        break;
+      // Sort the coins by balance in descending order
+      coins.data.sort((a, b) => parseInt(b.balance) - parseInt(a.balance));
+      for (const coinData of coins.data) {
+        selectedCoins.push({
+          objectId: coinData.coinObjectId,
+          digest: coinData.digest,
+          version: coinData.version,
+        });
+        totalAmount = totalAmount + parseInt(coinData.balance);
+        if (totalAmount >= amount) {
+          break;
+        }
       }
+
+      nextCursor = coins.nextCursor;
+      hasNext = coins.hasNextPage;
     }
 
     if (!selectedCoins.length) {

@@ -153,25 +153,36 @@ export class SuiInteractor {
     amount: number,
     coinType: string = '0x2::SUI::SUI'
   ) {
-    const coins = await this.currentProvider.getCoins({ owner: addr, coinType });
     const selectedCoins: {
       objectId: string;
       digest: string;
       version: string;
     }[] = [];
     let totalAmount = 0;
-    // Sort the coins by balance in descending order
-    coins.data.sort((a, b) => parseInt(b.balance) - parseInt(a.balance));
-    for (const coinData of coins.data) {
-      selectedCoins.push({
-        objectId: coinData.coinObjectId,
-        digest: coinData.digest,
-        version: coinData.version,
+    let hasNext = true,
+      nextCursor: string | null = null;
+    while (hasNext && totalAmount < amount) {
+      const coins = await this.currentProvider.getCoins({
+        owner: addr,
+        coinType: coinType,
+        cursor: nextCursor,
       });
-      totalAmount = totalAmount + parseInt(coinData.balance);
-      if (totalAmount >= amount) {
-        break;
+      // Sort the coins by balance in descending order
+      coins.data.sort((a, b) => parseInt(b.balance) - parseInt(a.balance));
+      for (const coinData of coins.data) {
+        selectedCoins.push({
+          objectId: coinData.coinObjectId,
+          digest: coinData.digest,
+          version: coinData.version,
+        });
+        totalAmount = totalAmount + parseInt(coinData.balance);
+        if (totalAmount >= amount) {
+          break;
+        }
       }
+
+      nextCursor = coins.nextCursor;
+      hasNext = coins.hasNextPage;
     }
 
     if (!selectedCoins.length) {

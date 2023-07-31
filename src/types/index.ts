@@ -1,11 +1,12 @@
 import { Infer } from 'superstruct';
 import {
-  DisplayFieldsResponse, ObjectCallArg,
+  DisplayFieldsResponse,
+  ObjectCallArg,
   ObjectContentFields,
   SharedObjectRef,
   SuiObjectRef,
-  TransactionArgument
-} from "@mysten/sui.js";
+  TransactionArgument,
+} from '@mysten/sui.js';
 
 export type AccountMangerParams = {
   mnemonics?: string;

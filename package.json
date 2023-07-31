@@ -65,26 +65,26 @@
     "@mysten/sui.js": "^0.37.1"
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.6.6",
-    "@commitlint/config-conventional": "^17.6.6",
-    "@commitlint/prompt-cli": "^17.6.6",
-    "@types/node": "^20.3.2",
+    "@commitlint/cli": "^17.6.7",
+    "@commitlint/config-conventional": "^17.6.7",
+    "@commitlint/prompt-cli": "^17.6.7",
+    "@types/node": "^20.4.5",
     "@types/tmp": "^0.2.3",
-    "@typescript-eslint/eslint-plugin": "^5.60.1",
-    "@typescript-eslint/parser": "^5.60.1",
+    "@typescript-eslint/eslint-plugin": "^6.2.1",
+    "@typescript-eslint/parser": "^6.2.1",
     "dotenv": "^16.3.1",
-    "eslint": "^8.43.0",
-    "eslint-config-prettier": "^8.8.0",
-    "eslint-plugin-prettier": "^4.2.1",
+    "eslint": "^8.46.0",
+    "eslint-config-prettier": "^8.9.0",
+    "eslint-plugin-prettier": "^5.0.0",
     "husky": "^8.0.3",
     "lint-staged": "^13.2.3",
-    "prettier": "^2.8.8",
+    "prettier": "^3.0.0",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "tsup": "^7.1.0",
     "typedoc": "^0.24.8",
-    "typescript": "^5.0.4",
-    "vitest": "^0.32.2"
+    "typescript": "^5.1.6",
+    "vitest": "^0.33.0"
   },
   "lint-staged": {
     "**/*.ts": [

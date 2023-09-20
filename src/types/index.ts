@@ -1,12 +1,16 @@
-import { Infer } from 'superstruct';
-import {
-  DisplayFieldsResponse,
-  ObjectCallArg,
-  ObjectContentFields,
-  SharedObjectRef,
-  SuiObjectRef,
-  TransactionArgument,
-} from '@mysten/sui.js';
+import { union, object, string, number, boolean, integer } from 'superstruct';
+import { TransactionBlock, Transactions } from '@mysten/sui.js/transactions';
+import type { Infer } from 'superstruct';
+import type { TransactionArgument } from '@mysten/sui.js/transactions';
+import type { SharedObjectRef } from '@mysten/sui.js/bcs';
+
+export type SuiKitParams = AccountMangerParams & {
+  fullnodeUrls?: string[];
+  faucetUrl?: string;
+  networkType?: NetworkType;
+};
+
+export type NetworkType = 'testnet' | 'mainnet' | 'devnet' | 'localnet';
 
 export type AccountMangerParams = {
   mnemonics?: string;
@@ -19,25 +23,37 @@ export type DerivePathParams = {
   addressIndex?: number;
 };
 
-export type NetworkType = 'testnet' | 'mainnet' | 'devnet' | 'localnet';
+const SuiObjectRef = object({
+  digest: string(),
+  objectId: string(),
+  version: union([number(), string()]),
+});
 
-export type SuiKitParams = {
-  mnemonics?: string;
-  secretKey?: string;
-  fullnodeUrls?: string[];
-  faucetUrl?: string;
-  networkType?: NetworkType;
-};
+const ObjectArg = union([
+  object({ ImmOrOwned: SuiObjectRef }),
+  object({
+    Shared: object({
+      objectId: string(),
+      initialSharedVersion: union([integer(), string()]),
+      mutable: boolean(),
+    }),
+  }),
+]);
 
-export type ObjectData = {
-  objectId: string;
-  objectType: string;
-  objectVersion: number;
-  objectDigest: string;
-  initialSharedVersion?: number;
-  objectDisplay: DisplayFieldsResponse;
-  objectFields: ObjectContentFields;
-};
+const ObjectCallArg = object({ Object: ObjectArg });
+
+type TransactionBlockType = InstanceType<typeof TransactionBlock>;
+export type ObjectCallArg = Infer<typeof ObjectCallArg>;
+export type TransactionType = Parameters<TransactionBlockType['add']>;
+export type PublishTransactionArgs = Parameters<
+  (typeof Transactions)['Publish']
+>;
+export type UpgradeTransactionArgs = Parameters<
+  (typeof Transactions)['Upgrade']
+>;
+export type MakeMoveVecTransactionArgs = Parameters<
+  (typeof Transactions)['MakeMoveVec']
+>;
 
 export type SuiTxArg =
   | Infer<typeof TransactionArgument>

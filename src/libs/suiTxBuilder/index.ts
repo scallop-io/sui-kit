@@ -1,8 +1,11 @@
-import { SuiClient, SuiObjectRef } from '@mysten/sui.js/client';
 import { TransactionBlock } from '@mysten/sui.js/transactions';
 import { SUI_SYSTEM_STATE_OBJECT_ID } from '@mysten/sui.js/utils';
-import { TransactionExpiration, SharedObjectRef } from '@mysten/sui.js/bcs';
 import { convertArgs } from './util';
+import type { SuiClient, SuiObjectRef } from '@mysten/sui.js/client';
+import type {
+  TransactionExpiration,
+  SharedObjectRef,
+} from '@mysten/sui.js/bcs';
 import type {
   SuiTxArg,
   SuiObjectArg,

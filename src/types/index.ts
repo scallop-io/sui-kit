@@ -1,5 +1,8 @@
 import { union, object, string, number, boolean, integer } from 'superstruct';
-import { TransactionBlock, Transactions } from '@mysten/sui.js/transactions';
+import type {
+  TransactionBlock,
+  Transactions,
+} from '@mysten/sui.js/transactions';
 import type { Infer } from 'superstruct';
 import type { TransactionArgument } from '@mysten/sui.js/transactions';
 import type { SharedObjectRef } from '@mysten/sui.js/bcs';

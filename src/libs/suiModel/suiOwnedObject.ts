@@ -1,4 +1,4 @@
-import { SuiTransactionBlockResponse } from '@mysten/sui.js/client';
+import type { SuiTransactionBlockResponse } from '@mysten/sui.js/client';
 import type { CallArg } from '@mysten/sui.js/bcs';
 
 export class SuiOwnedObject {

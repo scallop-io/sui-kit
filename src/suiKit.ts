@@ -1,18 +1,23 @@
 /**
  * @description This file is used to aggregate the tools that used to interact with SUI network.
  */
-import {
-  SuiTransactionBlockResponse,
-  DevInspectResults,
-  SuiObjectDataOptions,
-  getFullnodeUrl,
-} from '@mysten/sui.js/client';
+import { getFullnodeUrl } from '@mysten/sui.js/client';
 import { TransactionBlock } from '@mysten/sui.js/transactions';
 import { SuiAccountManager } from './libs/suiAccountManager';
 import { SuiTxBlock } from './libs/suiTxBuilder';
 import { SuiInteractor } from './libs/suiInteractor';
-import { SuiSharedObject, SuiOwnedObject } from './libs/suiModel';
-import { SuiKitParams, DerivePathParams, SuiTxArg, SuiVecTxArg } from './types';
+import type {
+  SuiTransactionBlockResponse,
+  DevInspectResults,
+  SuiObjectDataOptions,
+} from '@mysten/sui.js/client';
+import type { SuiSharedObject, SuiOwnedObject } from './libs/suiModel';
+import type {
+  SuiKitParams,
+  DerivePathParams,
+  SuiTxArg,
+  SuiVecTxArg,
+} from './types';
 
 /**
  * @class SuiKit

@@ -1,12 +1,12 @@
-import {
-  SuiClient,
+import { SuiClient } from '@mysten/sui.js/client';
+import { SuiOwnedObject, SuiSharedObject } from '../suiModel';
+import { delay } from './util';
+import type {
   SuiTransactionBlockResponseOptions,
   SuiTransactionBlockResponse,
   SuiObjectDataOptions,
   SuiObjectData,
 } from '@mysten/sui.js/client';
-import { SuiOwnedObject, SuiSharedObject } from '../suiModel';
-import { delay } from './util';
 
 /**
  * Encapsulates all functions that interact with the sui sdk

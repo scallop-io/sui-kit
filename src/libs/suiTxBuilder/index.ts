@@ -1,24 +1,36 @@
-import {
-  TransactionBlock,
-  SUI_SYSTEM_STATE_OBJECT_ID,
-  TransactionExpiration,
-  SuiObjectRef,
-  SharedObjectRef,
-  JsonRpcProvider,
-  TransactionType,
-  Transactions,
-  ObjectCallArg,
-} from '@mysten/sui.js';
+import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { SUI_SYSTEM_STATE_OBJECT_ID } from '@mysten/sui.js/utils';
 import { convertArgs } from './util';
-import type { SuiTxArg, SuiObjectArg, SuiVecTxArg } from 'src/types';
+import type { SuiClient, SuiObjectRef } from '@mysten/sui.js/client';
+import type {
+  TransactionExpiration,
+  SharedObjectRef,
+} from '@mysten/sui.js/bcs';
+import type {
+  SuiTxArg,
+  SuiObjectArg,
+  SuiVecTxArg,
+  ObjectCallArg,
+  TransactionType,
+  PublishTransactionArgs,
+  UpgradeTransactionArgs,
+  MakeMoveVecTransactionArgs,
+} from 'src/types';
 
 export class SuiTxBlock {
   public txBlock: TransactionBlock;
+
   constructor(transaction?: TransactionBlock) {
     this.txBlock = new TransactionBlock(transaction);
   }
 
-  //======== override methods of TransactionBlock ============
+  /* Directly wrap methods and properties of TransactionBlock */
+  get gas() {
+    return this.txBlock.gas;
+  }
+  get blockData() {
+    return this.txBlock.blockData;
+  }
 
   address(value: string) {
     return this.txBlock.pure(value, 'address');
@@ -56,37 +68,40 @@ export class SuiTxBlock {
   setGasPayment(payments: SuiObjectRef[]) {
     return this.txBlock.setGasPayment(payments);
   }
-
-  add(transaction: TransactionType) {
-    return this.txBlock.add(transaction);
-  }
   serialize() {
     return this.txBlock.serialize();
   }
-  build(
-    params: {
-      provider?: JsonRpcProvider;
-      onlyTransactionKind?: boolean;
-    } = {}
-  ) {
+  build(params: {
+    client?: SuiClient;
+    provider?: SuiClient;
+    onlyTransactionKind?: boolean;
+  }) {
     return this.txBlock.build(params);
   }
-  getDigest({ provider }: { provider?: JsonRpcProvider } = {}) {
-    return this.txBlock.getDigest({ provider });
+  getDigest(params: { client?: SuiClient; provider?: SuiClient } = {}) {
+    return this.txBlock.getDigest(params);
+  }
+  add(...args: TransactionType) {
+    return this.txBlock.add(...args);
+  }
+  publish(...args: PublishTransactionArgs) {
+    return this.txBlock.publish(...args);
+  }
+  upgrade(...args: UpgradeTransactionArgs) {
+    return this.txBlock.upgrade(...args);
+  }
+  makeMoveVec(...args: MakeMoveVecTransactionArgs) {
+    return this.txBlock.makeMoveVec(...args);
   }
 
-  get gas() {
-    return this.txBlock.gas;
-  }
-  get blockData() {
-    return this.txBlock.blockData;
-  }
+  /* Override methods of TransactionBlock */
 
   transferObjects(objects: SuiObjectArg[], recipient: string) {
     const tx = this.txBlock;
     tx.transferObjects(convertArgs(this.txBlock, objects), tx.pure(recipient));
     return this;
   }
+
   splitCoins(coin: SuiObjectArg, amounts: number[]) {
     const tx = this.txBlock;
     const coinObject = convertArgs(this.txBlock, [coin])[0];
@@ -96,19 +111,11 @@ export class SuiTxBlock {
     );
     return amounts.map((_, i) => res[i]);
   }
+
   mergeCoins(destination: SuiObjectArg, sources: SuiObjectArg[]) {
     const destinationObject = convertArgs(this.txBlock, [destination])[0];
     const sourceObjects = convertArgs(this.txBlock, sources);
     return this.txBlock.mergeCoins(destinationObject, sourceObjects);
-  }
-  publish(...args: Parameters<(typeof Transactions)['Publish']>) {
-    return this.txBlock.publish(...args);
-  }
-  upgrade(...args: Parameters<(typeof Transactions)['Upgrade']>) {
-    return this.txBlock.upgrade(...args);
-  }
-  makeMoveVec(...args: Parameters<(typeof Transactions)['MakeMoveVec']>) {
-    return this.txBlock.makeMoveVec(...args);
   }
 
   /**
@@ -139,7 +146,8 @@ export class SuiTxBlock {
     });
   }
 
-  //======== enhance methods ============
+  /* Enhance methods of TransactionBlock */
+
   transferSuiToMany(recipients: string[], amounts: number[]) {
     // require recipients.length === amounts.length
     if (recipients.length !== amounts.length) {

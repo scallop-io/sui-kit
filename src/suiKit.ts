@@ -1,17 +1,23 @@
 /**
  * @description This file is used to aggregate the tools that used to interact with SUI network.
  */
-import {
-  RawSigner,
-  TransactionBlock,
-  DevInspectResults,
-  SuiTransactionBlockResponse,
-} from '@mysten/sui.js';
+import { getFullnodeUrl } from '@mysten/sui.js/client';
+import { TransactionBlock } from '@mysten/sui.js/transactions';
 import { SuiAccountManager } from './libs/suiAccountManager';
 import { SuiTxBlock } from './libs/suiTxBuilder';
-import { SuiInteractor, getDefaultConnection } from './libs/suiInteractor';
-import { SuiSharedObject, SuiOwnedObject } from './libs/suiModel';
-import { SuiKitParams, DerivePathParams, SuiTxArg, SuiVecTxArg } from './types';
+import { SuiInteractor } from './libs/suiInteractor';
+import type {
+  SuiTransactionBlockResponse,
+  DevInspectResults,
+  SuiObjectDataOptions,
+} from '@mysten/sui.js/client';
+import type { SuiSharedObject, SuiOwnedObject } from './libs/suiModel';
+import type {
+  SuiKitParams,
+  DerivePathParams,
+  SuiTxArg,
+  SuiVecTxArg,
+} from './types';
 
 /**
  * @class SuiKit
@@ -29,7 +35,7 @@ export class SuiKit {
    *
    * @param mnemonics, 12 or 24 mnemonics words, separated by space
    * @param secretKey, base64 or hex string, when mnemonics is provided, secretKey will be ignored
-   * @param networkType, 'testnet' | 'mainnet' | 'devnet' | 'localnet', default is 'devnet'
+   * @param networkType, 'testnet' | 'mainnet' | 'devnet' | 'localnet', default is 'mainnet'
    * @param fullnodeUrl, the fullnode url, default is the preconfig fullnode url for the given network type
    */
   constructor({
@@ -40,20 +46,19 @@ export class SuiKit {
   }: SuiKitParams = {}) {
     // Init the account manager
     this.accountManager = new SuiAccountManager({ mnemonics, secretKey });
-    // Init the rpc provider
-    fullnodeUrls = fullnodeUrls || [getDefaultConnection(networkType).fullnode];
+    // Init the sui interactor
+    fullnodeUrls = fullnodeUrls || [getFullnodeUrl(networkType ?? 'mainnet')];
     this.suiInteractor = new SuiInteractor(fullnodeUrls);
   }
 
   /**
-   * if derivePathParams is not provided or mnemonics is empty, it will return the currentSigner.
+   * if derivePathParams is not provided or mnemonics is empty, it will return the keypair.
    * else:
    * it will generate signer from the mnemonic with the given derivePathParams.
    * @param derivePathParams, such as { accountIndex: 2, isExternal: false, addressIndex: 10 }, comply with the BIP44 standard
    */
-  getSigner(derivePathParams?: DerivePathParams) {
-    const keyPair = this.accountManager.getKeyPair(derivePathParams);
-    return new RawSigner(keyPair, this.suiInteractor.currentProvider);
+  getKeypair(derivePathParams?: DerivePathParams) {
+    return this.accountManager.getKeyPair(derivePathParams);
   }
 
   /**
@@ -71,21 +76,22 @@ export class SuiKit {
   getAddress(derivePathParams?: DerivePathParams) {
     return this.accountManager.getAddress(derivePathParams);
   }
+
   currentAddress() {
     return this.accountManager.currentAddress;
   }
 
-  provider() {
-    return this.suiInteractor.currentProvider;
-  }
-
   async getBalance(coinType?: string, derivePathParams?: DerivePathParams) {
     const owner = this.accountManager.getAddress(derivePathParams);
-    return this.suiInteractor.currentProvider.getBalance({ owner, coinType });
+    return this.suiInteractor.currentClient.getBalance({ owner, coinType });
   }
 
-  async getObjects(objectIds: string[]) {
-    return this.suiInteractor.getObjects(objectIds);
+  client() {
+    return this.suiInteractor.currentClient;
+  }
+
+  async getObjects(objectIds: string[], options?: SuiObjectDataOptions) {
+    return this.suiInteractor.getObjects(objectIds, options);
   }
 
   /**
@@ -100,20 +106,21 @@ export class SuiKit {
     tx: Uint8Array | TransactionBlock | SuiTxBlock,
     derivePathParams?: DerivePathParams
   ) {
-    tx = tx instanceof SuiTxBlock ? tx.txBlock : tx;
-    const signer = this.getSigner(derivePathParams);
-    return signer.signTransactionBlock({ transactionBlock: tx });
+    const txBlock = tx instanceof SuiTxBlock ? tx.txBlock : tx;
+    const txBytes =
+      txBlock instanceof TransactionBlock
+        ? await txBlock.build({ client: this.client() })
+        : txBlock;
+    const keyPair = this.getKeypair(derivePathParams);
+    return await keyPair.signTransactionBlock(txBytes);
   }
 
   async signAndSendTxn(
     tx: Uint8Array | TransactionBlock | SuiTxBlock,
     derivePathParams?: DerivePathParams
   ): Promise<SuiTransactionBlockResponse> {
-    const { transactionBlockBytes, signature } = await this.signTxn(
-      tx,
-      derivePathParams
-    );
-    return this.suiInteractor.sendTx(transactionBlockBytes, signature);
+    const { bytes, signature } = await this.signTxn(tx, derivePathParams);
+    return this.suiInteractor.sendTx(bytes, signature);
   }
 
   /**
@@ -262,9 +269,9 @@ export class SuiKit {
     tx: Uint8Array | TransactionBlock | SuiTxBlock,
     derivePathParams?: DerivePathParams
   ): Promise<DevInspectResults> {
-    tx = tx instanceof SuiTxBlock ? tx.txBlock : tx;
-    return this.suiInteractor.currentProvider.devInspectTransactionBlock({
-      transactionBlock: tx,
+    const txBlock = tx instanceof SuiTxBlock ? tx.txBlock : tx;
+    return this.suiInteractor.currentClient.devInspectTransactionBlock({
+      transactionBlock: txBlock,
       sender: this.getAddress(derivePathParams),
     });
   }

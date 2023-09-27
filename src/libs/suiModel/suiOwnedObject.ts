@@ -1,14 +1,9 @@
-import { Infer } from 'superstruct';
-import {
-  getObjectChanges,
-  SuiTransactionBlockResponse,
-  ObjectCallArg,
-  ObjectId,
-} from '@mysten/sui.js';
+import type { SuiTransactionBlockResponse } from '@mysten/sui.js/client';
+import type { CallArg } from '@mysten/sui.js/bcs';
 
 export class SuiOwnedObject {
   public readonly objectId: string;
-  public version?: number | string;
+  public version?: string;
   public digest?: string;
 
   constructor(param: { objectId: string; version?: string; digest?: string }) {
@@ -26,7 +21,7 @@ export class SuiOwnedObject {
     return !!this.version && !!this.digest;
   }
 
-  asCallArg(): Infer<typeof ObjectCallArg> | Infer<typeof ObjectId> {
+  asCallArg(): CallArg | string {
     if (!this.version || !this.digest) {
       return this.objectId;
     }
@@ -46,7 +41,7 @@ export class SuiOwnedObject {
    * @param txResponse
    */
   updateFromTxResponse(txResponse: SuiTransactionBlockResponse) {
-    const changes = getObjectChanges(txResponse);
+    const changes = txResponse.objectChanges;
     if (!changes) {
       throw new Error('Bad transaction response!');
     }

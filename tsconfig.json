@@ -24,7 +24,7 @@
     "noEmit": false,
     "emitDeclarationOnly": true,
     "incremental": true,
-    "typeRoots": ["./src/types", "./node_modules/@types"]
+    "typeRoots": ["./node_modules/@types"]
   },
   "include": ["./src/**/*"],
   "exclude": ["node_modules", "dist"]

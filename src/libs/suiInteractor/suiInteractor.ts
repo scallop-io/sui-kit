@@ -1,40 +1,37 @@
-import {
-  SuiTransactionBlockResponse,
-  SuiTransactionBlockResponseOptions,
-  JsonRpcProvider,
-  Connection,
-  getObjectDisplay,
-  getObjectFields,
-  getObjectId,
-  getObjectType,
-  getObjectVersion,
-  getSharedObjectInitialVersion,
-} from '@mysten/sui.js';
-import { ObjectData } from 'src/types';
+import { SuiClient } from '@mysten/sui.js/client';
 import { SuiOwnedObject, SuiSharedObject } from '../suiModel';
 import { delay } from './util';
+import type {
+  SuiTransactionBlockResponseOptions,
+  SuiTransactionBlockResponse,
+  SuiObjectDataOptions,
+  SuiObjectData,
+} from '@mysten/sui.js/client';
 
 /**
- * `SuiTransactionSender` is used to send transaction with a given gas coin.
- * It always uses the gas coin to pay for the gas,
- * and update the gas coin after the transaction.
+ * Encapsulates all functions that interact with the sui sdk
  */
 export class SuiInteractor {
-  public readonly providers: JsonRpcProvider[];
-  public currentProvider: JsonRpcProvider;
+  public readonly clients: SuiClient[];
+  public currentClient: SuiClient;
+  public readonly fullNodes: string[];
+  public currentFullNode: string;
+
   constructor(fullNodeUrls: string[]) {
     if (fullNodeUrls.length === 0)
       throw new Error('fullNodeUrls must not be empty');
-    this.providers = fullNodeUrls.map(
-      (url) => new JsonRpcProvider(new Connection({ fullnode: url }))
-    );
-    this.currentProvider = this.providers[0];
+    this.fullNodes = fullNodeUrls;
+    this.clients = fullNodeUrls.map((url) => new SuiClient({ url }));
+    this.currentFullNode = fullNodeUrls[0];
+    this.currentClient = this.clients[0];
   }
 
-  switchToNextProvider() {
-    const currentProviderIdx = this.providers.indexOf(this.currentProvider);
-    this.currentProvider =
-      this.providers[(currentProviderIdx + 1) % this.providers.length];
+  switchToNextClient() {
+    const currentClientIdx = this.clients.indexOf(this.currentClient);
+    this.currentClient =
+      this.clients[(currentClientIdx + 1) % this.clients.length];
+    this.currentFullNode =
+      this.fullNodes[(currentClientIdx + 1) % this.clients.length];
   }
 
   async sendTx(
@@ -48,77 +45,58 @@ export class SuiInteractor {
       showBalanceChanges: true,
     };
 
-    // const currentProviderIdx = this.providers.indexOf(this.currentProvider);
-    // const providers = [
-    //   ...this.providers.slice(currentProviderIdx, this.providers.length),
-    //   ...this.providers.slice(0, currentProviderIdx),
-    // ]
-
-    for (const provider of this.providers) {
+    for (const clientIdx in this.clients) {
       try {
-        const res = await provider.executeTransactionBlock({
+        return await this.clients[clientIdx].executeTransactionBlock({
           transactionBlock,
           signature,
           options: txResOptions,
         });
-        return res;
       } catch (err) {
         console.warn(
-          `Failed to send transaction with fullnode ${provider.connection.fullnode}: ${err}`
+          `Failed to send transaction with fullnode ${this.fullNodes[clientIdx]}: ${err}`
         );
         await delay(2000);
       }
     }
     throw new Error('Failed to send transaction with all fullnodes');
   }
-  async getObjects(ids: string[]) {
-    const options = {
+
+  async getObjects(
+    ids: string[],
+    options?: SuiObjectDataOptions
+  ): Promise<SuiObjectData[]> {
+    const opts: SuiObjectDataOptions = options ?? {
       showContent: true,
       showDisplay: true,
       showType: true,
       showOwner: true,
     };
 
-    // const currentProviderIdx = this.providers.indexOf(this.currentProvider);
-    // const providers = [
-    //   ...this.providers.slice(currentProviderIdx, this.providers.length),
-    //   ...this.providers.slice(0, currentProviderIdx),
-    // ]
-
-    for (const provider of this.providers) {
+    for (const clientIdx in this.clients) {
       try {
-        const objects = await provider.multiGetObjects({ ids, options });
-        const parsedObjects = objects.map((object) => {
-          const objectId = getObjectId(object);
-          const objectType = getObjectType(object);
-          const objectVersion = getObjectVersion(object);
-          const objectDigest = object.data ? object.data.digest : undefined;
-          const initialSharedVersion = getSharedObjectInitialVersion(object);
-          const objectFields = getObjectFields(object);
-          const objectDisplay = getObjectDisplay(object);
-          return {
-            objectId,
-            objectType,
-            objectVersion,
-            objectDigest,
-            objectFields,
-            objectDisplay,
-            initialSharedVersion,
-          };
+        const objects = await this.clients[clientIdx].multiGetObjects({
+          ids,
+          options: opts,
         });
-        return parsedObjects as ObjectData[];
+        const parsedObjects = objects
+          .map((object) => {
+            return object.data;
+          })
+          .filter((object) => object !== null && object !== undefined);
+        return parsedObjects as SuiObjectData[];
       } catch (err) {
         await delay(2000);
         console.warn(
-          `Failed to get objects with fullnode ${provider.connection.fullnode}: ${err}`
+          `Failed to get objects with fullnode ${this.fullNodes[clientIdx]}: ${err}`
         );
       }
     }
     throw new Error('Failed to get objects with all fullnodes');
   }
 
-  async getObject(id: string) {
-    const objects = await this.getObjects([id]);
+  async getObject(id: string, options?: SuiObjectDataOptions) {
+    const objects = await this.getObjects([id], options);
     return objects[0];
   }
 
@@ -131,13 +109,22 @@ export class SuiInteractor {
     const objects = await this.getObjects(objectIds);
     for (const object of objects) {
       const suiObject = suiObjects.find(
-        (obj) => obj.objectId === object.objectId
+        (obj) => obj.objectId === object?.objectId
       );
       if (suiObject instanceof SuiSharedObject) {
-        suiObject.initialSharedVersion = object.initialSharedVersion;
+        if (
+          object.owner &&
+          typeof object.owner === 'object' &&
+          'Shared' in object.owner
+        ) {
+          suiObject.initialSharedVersion =
+            object.owner.Shared.initial_shared_version;
+        } else {
+          suiObject.initialSharedVersion = undefined;
+        }
       } else if (suiObject instanceof SuiOwnedObject) {
-        suiObject.version = object.objectVersion;
-        suiObject.digest = object.objectDigest;
+        suiObject.version = object?.version;
+        suiObject.digest = object?.digest;
       }
     }
   }
@@ -160,9 +147,9 @@ export class SuiInteractor {
     }[] = [];
     let totalAmount = 0;
     let hasNext = true,
-      nextCursor: string | null = null;
+      nextCursor: string | null | undefined = null;
     while (hasNext && totalAmount < amount) {
-      const coins = await this.currentProvider.getCoins({
+      const coins = await this.currentClient.getCoins({
         owner: addr,
         coinType: coinType,
         cursor: nextCursor,

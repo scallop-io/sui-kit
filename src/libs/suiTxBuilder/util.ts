@@ -1,9 +1,9 @@
-import {
-  normalizeSuiObjectId,
+import { normalizeSuiObjectId } from '@mysten/sui.js/utils';
+import type {
   TransactionArgument,
   TransactionBlock,
-} from '@mysten/sui.js';
-import { SuiTxArg, SuiInputTypes } from 'src/types';
+} from '@mysten/sui.js/transactions';
+import type { SuiTxArg, SuiInputTypes } from 'src/types';
 
 export const getDefaultSuiInputType = (value: any): SuiInputTypes => {
   if (typeof value === 'string' && value.startsWith('0x')) {

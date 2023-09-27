@@ -1,22 +1,19 @@
-import { Infer } from 'superstruct';
-import { ObjectCallArg, ObjectId } from '@mysten/sui.js';
+import type { CallArg } from '@mysten/sui.js/bcs';
 
 export class SuiSharedObject {
   public readonly objectId: string;
-  public initialSharedVersion?: number | string;
+  public initialSharedVersion?: string;
 
   constructor(param: {
     objectId: string;
-    initialSharedVersion?: number;
+    initialSharedVersion?: string;
     mutable?: boolean;
   }) {
     this.objectId = param.objectId;
     this.initialSharedVersion = param.initialSharedVersion;
   }
 
-  asCallArg(
-    mutable: boolean = false
-  ): Infer<typeof ObjectCallArg> | Infer<typeof ObjectId> {
+  asCallArg(mutable: boolean = false): CallArg | string {
     if (!this.initialSharedVersion) {
       return this.objectId;
     }

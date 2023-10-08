@@ -1,6 +1,6 @@
 {
   "name": "@scallop-io/sui-kit",
-  "version": "0.42.0",
+  "version": "0.42.1",
   "description": "Tookit for interacting with SUI network",
   "keywords": [
     "sui",
@@ -59,7 +59,9 @@
     "doc": "typedoc --out docs src/index.ts"
   },
   "dependencies": {
+    "@mysten/bcs": "^0.8.0",
     "@mysten/sui.js": "^0.42.0",
+    "@noble/hashes": "^1.3.2",
     "@scure/bip39": "^1.2.1",
     "assert": "^2.1.0",
     "superstruct": "^1.0.3",

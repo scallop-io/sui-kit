@@ -27,7 +27,7 @@ describe('Test MultiSigClient', async () => {
   const expectedMultiSigAddress =
     '0x9beec666af1077857edc0172d0f5624f6f4f15d02159769b3f4935a41985ebf4';
 
-  const multiSigClient = MultiSigClient.fromRawPubkeys(
+  const multiSigClient = MultiSigClient.fromRawEd25519PublicKeys(
     rawPubkeys,
     weights,
     threshold

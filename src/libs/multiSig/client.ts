@@ -1,25 +1,33 @@
-import {
-  PubkeyWeightPair,
-  combinePartialSigs,
-  toMultiSigAddress,
-} from './multiSig';
+import { MultiSigPublicKey } from '@mysten/sui.js/multisig';
+import type { PublicKey } from '@mysten/sui.js/src/cryptography';
 import { ed25519PublicKeyFromBase64 } from './publickey';
+
+export type PublicKeyWeightPair = {
+  publicKey: PublicKey;
+  weight: number;
+};
+
 export class MultiSigClient {
-  public readonly pksWeightPairs: PubkeyWeightPair[];
+  public readonly pksWeightPairs: PublicKeyWeightPair[];
   public readonly threshold: number;
-  constructor(pks: PubkeyWeightPair[], threshold: number) {
+  public readonly multiSigPublicKey: MultiSigPublicKey;
+  constructor(pks: PublicKeyWeightPair[], threshold: number) {
     this.pksWeightPairs = pks;
     this.threshold = threshold;
+    this.multiSigPublicKey = MultiSigPublicKey.fromPublicKeys({
+      threshold: this.threshold,
+      publicKeys: this.pksWeightPairs,
+    });
   }
 
-  static fromRawPubkeys(
-    rawPubkeys: string[],
+  static fromRawEd25519PublicKeys(
+    rawPublicKeys: string[],
     weights: number[],
     threshold: number
   ): MultiSigClient {
-    const pks = rawPubkeys.map((rawPubkey, i) => {
+    const pks = rawPublicKeys.map((rawPublicKey, i) => {
       return {
-        pubKey: ed25519PublicKeyFromBase64(rawPubkey),
+        publicKey: ed25519PublicKeyFromBase64(rawPublicKey),
         weight: weights[i],
       };
     });
@@ -27,10 +35,10 @@ export class MultiSigClient {
   }
 
   multiSigAddress(): string {
-    return toMultiSigAddress(this.pksWeightPairs, this.threshold);
+    return this.multiSigPublicKey.toSuiAddress();
   }
 
   combinePartialSigs(sigs: string[]): string {
-    return combinePartialSigs(sigs, this.pksWeightPairs, this.threshold);
+    return this.multiSigPublicKey.combinePartialSignatures(sigs);
   }
 }

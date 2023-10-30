@@ -284,7 +284,7 @@ export class SuiTxBlock {
       arguments: convertArgs(this.txBlock, [
         SUI_SYSTEM_STATE_OBJECT_ID,
         stakeCoin,
-        validatorAddr,
+        this.txBlock.pure(validatorAddr),
       ]),
     });
   }

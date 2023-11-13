@@ -101,4 +101,107 @@ describe('Test Scallop Kit', async () => {
 
     expect(!!coins).toBe(true);
   });
+
+  it.skip('Test Interactor with Sui: transfer coin', async () => {
+    const coinType = '0x2::sui::SUI';
+    const receiver =
+      '0xc73c496dce5766da0f5f8a2dbf5243a7ba6b976b3611f7092dcb08b73a66abc1';
+    console.log(receiver);
+    const amount = 10 ** 9;
+    const transferCoinsRes = await suiKit.transferCoin(
+      receiver,
+      amount,
+      coinType
+    );
+
+    if (ENABLE_LOG) {
+      console.log(`Transfer coins response: ${transferCoinsRes}`);
+    }
+
+    expect(!!transferCoinsRes).toBe(true);
+  });
+  it.skip('Test interactor with usdc: transfer coin to many', async () => {
+    const coinType =
+      '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN'; // USDC
+    const receiver = [
+      suiKit.accountManager.getAddress({
+        accountIndex: 1,
+      }),
+      suiKit.accountManager.getAddress({
+        accountIndex: 2,
+      }),
+    ];
+    const amount = 10 ** 6;
+    const transferCoinsRes = await suiKit.transferCoinToMany(
+      receiver,
+      [amount, amount],
+      coinType
+    );
+
+    if (ENABLE_LOG) {
+      console.log(`Transfer coins response: ${transferCoinsRes}`);
+    }
+
+    expect(!!transferCoinsRes).toBe(true);
+  });
+
+  it.skip('Test Interactor with Sui: transfer sui', async () => {
+    const receiver = suiKit.accountManager.getAddress({
+      accountIndex: 1,
+    });
+    const amount = 10 ** 9;
+    const transferCoinsRes = await suiKit.transferSui(receiver, amount);
+
+    if (ENABLE_LOG) {
+      console.log(`Transfer coins response: ${transferCoinsRes}`);
+    }
+
+    expect(!!transferCoinsRes).toBe(true);
+  });
+  it.skip('Test Interactor with Sui: transfer sui to many', async () => {
+    const receiver = [
+      suiKit.accountManager.getAddress({
+        accountIndex: 1,
+      }),
+      suiKit.accountManager.getAddress({
+        accountIndex: 2,
+      }),
+    ];
+    const amount = 10 ** 9;
+    const transferCoinsRes = await suiKit.transferSuiToMany(receiver, [
+      amount,
+      amount,
+    ]);
+
+    if (ENABLE_LOG) {
+      console.log(`Transfer coins response: ${transferCoinsRes}`);
+    }
+
+    expect(!!transferCoinsRes).toBe(true);
+  });
+  it('Test Interactor with sui: stake sui', async () => {
+    const validatorAddress =
+      '0x8ecaf4b95b3c82c712d3ddb22e7da88d2286c4653f3753a86b6f7a216a3ca518';
+    const amount = 10 ** 9;
+    const transferCoinsRes = await suiKit.stakeSui(amount, validatorAddress);
+
+    if (ENABLE_LOG) {
+      console.log(`Transfer coins response: ${transferCoinsRes}`);
+    }
+
+    expect(!!transferCoinsRes).toBe(true);
+  });
+  it.skip('Test Interactor with sui: transfer object', async () => {
+    const object =
+      '0x2890913fdce690db776f2c8dbf38c02a3cbf11db96e4050aeacfa49e35682249';
+    const receiver = suiKit.accountManager.getAddress({
+      accountIndex: 1,
+    });
+    const transferCoinsRes = await suiKit.transferObjects([object], receiver);
+    if (ENABLE_LOG) {
+      console.log(`Transfer coins response: ${transferCoinsRes}`);
+    }
+
+    expect(!!transferCoinsRes).toBe(true);
+  });
 });

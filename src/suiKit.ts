@@ -106,6 +106,9 @@ export class SuiKit {
     tx: Uint8Array | TransactionBlock | SuiTxBlock,
     derivePathParams?: DerivePathParams
   ) {
+    if (tx instanceof SuiTxBlock) {
+      tx.setSender(this.getAddress(derivePathParams));
+    }
     const txBlock = tx instanceof SuiTxBlock ? tx.txBlock : tx;
     const txBytes =
       txBlock instanceof TransactionBlock

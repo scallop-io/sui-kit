@@ -6,6 +6,7 @@ import type {
   SuiTransactionBlockResponse,
   SuiObjectDataOptions,
   SuiObjectData,
+  DryRunTransactionBlockResponse,
 } from '@mysten/sui.js/client';
 
 /**
@@ -60,6 +61,24 @@ export class SuiInteractor {
       }
     }
     throw new Error('Failed to send transaction with all fullnodes');
+  }
+
+  async dryRunTx(
+    transactionBlock: Uint8Array
+  ): Promise<DryRunTransactionBlockResponse> {
+    for (const clientIdx in this.clients) {
+      try {
+        return await this.clients[clientIdx].dryRunTransactionBlock({
+          transactionBlock,
+        });
+      } catch (err) {
+        console.warn(
+          `Failed to dry run transaction with fullnode ${this.fullNodes[clientIdx]}: ${err}`
+        );
+        await delay(2000);
+      }
+    }
+    throw new Error('Failed to dry run transaction with all fullnodes');
   }
 
   async getObjects(

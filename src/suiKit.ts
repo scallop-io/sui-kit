@@ -10,6 +10,7 @@ import type {
   SuiTransactionBlockResponse,
   DevInspectResults,
   SuiObjectDataOptions,
+  DryRunTransactionBlockResponse,
 } from '@mysten/sui.js/client';
 import type { SuiSharedObject, SuiOwnedObject } from './libs/suiModel';
 import type {
@@ -124,6 +125,21 @@ export class SuiKit {
   ): Promise<SuiTransactionBlockResponse> {
     const { bytes, signature } = await this.signTxn(tx, derivePathParams);
     return this.suiInteractor.sendTx(bytes, signature);
+  }
+
+  async dryRunTxn(
+    tx: Uint8Array | TransactionBlock | SuiTxBlock,
+    derivePathParams?: DerivePathParams
+  ): Promise<DryRunTransactionBlockResponse> {
+    if (tx instanceof SuiTxBlock) {
+      tx.setSender(this.getAddress(derivePathParams));
+    }
+    const txBlock = tx instanceof SuiTxBlock ? tx.txBlock : tx;
+    const txBytes =
+      txBlock instanceof TransactionBlock
+        ? await txBlock.build({ client: this.client() })
+        : txBlock;
+    return this.suiInteractor.dryRunTx(txBytes);
   }
 
   /**

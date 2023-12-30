@@ -114,7 +114,8 @@ export function convertArgs(
     } else if (
       typeof arg == 'object' &&
       !isSerializedBcs(arg) &&
-      !isPureArg(arg)
+      !isPureArg(arg) &&
+      !isMoveVecArg(arg)
     ) {
       return convertObjArg(txBlock, arg as SuiObjectArg);
     } else if (isMoveVecArg(arg)) {

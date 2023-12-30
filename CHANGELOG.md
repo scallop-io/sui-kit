@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.44.2](https://github.com/scallop-io/sui-kit/compare/v0.44.1...v0.44.2) (2023-12-30)
+
+### Bug Fixes
+
+- correct VecArg for convertArgs ([c213a7b](https://github.com/scallop-io/sui-kit/commit/c213a7bf670ecb28ad8698b130e27e0240fedd36))
+
 ## [0.44.0](https://github.com/scallop-io/sui-kit/compare/v0.42.2...v0.44.0) (2023-10-22)
 
 ## [0.42.0](https://github.com/scallop-io/sui-kit/compare/v0.41.0...v0.42.0) (2023-09-27)

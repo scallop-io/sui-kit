@@ -1,4 +1,4 @@
-# Tookit for interacting with SUI network
+# Toolkit for interacting with SUI network
 
 ## Features
 
@@ -53,8 +53,8 @@ const suiKit = new SuiKit({
 You can use SuiKit to transfer SUI, custom coins, and any objects.
 
 ```typescript
-const recipient1 = '0x123'; // repace with real address
-const recipient2 = '0x456'; // repace with real address
+const recipient1 = '0x123'; // replace with real address
+const recipient2 = '0x456'; // replace with real address
 
 // transfer SUI to single recipient
 await suiKit.transferSui(recipient1, 1000);

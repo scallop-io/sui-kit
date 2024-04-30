@@ -35,7 +35,7 @@ export class SuiKit {
    * If none of them is provided, will generate a random mnemonics with 24 words.
    *
    * @param mnemonics, 12 or 24 mnemonics words, separated by space
-   * @param secretKey, base64 or hex string, when mnemonics is provided, secretKey will be ignored
+   * @param secretKey, base64 or hex string or bech32, when mnemonics is provided, secretKey will be ignored
    * @param networkType, 'testnet' | 'mainnet' | 'devnet' | 'localnet', default is 'mainnet'
    * @param fullnodeUrl, the fullnode url, default is the preconfig fullnode url for the given network type
    */

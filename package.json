@@ -1,6 +1,6 @@
 {
   "name": "@scallop-io/sui-kit",
-  "version": "0.44.2",
+  "version": "0.45.0",
   "description": "Tookit for interacting with SUI network",
   "keywords": [
     "sui",
@@ -60,17 +60,18 @@
   },
   "dependencies": {
     "@mysten/bcs": "^0.8.1",
-    "@mysten/sui.js": "^0.44.0",
+    "@mysten/sui.js": "^0.52.0",
     "@noble/curves": "^1.2.0",
     "@noble/hashes": "^1.3.2",
     "@scure/bip39": "^1.2.1",
     "assert": "^2.1.0",
+    "bech32": "^2.0.0",
     "superstruct": "^1.0.3",
     "ts-retry-promise": "^0.7.1",
     "tweetnacl": "^1.0.3"
   },
   "peerDependencies": {
-    "@mysten/sui.js": "^0.44.0"
+    "@mysten/sui.js": "^0.52.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^18.0.0",

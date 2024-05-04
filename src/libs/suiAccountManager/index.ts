@@ -3,6 +3,10 @@ import { getKeyPair } from './keypair';
 import { hexOrBase64ToUint8Array, normalizePrivateKey } from './util';
 import { generateMnemonic } from './crypto';
 import type { AccountMangerParams, DerivePathParams } from 'src/types';
+import {
+  SUI_PRIVATE_KEY_PREFIX,
+  decodeSuiPrivateKey,
+} from '@mysten/sui.js/cryptography';
 
 export class SuiAccountManager {
   private mnemonics: string;
@@ -17,7 +21,7 @@ export class SuiAccountManager {
    * If none of them is provided, will generate a random mnemonics with 24 words.
    *
    * @param mnemonics, 12 or 24 mnemonics words, separated by space
-   * @param secretKey, base64 or hex string, when mnemonics is provided, secretKey will be ignored
+   * @param secretKey, base64 or hex string or Bech32 string, when mnemonics is provided, secretKey will be ignored
    */
   constructor({ mnemonics, secretKey }: AccountMangerParams = {}) {
     // If the mnemonics or secretKey is provided, use it
@@ -30,11 +34,25 @@ export class SuiAccountManager {
 
     // Init the current account
     this.currentKeyPair = this.secretKey
-      ? Ed25519Keypair.fromSecretKey(
-          normalizePrivateKey(hexOrBase64ToUint8Array(this.secretKey))
-        )
+      ? this.parseSecretKey(this.secretKey)
       : getKeyPair(this.mnemonics);
     this.currentAddress = this.currentKeyPair.getPublicKey().toSuiAddress();
+  }
+
+  /**
+   * Check if the secretKey starts with bench32 format
+   */
+  parseSecretKey(secretKey: string) {
+    if (secretKey.startsWith(SUI_PRIVATE_KEY_PREFIX)) {
+      const { secretKey: uint8ArraySecretKey } = decodeSuiPrivateKey(secretKey);
+      return Ed25519Keypair.fromSecretKey(
+        normalizePrivateKey(uint8ArraySecretKey)
+      );
+    }
+
+    return Ed25519Keypair.fromSecretKey(
+      normalizePrivateKey(hexOrBase64ToUint8Array(secretKey))
+    );
   }
 
   /**

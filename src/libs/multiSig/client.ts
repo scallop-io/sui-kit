@@ -1,5 +1,5 @@
 import { MultiSigPublicKey } from '@mysten/sui.js/multisig';
-import type { PublicKey } from '@mysten/sui.js/src/cryptography';
+import type { PublicKey } from '@mysten/sui.js/cryptography';
 import { ed25519PublicKeyFromBase64 } from './publickey';
 
 export type PublicKeyWeightPair = {

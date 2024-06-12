@@ -1,11 +1,11 @@
 import type {
   Transaction,
   TransactionObjectArgument,
-  TransactionArgument,
+  Argument,
   Inputs,
+  TransactionArgument,
 } from '@mysten/sui/transactions';
 import type { SerializedBcs } from '@mysten/bcs';
-import type { bcs } from '@mysten/sui/bcs';
 
 export type SuiKitParams = AccountMangerParams & {
   fullnodeUrls?: string[];
@@ -28,31 +28,54 @@ export type DerivePathParams = {
 
 type TransactionBlockType = InstanceType<typeof Transaction>;
 
-type ObjectArg = typeof bcs.ObjectArg.$inferInput;
-
 export type PureCallArg = {
   Pure: number[];
 };
+
+type SharedObjectRef = {
+  /** Hex code as string representing the object id */
+  objectId: string;
+
+  /** The version the object was shared at */
+  initialSharedVersion: number | string;
+
+  /** Whether reference is mutable */
+  mutable: boolean;
+};
+
+type SuiObjectRef = {
+  /** Base64 string representing the object digest */
+  objectId: string;
+  /** Object version */
+  version: number | string;
+  /** Hex code as string representing the object id */
+  digest: string;
+};
+
+/**
+ * An object argument.
+ */
+type ObjectArg =
+  | { ImmOrOwnedObject: SuiObjectRef }
+  | { SharedObject: SharedObjectRef }
+  | { Receiving: SuiObjectRef };
+
 export type ObjectCallArg = {
   Object: ObjectArg;
 };
 export type TransactionType = Parameters<TransactionBlockType['add']>;
 
 export type TransactionPureArgument = Extract<
-  TransactionArgument,
+  Argument,
   {
-    kind: 'Input';
-    type: 'pure';
+    $kind: 'Input';
+    type?: 'pure';
   }
 >;
 
-export type SuiTxArg = SuiAddressArg | number | bigint | boolean;
-
-export type SuiAddressArg =
-  | TransactionArgument
-  | SerializedBcs<any>
-  | string
-  | PureCallArg;
+export type SuiTxArg = TransactionArgument | SerializedBcs<any>;
+export type SuiAddressArg = Argument | SerializedBcs<any> | string;
+export type SuiAmountsArg = SuiTxArg | number | bigint;
 
 export type SuiObjectArg =
   | TransactionObjectArgument

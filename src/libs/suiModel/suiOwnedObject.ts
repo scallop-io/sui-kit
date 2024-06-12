@@ -26,8 +26,10 @@ export class SuiOwnedObject {
       return this.objectId;
     }
     return {
+      $kind: 'Object',
       Object: {
-        ImmOrOwned: {
+        $kind: 'ImmOrOwnedObject',
+        ImmOrOwnedObject: {
           objectId: this.objectId,
           version: this.version,
           digest: this.digest,

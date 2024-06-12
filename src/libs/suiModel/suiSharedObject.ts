@@ -18,8 +18,10 @@ export class SuiSharedObject {
       return this.objectId;
     }
     return {
+      $kind: 'Object',
       Object: {
-        Shared: {
+        $kind: 'SharedObject',
+        SharedObject: {
           objectId: this.objectId,
           initialSharedVersion: this.initialSharedVersion,
           mutable,

@@ -1,14 +1,19 @@
-import { Transaction } from '@mysten/sui/transactions';
+import { Transaction, TransactionObjectInput } from '@mysten/sui/transactions';
 import { SUI_SYSTEM_STATE_OBJECT_ID } from '@mysten/sui/utils';
-import { convertArgs, convertAddressArg, convertObjArg } from './util';
+import {
+  convertArgs,
+  convertAddressArg,
+  convertObjArg,
+  convertAmounts,
+} from './util';
 import type { SuiClient, SuiObjectRef } from '@mysten/sui/client';
 import type { Keypair } from '@mysten/sui/cryptography';
 import type {
-  ObjectCallArg,
   SuiTxArg,
   SuiAddressArg,
   SuiObjectArg,
   SuiVecTxArg,
+  SuiAmountsArg,
 } from 'src/types';
 import type { bcs } from '@mysten/sui/bcs';
 
@@ -37,7 +42,7 @@ export class SuiTxBlock {
     return this.txBlock.pure.bind(this.txBlock);
   }
 
-  object(value: string | ObjectCallArg) {
+  object(value: string | TransactionObjectInput) {
     return this.txBlock.object(value);
   }
 
@@ -53,7 +58,7 @@ export class SuiTxBlock {
   setSenderIfNotSet(sender: string) {
     return this.txBlock.setSenderIfNotSet(sender);
   }
-  setExpiration(expiration?: typeof bcs.TransactionExpiration.$inferInput) {
+  setExpiration(expiration?: Parameters<typeof this.txBlock.setExpiration>[0]) {
     return this.txBlock.setExpiration(expiration);
   }
   setGasPrice(price: number | bigint) {
@@ -168,7 +173,10 @@ export class SuiTxBlock {
 
   /* Enhance methods of TransactionBlock */
 
-  transferSuiToMany(recipients: SuiAddressArg[], amounts: SuiTxArg[]) {
+  transferSuiToMany(
+    recipients: SuiAddressArg[],
+    amounts: (SuiTxArg | number | bigint)[]
+  ) {
     // require recipients.length === amounts.length
     if (recipients.length !== amounts.length) {
       throw new Error(
@@ -177,7 +185,11 @@ export class SuiTxBlock {
     }
     const coins = this.txBlock.splitCoins(
       this.txBlock.gas,
-      convertArgs(this.txBlock, amounts)
+      amounts.map((amount) =>
+        typeof amount === 'number' || typeof amount === 'bigint'
+          ? amount
+          : convertArgs(this.txBlock, [amount])[0]
+      )
     );
     const recipientObjects = recipients.map((recipient) =>
       convertAddressArg(this.txBlock, recipient)
@@ -188,20 +200,24 @@ export class SuiTxBlock {
     return this;
   }
 
-  transferSui(address: SuiAddressArg, amount: SuiTxArg) {
+  transferSui(address: SuiAddressArg, amount: SuiTxArg | number | bigint) {
     return this.transferSuiToMany([address], [amount]);
   }
 
-  takeAmountFromCoins(coins: SuiObjectArg[], amount: SuiTxArg) {
+  takeAmountFromCoins(
+    coins: SuiObjectArg[],
+    amount: SuiTxArg | number | bigint
+  ) {
     const coinObjects = coins.map((coin) => convertObjArg(this.txBlock, coin));
     const mergedCoin = coinObjects[0];
     if (coins.length > 1) {
       this.txBlock.mergeCoins(mergedCoin, coinObjects.slice(1));
     }
-    const [sendCoin] = this.txBlock.splitCoins(
-      mergedCoin,
-      convertArgs(this.txBlock, [amount])
-    );
+    const [sendCoin] = this.txBlock.splitCoins(mergedCoin, [
+      typeof amount === 'number' || typeof amount === 'bigint'
+        ? amount
+        : convertArgs(this.txBlock, [amount])[0],
+    ]);
     return [sendCoin, mergedCoin];
   }
 
@@ -212,7 +228,7 @@ export class SuiTxBlock {
     );
   }
 
-  splitMultiCoins(coins: SuiObjectArg[], amounts: SuiTxArg[]) {
+  splitMultiCoins(coins: SuiObjectArg[], amounts: SuiAmountsArg[]) {
     const coinObjects = coins.map((coin) => convertObjArg(this.txBlock, coin));
     const mergedCoin = coinObjects[0];
     if (coins.length > 1) {
@@ -220,7 +236,7 @@ export class SuiTxBlock {
     }
     const splitedCoins = this.txBlock.splitCoins(
       mergedCoin,
-      convertArgs(this.txBlock, amounts)
+      convertAmounts(this.txBlock, amounts)
     );
     return { splitedCoins, mergedCoin };
   }
@@ -229,7 +245,7 @@ export class SuiTxBlock {
     coins: SuiObjectArg[],
     sender: SuiAddressArg,
     recipients: SuiAddressArg[],
-    amounts: SuiTxArg[]
+    amounts: SuiAmountsArg[]
   ) {
     // require recipients.length === amounts.length
     if (recipients.length !== amounts.length) {
@@ -264,17 +280,17 @@ export class SuiTxBlock {
     return this.transferCoinToMany(coins, sender, [recipient], [amount]);
   }
 
-  stakeSui(amount: SuiTxArg, validatorAddr: SuiAddressArg) {
+  stakeSui(amount: SuiTxArg | number | bigint, validatorAddr: SuiAddressArg) {
     const [stakeCoin] = this.txBlock.splitCoins(
       this.txBlock.gas,
-      convertArgs(this.txBlock, [amount])
+      convertAmounts(this.txBlock, [amount])
     );
     return this.txBlock.moveCall({
       target: '0x3::sui_system::request_add_stake',
       arguments: convertArgs(this.txBlock, [
-        SUI_SYSTEM_STATE_OBJECT_ID,
+        this.txBlock.object(SUI_SYSTEM_STATE_OBJECT_ID),
         stakeCoin,
-        this.txBlock.pure(validatorAddr),
+        convertAddressArg(this.txBlock, validatorAddr),
       ]),
     });
   }

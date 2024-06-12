@@ -5,7 +5,7 @@ import {
   isValidSuiAddress,
 } from '@mysten/sui/utils';
 import { Inputs, getPureBcsSchema } from '@mysten/sui/transactions';
-import { bcs, isSerializedBcs } from '@mysten/bcs';
+import { SerializedBcs, bcs, isSerializedBcs } from '@mysten/bcs';
 import type {
   TransactionArgument,
   Transaction,
@@ -107,27 +107,20 @@ export function isMoveVecArg(arg: SuiTxArg | SuiVecTxArg): arg is SuiVecTxArg {
 export function convertArgs(
   txBlock: Transaction,
   args: (SuiTxArg | SuiVecTxArg)[]
-) {
+): TransactionArgument[] {
   return args.map((arg) => {
-    if (typeof arg === 'string' && isValidSuiObjectId(arg)) {
-      return txBlock.object(normalizeSuiObjectId(arg));
-    } else if (
-      typeof arg == 'object' &&
-      !isSerializedBcs(arg) &&
-      !!(arg.$kind === 'Pure') &&
-      !isMoveVecArg(arg)
-    ) {
-      return convertObjArg(txBlock, arg as SuiObjectArg);
-    } else if (isMoveVecArg(arg)) {
+    if (arg instanceof SerializedBcs || isSerializedBcs(arg)) {
+      return txBlock.pure(arg);
+    }
+
+    if (isMoveVecArg(arg)) {
       const vecType = 'vecType' in arg;
       return vecType
         ? makeVecParam(txBlock, arg.value, arg.vecType)
         : makeVecParam(txBlock, arg);
-    } else if (isSerializedBcs(arg)) {
-      return arg;
-    } else {
-      return txBlock.pure(arg);
     }
+
+    return arg;
   });
 }
 
@@ -138,19 +131,14 @@ export function convertArgs(
  * @param arg The address argument to convert.
  * @returns The converted TransactionArgument.
  */
-export function convertAddressArg(txBlock: Transaction, arg: SuiAddressArg) {
+export function convertAddressArg(
+  txBlock: Transaction,
+  arg: SuiAddressArg
+): TransactionArgument {
   if (typeof arg === 'string' && isValidSuiAddress(arg)) {
     return txBlock.pure.address(normalizeSuiAddress(arg));
-  } else if (
-    typeof arg == 'object' &&
-    !isSerializedBcs(arg) &&
-    !!(arg.$kind === 'Pure')
-  ) {
-    return convertObjArg(txBlock, arg as SuiObjectArg);
-  } else if (!(arg.$kind === 'Pure')) {
-    return txBlock.pure(arg);
   } else {
-    return arg;
+    return convertArgs(txBlock, [arg])[0];
   }
 }
 
@@ -178,10 +166,10 @@ export function convertObjArg(
   }
 
   if ('Object' in arg) {
-    if ('ImmOrOwned' in arg.Object) {
-      return txb.object(Inputs.ObjectRef(arg.Object.ImmOrOwned));
-    } else if ('Shared' in arg.Object) {
-      return txb.object(Inputs.SharedObjectRef(arg.Object.Shared));
+    if ('ImmOrOwnedObject' in arg.Object) {
+      return txb.object(Inputs.ObjectRef(arg.Object.ImmOrOwnedObject));
+    } else if ('SharedObject' in arg.Object) {
+      return txb.object(Inputs.SharedObjectRef(arg.Object.SharedObject));
     } else {
       throw new Error('Invalid argument type');
     }
@@ -192,4 +180,17 @@ export function convertObjArg(
   }
 
   throw new Error('Invalid argument type');
+}
+
+export function convertAmounts(
+  txBlock: Transaction,
+  amounts: (SuiTxArg | number | bigint)[]
+): (TransactionArgument | number | bigint)[] {
+  return amounts.map((amount) => {
+    if (typeof amount === 'number' || typeof amount === 'bigint') {
+      return amount;
+    } else {
+      return convertArgs(txBlock, [amount])[0];
+    }
+  });
 }

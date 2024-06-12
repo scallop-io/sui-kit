@@ -1,4 +1,4 @@
-import type { CallArg } from '@mysten/sui.js/bcs';
+import type { CallArg } from '@mysten/sui/transactions';
 
 export class SuiSharedObject {
   public readonly objectId: string;

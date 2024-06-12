@@ -1,11 +1,11 @@
 import type {
-  TransactionBlock,
+  Transaction,
   TransactionObjectArgument,
   TransactionArgument,
-} from '@mysten/sui.js/transactions';
-import type { SuiObjectRef } from '@mysten/sui.js/client';
-import type { SharedObjectRef, ObjectArg } from '@mysten/sui.js/bcs';
+  Inputs,
+} from '@mysten/sui/transactions';
 import type { SerializedBcs } from '@mysten/bcs';
+import type { bcs } from '@mysten/sui/bcs';
 
 export type SuiKitParams = AccountMangerParams & {
   fullnodeUrls?: string[];
@@ -26,7 +26,9 @@ export type DerivePathParams = {
   addressIndex?: number;
 };
 
-type TransactionBlockType = InstanceType<typeof TransactionBlock>;
+type TransactionBlockType = InstanceType<typeof Transaction>;
+
+type ObjectArg = typeof bcs.ObjectArg.$inferInput;
 
 export type PureCallArg = {
   Pure: number[];
@@ -55,8 +57,8 @@ export type SuiAddressArg =
 export type SuiObjectArg =
   | TransactionObjectArgument
   | string
-  | SharedObjectRef
-  | SuiObjectRef
+  | Parameters<typeof Inputs.ObjectRef>[0]
+  | Parameters<typeof Inputs.SharedObjectRef>[0]
   | ObjectCallArg;
 
 export type SuiVecTxArg =
@@ -74,7 +76,6 @@ export type SuiBasicTypes =
   | 'u32'
   | 'u64'
   | 'u128'
-  | 'u256'
-  | 'signer';
+  | 'u256';
 
 export type SuiInputTypes = 'object' | SuiBasicTypes;

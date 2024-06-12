@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { Transaction } from '@mysten/sui/transactions';
+import { SuiClient, getFullnodeUrl } from '@mysten/sui/client';
 import { SuiAccountManager } from '../src/libs/suiAccountManager';
 import { MultiSigClient } from '../src/libs/multiSig';
 
@@ -45,19 +45,19 @@ describe('Test MultiSigClient', async () => {
   });
 
   it.skip('Test multiSig combine with weight 2 + 1 should success', async () => {
-    const tx = new TransactionBlock();
-    const [suiCoin] = tx.splitCoins(tx.gas, [tx.pure(1)]);
-    tx.transferObjects([suiCoin], tx.pure(expectedMultiSigAddress));
+    const tx = new Transaction();
+    const [suiCoin] = tx.splitCoins(tx.gas, [1]);
+    tx.transferObjects([suiCoin], expectedMultiSigAddress);
     tx.setSender(expectedMultiSigAddress);
 
     const txBytes = await tx.build({ client: suiClient });
 
     const sig1 = await accountManager
       .getKeyPair({ accountIndex: 0 })
-      .signTransactionBlock(txBytes);
+      .signTransaction(txBytes);
     const sig2 = await accountManager
       .getKeyPair({ accountIndex: 1 })
-      .signTransactionBlock(txBytes);
+      .signTransaction(txBytes);
     const sigs = [sig1.signature, sig2.signature];
 
     const signature = multiSigClient.combinePartialSigs(sigs);
@@ -79,22 +79,22 @@ describe('Test MultiSigClient', async () => {
   });
 
   it.skip('Test multiSig combine with weight 1 + 1 + 1 should success', async () => {
-    const tx = new TransactionBlock();
-    const [suiCoin] = tx.splitCoins(tx.gas, [tx.pure(1)]);
-    tx.transferObjects([suiCoin], tx.pure(expectedMultiSigAddress));
+    const tx = new Transaction();
+    const [suiCoin] = tx.splitCoins(tx.gas, [1]);
+    tx.transferObjects([suiCoin], expectedMultiSigAddress);
     tx.setSender(expectedMultiSigAddress);
 
     const txBytes = await tx.build({ client: suiClient });
 
     const sig1 = await accountManager
       .getKeyPair({ accountIndex: 1 })
-      .signTransactionBlock(txBytes);
+      .signTransaction(txBytes);
     const sig2 = await accountManager
       .getKeyPair({ accountIndex: 2 })
-      .signTransactionBlock(txBytes);
+      .signTransaction(txBytes);
     const sig3 = await accountManager
       .getKeyPair({ accountIndex: 3 })
-      .signTransactionBlock(txBytes);
+      .signTransaction(txBytes);
     const sigs = [sig1.signature, sig2.signature, sig3.signature];
 
     const signature = multiSigClient.combinePartialSigs(sigs);

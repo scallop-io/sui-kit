@@ -1,5 +1,5 @@
-import type { SuiTransactionBlockResponse } from '@mysten/sui.js/client';
-import type { CallArg } from '@mysten/sui.js/bcs';
+import type { SuiTransactionBlockResponse } from '@mysten/sui/client';
+import type { CallArg } from '@mysten/sui/transactions';
 
 export class SuiOwnedObject {
   public readonly objectId: string;

@@ -36,7 +36,7 @@ describe('Test Scallop Kit', async () => {
     const deriveAddressBalance = (
       await suiKit.getBalance(coinType, derivePathParams)
     ).totalBalance;
-    const currentPrivateKey = suiKit.getKeypair().export().privateKey;
+    const currentPrivateKey = suiKit.getKeypair().getSecretKey();
 
     if (ENABLE_LOG) {
       console.log(

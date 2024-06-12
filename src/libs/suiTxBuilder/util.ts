@@ -175,7 +175,16 @@ export function convertObjArg(
     }
   }
 
-  if ('kind' in arg) {
+  if (typeof arg === 'function') {
+    return arg;
+  }
+
+  if (
+    'GasCoin' in arg ||
+    'Input' in arg ||
+    'Result' in arg ||
+    'NestedResult' in arg
+  ) {
     return arg;
   }
 

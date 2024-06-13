@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.52.0](https://github.com/scallop-io/sui-kit/compare/v0.45.0...v0.52.0) (2024-06-14)
+
+### Features
+- Add `balance` property to `selectCoins` metyhod in `SuiInteractor` class ([c61c7d8](https://github.com/scallop-io/sui-kit/pull/24/commits/c61c7d86e86bfb213271b9c7c4c32768a072df7f))
+- Match version number with `mysten/sui.js` library version
+
+### [0.44.45](https://github.com/scallop-io/sui-kit/compare/v0.44.2...v0.45.0) (2024-05-14)
+
 ### [0.44.2](https://github.com/scallop-io/sui-kit/compare/v0.44.1...v0.44.2) (2023-12-30)
 
 ### Bug Fixes

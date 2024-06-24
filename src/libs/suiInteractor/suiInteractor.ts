@@ -42,6 +42,7 @@ export class SuiInteractor {
     const txResOptions: SuiTransactionBlockResponseOptions = {
       showEvents: true,
       showEffects: true,
+      showRawEffects: true,
       showObjectChanges: true,
       showBalanceChanges: true,
     };

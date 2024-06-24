@@ -173,10 +173,7 @@ export class SuiTxBlock {
 
   /* Enhance methods of TransactionBlock */
 
-  transferSuiToMany(
-    recipients: SuiAddressArg[],
-    amounts: (SuiTxArg | number | bigint)[]
-  ) {
+  transferSuiToMany(recipients: SuiAddressArg[], amounts: SuiAmountsArg[]) {
     // require recipients.length === amounts.length
     if (recipients.length !== amounts.length) {
       throw new Error(
@@ -185,11 +182,7 @@ export class SuiTxBlock {
     }
     const coins = this.txBlock.splitCoins(
       this.txBlock.gas,
-      amounts.map((amount) =>
-        typeof amount === 'number' || typeof amount === 'bigint'
-          ? amount
-          : convertArgs(this.txBlock, [amount])[0]
-      )
+      convertAmounts(this.txBlock, amounts)
     );
     const recipientObjects = recipients.map((recipient) =>
       convertAddressArg(this.txBlock, recipient)
@@ -200,23 +193,18 @@ export class SuiTxBlock {
     return this;
   }
 
-  transferSui(address: SuiAddressArg, amount: SuiTxArg | number | bigint) {
+  transferSui(address: SuiAddressArg, amount: SuiAmountsArg) {
     return this.transferSuiToMany([address], [amount]);
   }
 
-  takeAmountFromCoins(
-    coins: SuiObjectArg[],
-    amount: SuiTxArg | number | bigint
-  ) {
+  takeAmountFromCoins(coins: SuiObjectArg[], amount: SuiAmountsArg) {
     const coinObjects = coins.map((coin) => convertObjArg(this.txBlock, coin));
     const mergedCoin = coinObjects[0];
     if (coins.length > 1) {
       this.txBlock.mergeCoins(mergedCoin, coinObjects.slice(1));
     }
     const [sendCoin] = this.txBlock.splitCoins(mergedCoin, [
-      typeof amount === 'number' || typeof amount === 'bigint'
-        ? amount
-        : convertArgs(this.txBlock, [amount])[0],
+      convertAmounts(this.txBlock, [amount]),
     ]);
     return [sendCoin, mergedCoin];
   }
@@ -256,7 +244,7 @@ export class SuiTxBlock {
     const coinObjects = coins.map((coin) => convertObjArg(this.txBlock, coin));
     const { splitedCoins, mergedCoin } = this.splitMultiCoins(
       coinObjects,
-      amounts
+      convertAmounts(this.txBlock, amounts)
     );
     const recipientObjects = recipients.map((recipient) =>
       convertAddressArg(this.txBlock, recipient)
@@ -280,7 +268,7 @@ export class SuiTxBlock {
     return this.transferCoinToMany(coins, sender, [recipient], [amount]);
   }
 
-  stakeSui(amount: SuiTxArg | number | bigint, validatorAddr: SuiAddressArg) {
+  stakeSui(amount: SuiAmountsArg, validatorAddr: SuiAddressArg) {
     const [stakeCoin] = this.txBlock.splitCoins(
       this.txBlock.gas,
       convertAmounts(this.txBlock, [amount])

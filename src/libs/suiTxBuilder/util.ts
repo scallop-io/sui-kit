@@ -17,6 +17,7 @@ import type {
   SuiTxArg,
   SuiVecTxArg,
   SuiInputTypes,
+  SuiAmountsArg,
 } from 'src/types';
 
 export const getDefaultSuiInputType = (
@@ -193,7 +194,7 @@ export function convertObjArg(
 
 export function convertAmounts(
   txBlock: Transaction,
-  amounts: (SuiTxArg | number | bigint)[]
+  amounts: SuiAmountsArg[]
 ): (TransactionArgument | number | bigint)[] {
   return amounts.map((amount) => {
     if (typeof amount === 'number' || typeof amount === 'bigint') {

@@ -18,6 +18,7 @@ import type {
   DerivePathParams,
   SuiTxArg,
   SuiVecTxArg,
+  SuiKitReturnType,
 } from './types';
 
 /**
@@ -265,16 +266,34 @@ export class SuiKit {
    * stake the given amount of SUI to the validator
    * @param amount the amount of SUI to stake
    * @param validatorAddr the validator address
+   * @param sign whether to sign and send the transaction, default is true
    * @param derivePathParams the derive path params for the current signer
    */
   async stakeSui(
     amount: number,
     validatorAddr: string,
     derivePathParams?: DerivePathParams
+  ): Promise<SuiTransactionBlockResponse>;
+  async stakeSui<S extends boolean>(
+    amount: number,
+    validatorAddr: string,
+    sign?: S,
+    derivePathParams?: DerivePathParams
+  ): Promise<SuiKitReturnType<S>>;
+  async stakeSui<S extends boolean>(
+    amount: number,
+    validatorAddr: string,
+    sign: S = true as S,
+    derivePathParams?: DerivePathParams
   ) {
     const tx = new SuiTxBlock();
     tx.stakeSui(amount, validatorAddr);
-    return this.signAndSendTxn(tx, derivePathParams);
+    return sign
+      ? ((await this.signAndSendTxn(
+          tx,
+          derivePathParams
+        )) as SuiKitReturnType<S>)
+      : (tx as SuiKitReturnType<S>);
   }
 
   /**

@@ -6,6 +6,8 @@ import type {
   TransactionArgument,
 } from '@mysten/sui/transactions';
 import type { SerializedBcs } from '@mysten/bcs';
+import { SuiTransactionBlockResponse } from '@mysten/sui/client';
+import { SuiTxBlock } from 'src/libs/suiTxBuilder';
 
 export type SuiKitParams = AccountMangerParams & {
   fullnodeUrls?: string[];
@@ -102,3 +104,7 @@ export type SuiBasicTypes =
   | 'u256';
 
 export type SuiInputTypes = 'object' | SuiBasicTypes;
+
+export type SuiKitReturnType<T extends boolean> = T extends true
+  ? SuiTransactionBlockResponse
+  : SuiTxBlock;

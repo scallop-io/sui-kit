@@ -4,7 +4,7 @@ import { SuiClient, getFullnodeUrl } from '@mysten/sui/client';
 import { SuiAccountManager } from '../src/libs/suiAccountManager';
 import { MultiSigClient } from '../src/libs/multiSig';
 
-const ENABLE_LOG = true;
+const ENABLE_LOG = false;
 
 /**
  *  Remove `.skip` to proceed with testing according to requirements.
@@ -66,6 +66,7 @@ describe('Test MultiSigClient', async () => {
       signature,
       options: {
         showEffects: true,
+        showRawEffects: true,
       },
     });
 
@@ -103,6 +104,7 @@ describe('Test MultiSigClient', async () => {
       signature,
       options: {
         showEffects: true,
+        showRawEffects: true,
       },
     });
 

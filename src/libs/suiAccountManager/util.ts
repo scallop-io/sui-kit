@@ -1,4 +1,4 @@
-import { fromB64 } from '@mysten/sui.js/utils';
+import { fromB64 } from '@mysten/sui/utils';
 
 /**
  * @description This regular expression matches any string that contains only hexadecimal digits (0-9, A-F, a-f).

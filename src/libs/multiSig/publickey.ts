@@ -1,6 +1,6 @@
-import { PublicKey } from '@mysten/sui.js/cryptography';
-import { Ed25519PublicKey } from '@mysten/sui.js/keypairs/ed25519';
-import { fromB64 } from '@mysten/sui.js/utils';
+import { PublicKey } from '@mysten/sui/cryptography';
+import { Ed25519PublicKey } from '@mysten/sui/keypairs/ed25519';
+import { fromB64 } from '@mysten/sui/utils';
 
 export function ed25519PublicKeyFromBase64(rawPubkey: string): PublicKey {
   let bytes = fromB64(rawPubkey);

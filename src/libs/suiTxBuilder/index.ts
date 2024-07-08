@@ -172,7 +172,6 @@ export class SuiTxBlock {
   }
 
   /* Enhance methods of TransactionBlock */
-
   transferSuiToMany(recipients: SuiAddressArg[], amounts: SuiAmountsArg[]) {
     // require recipients.length === amounts.length
     if (recipients.length !== amounts.length) {

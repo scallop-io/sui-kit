@@ -153,10 +153,27 @@ export class SuiKit {
     recipient: string,
     amount: number,
     derivePathParams?: DerivePathParams
+  ): Promise<SuiTransactionBlockResponse>;
+  async transferSui<S extends boolean>(
+    recipient: string,
+    amount: number,
+    sign?: S,
+    derivePathParams?: DerivePathParams
+  ): Promise<SuiKitReturnType<S>>;
+  async transferSui<S extends boolean>(
+    recipient: string,
+    amount: number,
+    sign: S = true as S,
+    derivePathParams?: DerivePathParams
   ) {
     const tx = new SuiTxBlock();
     tx.transferSui(recipient, amount);
-    return this.signAndSendTxn(tx, derivePathParams);
+    return sign
+      ? ((await this.signAndSendTxn(
+          tx,
+          derivePathParams
+        )) as SuiKitReturnType<S>)
+      : (tx as SuiKitReturnType<S>);
   }
 
   /**
@@ -169,10 +186,27 @@ export class SuiKit {
     recipients: string[],
     amounts: number[],
     derivePathParams?: DerivePathParams
+  ): Promise<SuiTransactionBlockResponse>;
+  async transferSuiToMany<S extends boolean>(
+    recipients: string[],
+    amounts: number[],
+    sign?: S,
+    derivePathParams?: DerivePathParams
+  ): Promise<SuiKitReturnType<S>>;
+  async transferSuiToMany<S extends boolean>(
+    recipients: string[],
+    amounts: number[],
+    sign: S = true as S,
+    derivePathParams?: DerivePathParams
   ) {
     const tx = new SuiTxBlock();
     tx.transferSuiToMany(recipients, amounts);
-    return this.signAndSendTxn(tx, derivePathParams);
+    return sign
+      ? ((await this.signAndSendTxn(
+          tx,
+          derivePathParams
+        )) as SuiKitReturnType<S>)
+      : (tx as SuiKitReturnType<S>);
   }
 
   /**
@@ -186,6 +220,20 @@ export class SuiKit {
     recipients: string[],
     amounts: number[],
     coinType: string,
+    derivePathParams?: DerivePathParams
+  ): Promise<SuiTransactionBlockResponse>;
+  async transferCoinToMany<S extends boolean>(
+    recipients: string[],
+    amounts: number[],
+    coinType: string,
+    sign?: S,
+    derivePathParams?: DerivePathParams
+  ): Promise<SuiKitReturnType<S>>;
+  async transferCoinToMany<S extends boolean>(
+    recipients: string[],
+    amounts: number[],
+    coinType: string,
+    sign: S = true as S,
     derivePathParams?: DerivePathParams
   ) {
     const tx = new SuiTxBlock();
@@ -202,7 +250,12 @@ export class SuiKit {
       recipients,
       amounts
     );
-    return this.signAndSendTxn(tx, derivePathParams);
+    return sign
+      ? ((await this.signAndSendTxn(
+          tx,
+          derivePathParams
+        )) as SuiKitReturnType<S>)
+      : (tx as SuiKitReturnType<S>);
   }
 
   async transferCoin(
@@ -210,23 +263,50 @@ export class SuiKit {
     amount: number,
     coinType: string,
     derivePathParams?: DerivePathParams
+  ): Promise<SuiTransactionBlockResponse>;
+  async transferCoin<S extends boolean>(
+    recipient: string,
+    amount: number,
+    coinType: string,
+    sign?: S,
+    derivePathParams?: DerivePathParams
+  ): Promise<SuiKitReturnType<S>>;
+  async transferCoin<S extends boolean>(
+    recipient: string,
+    amount: number,
+    coinType: string,
+    sign: S = true as S,
+    derivePathParams?: DerivePathParams
   ) {
     return this.transferCoinToMany(
       [recipient],
       [amount],
       coinType,
+      sign,
       derivePathParams
     );
   }
 
   async transferObjects(
-    objects: string[],
+    objects: SuiTxArg[],
     recipient: string,
+    derivePathParams?: DerivePathParams
+  ): Promise<SuiTransactionBlockResponse>;
+  async transferObjects<S extends boolean>(
+    objects: SuiTxArg[],
+    recipient: string,
+    sign?: S,
+    derivePathParams?: DerivePathParams
+  ): Promise<SuiKitReturnType<S>>;
+  async transferObjects<S extends boolean>(
+    objects: SuiTxArg[],
+    recipient: string,
+    sign: S = true as S,
     derivePathParams?: DerivePathParams
   ) {
     const tx = new SuiTxBlock();
     tx.transferObjects(objects, recipient);
-    return this.signAndSendTxn(tx, derivePathParams);
+    return sign ? await this.signAndSendTxn(tx, derivePathParams) : tx;
   }
 
   async moveCall(callParams: {

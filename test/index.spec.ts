@@ -7,9 +7,6 @@ const ENABLE_LOG = false;
 
 dotenv.config();
 
-/**
- *  Remove `.skip` to proceed with testing according to requirements.
- */
 describe('Test Scallop Kit', async () => {
   const fullnodeUrls = [
     'https://fullnode.mainnet.sui.io:443',
@@ -22,7 +19,7 @@ describe('Test Scallop Kit', async () => {
     fullnodeUrls,
   });
 
-  it.skip('Test Manage Account', async () => {
+  it('Test Manage Account', async () => {
     const coinType = '0x2::sui::SUI';
     const currentAddress = suiKit.currentAddress();
     const derivePathParams = {
@@ -53,7 +50,7 @@ describe('Test Scallop Kit', async () => {
     expect(!!deriveAddress).toBe(true);
     expect(!!currentPrivateKey).toBe(true);
   });
-  it.skip('Test Interactor with Sui: sign and send txn', async () => {
+  it('Test Interactor with Sui: sign and send txn', async () => {
     const tx = new SuiTxBlock();
     tx.setSender(suiKit.currentAddress());
     const signAndSendTxnRes = await suiKit.signAndSendTxn(tx);
@@ -65,7 +62,7 @@ describe('Test Scallop Kit', async () => {
     expect(signAndSendTxnRes.effects?.status.status === 'success').toBe(true);
   });
 
-  it.skip('Test Interactor with Sui: get objects', async () => {
+  it('Test Interactor with Sui: get objects', async () => {
     const coinType = `0x2::sui::SUI`;
     const objectIds = await suiKit.selectCoinsWithAmount(1e8, coinType);
     const getObjectsRes = await suiKit.getObjects(objectIds);
@@ -78,7 +75,7 @@ describe('Test Scallop Kit', async () => {
     expect(getObjectsRes.length > 0).toBe(true);
   });
 
-  it.skip('Test Interactor with Sui: select coins', async () => {
+  it('Test Interactor with Sui: select coins', async () => {
     const coinType = '0x2::sui::SUI';
     const coins = await suiKit.selectCoinsWithAmount(10 ** 8, coinType);
 
@@ -89,26 +86,23 @@ describe('Test Scallop Kit', async () => {
     expect(coins.length > 0).toBe(true);
   });
 
-  it.skip('Test Interactor with Sui: transfer coin', async () => {
+  it('Test Interactor with Sui: transfer coin', async () => {
     const coinType = '0x2::sui::SUI';
     const receiver = suiKit.currentAddress();
     console.log(`Receiver: ${receiver}`);
-    const amount = 10 ** 9;
-    const transferCoinsRes = await suiKit.transferCoin(
-      receiver,
-      amount,
-      coinType
-    );
+    const amount = 10 ** 7; // 0.01 SUI
+    const tx = await suiKit.transferCoin(receiver, amount, coinType, false);
+    const transferCoinsRes = await suiKit.inspectTxn(tx); // inspect txn should be enough to check if the txn is valid
 
     if (ENABLE_LOG) {
       console.log(`Transfer coins response: ${transferCoinsRes}`);
     }
 
-    expect(!!transferCoinsRes).toBe(true);
+    expect(transferCoinsRes.effects.status.status === 'success').toBe(true);
   });
-  it.skip('Test interactor with usdc: transfer coin to many', async () => {
-    const coinType =
-      '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN'; // USDC
+
+  it('Test interactor with sui: transfer coin to many', async () => {
+    const coinType = '0x2::sui::SUI';
     const receiver = [
       suiKit.accountManager.getAddress({
         accountIndex: 1,
@@ -117,32 +111,35 @@ describe('Test Scallop Kit', async () => {
         accountIndex: 2,
       }),
     ];
-    const amount = 10 ** 6;
-    const transferCoinsRes = await suiKit.transferCoinToMany(
+    const amount = 10 ** 7; // 0.01 SUI
+    const tx = await suiKit.transferCoinToMany(
       receiver,
       [amount, amount],
-      coinType
+      coinType,
+      false
     );
 
+    const transferCoinsRes = await suiKit.inspectTxn(tx); // inspect txn should be enough to check if the txn is valid
     if (ENABLE_LOG) {
       console.log(`Transfer coins response: ${transferCoinsRes}`);
     }
 
-    expect(!!transferCoinsRes).toBe(true);
+    expect(transferCoinsRes.effects.status.status === 'success').toBe(true);
   });
 
-  it.skip('Test Interactor with Sui: transfer sui', async () => {
+  it('Test Interactor with Sui: transfer sui', async () => {
     const receiver = suiKit.currentAddress();
-    const amount = 10 ** 9;
-    const transferCoinsRes = await suiKit.transferSui(receiver, amount);
-
+    const amount = 10 ** 7; // 0.01 SUI
+    const tx = await suiKit.transferSui(receiver, amount, false);
+    const transferCoinsRes = await suiKit.inspectTxn(tx); // inspect txn should be enough to check if the txn is valid
     if (ENABLE_LOG) {
       console.log(`Transfer coins response: ${transferCoinsRes}`);
     }
 
-    expect(!!transferCoinsRes).toBe(true);
+    expect(transferCoinsRes.effects.status.status === 'success').toBe(true);
   });
-  it.skip('Test Interactor with Sui: transfer sui to many', async () => {
+
+  it('Test Interactor with Sui: transfer sui to many', async () => {
     const receiver = [
       suiKit.accountManager.getAddress({
         accountIndex: 1,
@@ -151,27 +148,11 @@ describe('Test Scallop Kit', async () => {
         accountIndex: 2,
       }),
     ];
-    const amount = 10 ** 9;
-    const transferCoinsRes = await suiKit.transferSuiToMany(receiver, [
-      amount,
-      amount,
-    ]);
-
-    if (ENABLE_LOG) {
-      console.log(`Transfer coins response: ${transferCoinsRes}`);
-    }
-
-    expect(!!transferCoinsRes).toBe(true);
-  });
-  it.skip('Test Interactor with sui: stake sui', async () => {
-    const validatorAddress =
-      '0x8ecaf4b95b3c82c712d3ddb22e7da88d2286c4653f3753a86b6f7a216a3ca518';
-    const amount = 10 ** 9;
-    const tx = await suiKit.stakeSui(
-      amount,
-      validatorAddress,
-      false,
-      undefined
+    const amount = 10 ** 7; // 0.01 SUI
+    const tx = await suiKit.transferSuiToMany(
+      receiver,
+      [amount, amount],
+      false
     );
     const transferCoinsRes = await suiKit.inspectTxn(tx); // inspect txn should be enough to check if the txn is valid
 
@@ -181,15 +162,46 @@ describe('Test Scallop Kit', async () => {
 
     expect(transferCoinsRes.effects.status.status === 'success').toBe(true);
   });
-  it.skip('Test Interactor with sui: transfer object', async () => {
-    const object =
-      '0x2382368d7793a3ea13c5f667c06619c9a36d033bbee9147bd6d7e947731f9874'; // adjust to your owned object
+
+  it('Test Interactor with sui: stake sui', async () => {
+    const validatorAddress =
+      '0x8ecaf4b95b3c82c712d3ddb22e7da88d2286c4653f3753a86b6f7a216a3ca518';
+    const amount = 10 ** 9;
+    const tx = await suiKit.stakeSui(
+      amount,
+      validatorAddress,
+      false,
+      undefined
+    );
+    const stakeSuiRes = await suiKit.inspectTxn(tx); // inspect txn should be enough to check if the txn is valid
+
+    if (ENABLE_LOG) {
+      console.log(`Stake sui response: ${stakeSuiRes}`);
+    }
+
+    expect(stakeSuiRes.effects.status.status === 'success').toBe(true);
+  });
+
+  it('Test Interactor with sui: transfer object', async () => {
+    const object = (
+      await suiKit.client().getOwnedObjects({
+        owner: suiKit.currentAddress(),
+        limit: 1,
+      })
+    ).data[0].data;
+
+    if (!object)
+      throw new Error(
+        `No object found for wallet address: ${suiKit.currentAddress()}`
+      );
+
     const receiver = suiKit.currentAddress();
-    const transferCoinsRes = await suiKit.transferObjects([object], receiver);
+    const tx = await suiKit.transferObjects([object], receiver, false);
+    const transferCoinsRes = await suiKit.inspectTxn(tx); // inspect txn should be enough to check if the txn is valid
     if (ENABLE_LOG) {
       console.log(`Transfer coins response: ${transferCoinsRes}`);
     }
 
-    expect(!!transferCoinsRes).toBe(true);
+    expect(transferCoinsRes.effects.status.status === 'success').toBe(true);
   });
 });

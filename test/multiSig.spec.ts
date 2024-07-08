@@ -33,7 +33,7 @@ describe('Test MultiSigClient', async () => {
     threshold
   );
 
-  it.skip('Test multiSig address', async () => {
+  it('Test multiSig address', async () => {
     const multiSigAddress = multiSigClient.multiSigAddress();
 
     if (ENABLE_LOG) {
@@ -44,7 +44,7 @@ describe('Test MultiSigClient', async () => {
     expect(multiSigAddress).toEqual(expectedMultiSigAddress);
   });
 
-  it.skip('Test multiSig combine with weight 2 + 1 should success', async () => {
+  it('Test multiSig combine with weight 2 + 1 should success', async () => {
     const tx = new Transaction();
     const [suiCoin] = tx.splitCoins(tx.gas, [1]);
     tx.transferObjects([suiCoin], expectedMultiSigAddress);
@@ -79,7 +79,7 @@ describe('Test MultiSigClient', async () => {
     );
   });
 
-  it.skip('Test multiSig combine with weight 1 + 1 + 1 should success', async () => {
+  it('Test multiSig combine with weight 1 + 1 + 1 should success', async () => {
     const tx = new Transaction();
     const [suiCoin] = tx.splitCoins(tx.gas, [1]);
     tx.transferObjects([suiCoin], expectedMultiSigAddress);

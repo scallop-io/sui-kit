@@ -30,8 +30,13 @@ export class SuiTxBlock {
   get gas() {
     return this.txBlock.gas;
   }
+  /** @deprecated Use `getData()` instead. */
   get blockData() {
     return this.txBlock.blockData;
+  }
+
+  get getData() {
+    return this.txBlock.getData();
   }
 
   address(value: string) {
@@ -73,6 +78,10 @@ export class SuiTxBlock {
   setGasPayment(payments: SuiObjectRef[]) {
     return this.txBlock.setGasPayment(payments);
   }
+  /**
+   * @deprecated Use toJSON instead.
+   * For synchronous serialization, you can use `getData()`
+   * */
   serialize() {
     return this.txBlock.serialize();
   }

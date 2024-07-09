@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.0](https://github.com/scallop-io/sui-kit/compare/v0.45.0...v1.0.0) (2024-07-9)
+
+### ⚠ BREAKING CHANGES
+
+- Upgrade to `@mysten/sui@1` (https://github.com/scallop-io/sui-kit/pull/23)
+
 ### [0.52.0](https://github.com/scallop-io/sui-kit/compare/v0.45.0...v0.52.0) (2024-06-14)
 
 ### Features

@@ -1,11 +1,13 @@
 import type {
-  TransactionBlock,
+  Transaction,
   TransactionObjectArgument,
+  Argument,
+  Inputs,
   TransactionArgument,
-} from '@mysten/sui.js/transactions';
-import type { SuiObjectRef } from '@mysten/sui.js/client';
-import type { SharedObjectRef, ObjectArg } from '@mysten/sui.js/bcs';
+} from '@mysten/sui/transactions';
 import type { SerializedBcs } from '@mysten/bcs';
+import { SuiTransactionBlockResponse } from '@mysten/sui/client';
+import { SuiTxBlock } from 'src/libs/suiTxBuilder';
 
 export type SuiKitParams = AccountMangerParams & {
   fullnodeUrls?: string[];
@@ -26,37 +28,62 @@ export type DerivePathParams = {
   addressIndex?: number;
 };
 
-type TransactionBlockType = InstanceType<typeof TransactionBlock>;
+type TransactionBlockType = InstanceType<typeof Transaction>;
 
 export type PureCallArg = {
   Pure: number[];
 };
+
+type SharedObjectRef = {
+  /** Hex code as string representing the object id */
+  objectId: string;
+
+  /** The version the object was shared at */
+  initialSharedVersion: number | string;
+
+  /** Whether reference is mutable */
+  mutable: boolean;
+};
+
+type SuiObjectRef = {
+  /** Base64 string representing the object digest */
+  objectId: string;
+  /** Object version */
+  version: number | string;
+  /** Hex code as string representing the object id */
+  digest: string;
+};
+
+/**
+ * An object argument.
+ */
+type ObjectArg =
+  | { ImmOrOwnedObject: SuiObjectRef }
+  | { SharedObject: SharedObjectRef }
+  | { Receiving: SuiObjectRef };
+
 export type ObjectCallArg = {
   Object: ObjectArg;
 };
 export type TransactionType = Parameters<TransactionBlockType['add']>;
 
 export type TransactionPureArgument = Extract<
-  TransactionArgument,
+  Argument,
   {
-    kind: 'Input';
-    type: 'pure';
+    $kind: 'Input';
+    type?: 'pure';
   }
 >;
 
-export type SuiTxArg = SuiAddressArg | number | bigint | boolean;
-
-export type SuiAddressArg =
-  | TransactionArgument
-  | SerializedBcs<any>
-  | string
-  | PureCallArg;
+export type SuiTxArg = TransactionArgument | SerializedBcs<any>;
+export type SuiAddressArg = Argument | SerializedBcs<any> | string;
+export type SuiAmountsArg = SuiTxArg | number | bigint;
 
 export type SuiObjectArg =
   | TransactionObjectArgument
   | string
-  | SharedObjectRef
-  | SuiObjectRef
+  | Parameters<typeof Inputs.ObjectRef>[0]
+  | Parameters<typeof Inputs.SharedObjectRef>[0]
   | ObjectCallArg;
 
 export type SuiVecTxArg =
@@ -74,7 +101,10 @@ export type SuiBasicTypes =
   | 'u32'
   | 'u64'
   | 'u128'
-  | 'u256'
-  | 'signer';
+  | 'u256';
 
 export type SuiInputTypes = 'object' | SuiBasicTypes;
+
+export type SuiKitReturnType<T extends boolean> = T extends true
+  ? SuiTransactionBlockResponse
+  : SuiTxBlock;

@@ -1,50 +1,60 @@
-import { TransactionBlock } from '@mysten/sui.js/transactions';
-import { SUI_SYSTEM_STATE_OBJECT_ID } from '@mysten/sui.js/utils';
-import { convertArgs, convertAddressArg, convertObjArg } from './util';
-import type { SuiClient, SuiObjectRef } from '@mysten/sui.js/client';
-import type { TransactionObjectArgument } from '@mysten/sui.js/transactions';
+import { Transaction, TransactionObjectInput } from '@mysten/sui/transactions';
+import { SUI_SYSTEM_STATE_OBJECT_ID } from '@mysten/sui/utils';
+import {
+  convertArgs,
+  convertAddressArg,
+  convertObjArg,
+  convertAmounts,
+} from './util';
+import type { SuiClient, SuiObjectRef } from '@mysten/sui/client';
+import type { Keypair } from '@mysten/sui/cryptography';
 import type {
-  TransactionExpiration,
-  SharedObjectRef,
-} from '@mysten/sui.js/bcs';
-import type { Keypair } from '@mysten/sui.js/cryptography';
-import type {
-  ObjectCallArg,
-  TransactionType,
   SuiTxArg,
   SuiAddressArg,
   SuiObjectArg,
   SuiVecTxArg,
+  SuiAmountsArg,
 } from 'src/types';
+import type { bcs } from '@mysten/sui/bcs';
 
 export class SuiTxBlock {
-  public txBlock: TransactionBlock;
+  public txBlock: Transaction;
 
-  constructor(transaction?: TransactionBlock) {
-    this.txBlock = new TransactionBlock(transaction);
+  constructor(transaction?: Transaction) {
+    this.txBlock = transaction
+      ? Transaction.from(transaction)
+      : new Transaction();
   }
 
   /* Directly wrap methods and properties of TransactionBlock */
   get gas() {
     return this.txBlock.gas;
   }
+  /** @deprecated Use `getData()` instead. */
   get blockData() {
     return this.txBlock.blockData;
   }
 
+  get getData() {
+    return this.txBlock.getData();
+  }
+
   address(value: string) {
-    return this.txBlock.pure(value, 'address');
+    return this.txBlock.pure.address(value);
   }
-  pure(value: unknown, type?: string) {
-    return this.txBlock.pure(value, type);
+
+  get pure() {
+    return this.txBlock.pure.bind(this.txBlock);
   }
-  object(value: string | ObjectCallArg) {
+
+  object(value: string | TransactionObjectInput) {
     return this.txBlock.object(value);
   }
+
   objectRef(ref: SuiObjectRef) {
     return this.txBlock.objectRef(ref);
   }
-  sharedObjectRef(ref: SharedObjectRef) {
+  sharedObjectRef(ref: typeof bcs.SharedObjectRef.$inferType) {
     return this.txBlock.sharedObjectRef(ref);
   }
   setSender(sender: string) {
@@ -53,7 +63,7 @@ export class SuiTxBlock {
   setSenderIfNotSet(sender: string) {
     return this.txBlock.setSenderIfNotSet(sender);
   }
-  setExpiration(expiration?: TransactionExpiration) {
+  setExpiration(expiration?: Parameters<typeof this.txBlock.setExpiration>[0]) {
     return this.txBlock.setExpiration(expiration);
   }
   setGasPrice(price: number | bigint) {
@@ -68,9 +78,18 @@ export class SuiTxBlock {
   setGasPayment(payments: SuiObjectRef[]) {
     return this.txBlock.setGasPayment(payments);
   }
+  /**
+   * @deprecated Use toJSON instead.
+   * For synchronous serialization, you can use `getData()`
+   * */
   serialize() {
     return this.txBlock.serialize();
   }
+
+  toJSON() {
+    return this.txBlock.toJSON();
+  }
+
   sign(params: {
     signer: Keypair;
     client?: SuiClient;
@@ -89,7 +108,7 @@ export class SuiTxBlock {
   getDigest(params: { client?: SuiClient } = {}) {
     return this.txBlock.getDigest(params);
   }
-  add(...args: TransactionType) {
+  add(...args: Parameters<typeof this.txBlock.add>) {
     return this.txBlock.add(...args);
   }
   publish({
@@ -101,27 +120,12 @@ export class SuiTxBlock {
   }) {
     return this.txBlock.publish({ modules, dependencies });
   }
-  upgrade({
-    modules,
-    dependencies,
-    packageId,
-    ticket,
-  }: {
-    modules: number[][] | string[];
-    dependencies: string[];
-    packageId: string;
-    ticket: TransactionObjectArgument | string;
-  }) {
-    return this.txBlock.upgrade({ modules, dependencies, packageId, ticket });
+  upgrade(...args: Parameters<typeof this.txBlock.upgrade>) {
+    return this.txBlock.upgrade(...args);
   }
-  makeMoveVec({
-    objects,
-    type,
-  }: {
-    objects: (TransactionObjectArgument | string)[];
-    type?: string;
-  }) {
-    return this.txBlock.makeMoveVec({ objects, type });
+
+  makeMoveVec(...args: Parameters<typeof this.txBlock.makeMoveVec>) {
+    return this.txBlock.makeMoveVec(...args);
   }
 
   /* Override methods of TransactionBlock */
@@ -177,8 +181,7 @@ export class SuiTxBlock {
   }
 
   /* Enhance methods of TransactionBlock */
-
-  transferSuiToMany(recipients: SuiAddressArg[], amounts: SuiTxArg[]) {
+  transferSuiToMany(recipients: SuiAddressArg[], amounts: SuiAmountsArg[]) {
     // require recipients.length === amounts.length
     if (recipients.length !== amounts.length) {
       throw new Error(
@@ -187,7 +190,7 @@ export class SuiTxBlock {
     }
     const coins = this.txBlock.splitCoins(
       this.txBlock.gas,
-      convertArgs(this.txBlock, amounts)
+      convertAmounts(this.txBlock, amounts)
     );
     const recipientObjects = recipients.map((recipient) =>
       convertAddressArg(this.txBlock, recipient)
@@ -198,20 +201,19 @@ export class SuiTxBlock {
     return this;
   }
 
-  transferSui(address: SuiAddressArg, amount: SuiTxArg) {
+  transferSui(address: SuiAddressArg, amount: SuiAmountsArg) {
     return this.transferSuiToMany([address], [amount]);
   }
 
-  takeAmountFromCoins(coins: SuiObjectArg[], amount: SuiTxArg) {
+  takeAmountFromCoins(coins: SuiObjectArg[], amount: SuiAmountsArg) {
     const coinObjects = coins.map((coin) => convertObjArg(this.txBlock, coin));
     const mergedCoin = coinObjects[0];
     if (coins.length > 1) {
       this.txBlock.mergeCoins(mergedCoin, coinObjects.slice(1));
     }
-    const [sendCoin] = this.txBlock.splitCoins(
-      mergedCoin,
-      convertArgs(this.txBlock, [amount])
-    );
+    const [sendCoin] = this.txBlock.splitCoins(mergedCoin, [
+      convertAmounts(this.txBlock, [amount]),
+    ]);
     return [sendCoin, mergedCoin];
   }
 
@@ -222,7 +224,7 @@ export class SuiTxBlock {
     );
   }
 
-  splitMultiCoins(coins: SuiObjectArg[], amounts: SuiTxArg[]) {
+  splitMultiCoins(coins: SuiObjectArg[], amounts: SuiAmountsArg[]) {
     const coinObjects = coins.map((coin) => convertObjArg(this.txBlock, coin));
     const mergedCoin = coinObjects[0];
     if (coins.length > 1) {
@@ -230,7 +232,7 @@ export class SuiTxBlock {
     }
     const splitedCoins = this.txBlock.splitCoins(
       mergedCoin,
-      convertArgs(this.txBlock, amounts)
+      convertAmounts(this.txBlock, amounts)
     );
     return { splitedCoins, mergedCoin };
   }
@@ -239,7 +241,7 @@ export class SuiTxBlock {
     coins: SuiObjectArg[],
     sender: SuiAddressArg,
     recipients: SuiAddressArg[],
-    amounts: SuiTxArg[]
+    amounts: SuiAmountsArg[]
   ) {
     // require recipients.length === amounts.length
     if (recipients.length !== amounts.length) {
@@ -250,7 +252,7 @@ export class SuiTxBlock {
     const coinObjects = coins.map((coin) => convertObjArg(this.txBlock, coin));
     const { splitedCoins, mergedCoin } = this.splitMultiCoins(
       coinObjects,
-      amounts
+      convertAmounts(this.txBlock, amounts)
     );
     const recipientObjects = recipients.map((recipient) =>
       convertAddressArg(this.txBlock, recipient)
@@ -274,17 +276,17 @@ export class SuiTxBlock {
     return this.transferCoinToMany(coins, sender, [recipient], [amount]);
   }
 
-  stakeSui(amount: SuiTxArg, validatorAddr: SuiAddressArg) {
+  stakeSui(amount: SuiAmountsArg, validatorAddr: SuiAddressArg) {
     const [stakeCoin] = this.txBlock.splitCoins(
       this.txBlock.gas,
-      convertArgs(this.txBlock, [amount])
+      convertAmounts(this.txBlock, [amount])
     );
     return this.txBlock.moveCall({
       target: '0x3::sui_system::request_add_stake',
       arguments: convertArgs(this.txBlock, [
-        SUI_SYSTEM_STATE_OBJECT_ID,
+        this.txBlock.object(SUI_SYSTEM_STATE_OBJECT_ID),
         stakeCoin,
-        this.txBlock.pure(validatorAddr),
+        convertAddressArg(this.txBlock, validatorAddr),
       ]),
     });
   }

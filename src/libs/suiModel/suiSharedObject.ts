@@ -1,4 +1,4 @@
-import type { CallArg } from '@mysten/sui.js/bcs';
+import type { CallArg } from '@mysten/sui/transactions';
 
 export class SuiSharedObject {
   public readonly objectId: string;
@@ -18,8 +18,10 @@ export class SuiSharedObject {
       return this.objectId;
     }
     return {
+      $kind: 'Object',
       Object: {
-        Shared: {
+        $kind: 'SharedObject',
+        SharedObject: {
           objectId: this.objectId,
           initialSharedVersion: this.initialSharedVersion,
           mutable,

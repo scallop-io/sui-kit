@@ -1,4 +1,4 @@
-import { SuiClient } from '@mysten/sui.js/client';
+import { SuiClient } from '@mysten/sui/client';
 import { SuiOwnedObject, SuiSharedObject } from '../suiModel';
 import { delay } from './util';
 import type {
@@ -7,7 +7,7 @@ import type {
   SuiObjectDataOptions,
   SuiObjectData,
   DryRunTransactionBlockResponse,
-} from '@mysten/sui.js/client';
+} from '@mysten/sui/client';
 
 /**
  * Encapsulates all functions that interact with the sui sdk
@@ -42,6 +42,7 @@ export class SuiInteractor {
     const txResOptions: SuiTransactionBlockResponseOptions = {
       showEvents: true,
       showEffects: true,
+      showRawEffects: true,
       showObjectChanges: true,
       showBalanceChanges: true,
     };

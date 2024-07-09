@@ -1,8 +1,8 @@
 /**
  * @description This file is used to aggregate the tools that used to interact with SUI network.
  */
-import { getFullnodeUrl } from '@mysten/sui.js/client';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { getFullnodeUrl } from '@mysten/sui/client';
+import { Transaction } from '@mysten/sui/transactions';
 import { SuiAccountManager } from './libs/suiAccountManager';
 import { SuiTxBlock } from './libs/suiTxBuilder';
 import { SuiInteractor } from './libs/suiInteractor';
@@ -11,13 +11,14 @@ import type {
   DevInspectResults,
   SuiObjectDataOptions,
   DryRunTransactionBlockResponse,
-} from '@mysten/sui.js/client';
+} from '@mysten/sui/client';
 import type { SuiSharedObject, SuiOwnedObject } from './libs/suiModel';
 import type {
   SuiKitParams,
   DerivePathParams,
   SuiTxArg,
   SuiVecTxArg,
+  SuiKitReturnType,
 } from './types';
 
 /**
@@ -104,7 +105,7 @@ export class SuiKit {
   }
 
   async signTxn(
-    tx: Uint8Array | TransactionBlock | SuiTxBlock,
+    tx: Uint8Array | Transaction | SuiTxBlock,
     derivePathParams?: DerivePathParams
   ) {
     if (tx instanceof SuiTxBlock) {
@@ -112,15 +113,15 @@ export class SuiKit {
     }
     const txBlock = tx instanceof SuiTxBlock ? tx.txBlock : tx;
     const txBytes =
-      txBlock instanceof TransactionBlock
+      txBlock instanceof Transaction
         ? await txBlock.build({ client: this.client() })
         : txBlock;
     const keyPair = this.getKeypair(derivePathParams);
-    return await keyPair.signTransactionBlock(txBytes);
+    return await keyPair.signTransaction(txBytes);
   }
 
   async signAndSendTxn(
-    tx: Uint8Array | TransactionBlock | SuiTxBlock,
+    tx: Uint8Array | Transaction | SuiTxBlock,
     derivePathParams?: DerivePathParams
   ): Promise<SuiTransactionBlockResponse> {
     const { bytes, signature } = await this.signTxn(tx, derivePathParams);
@@ -128,7 +129,7 @@ export class SuiKit {
   }
 
   async dryRunTxn(
-    tx: Uint8Array | TransactionBlock | SuiTxBlock,
+    tx: Uint8Array | Transaction | SuiTxBlock,
     derivePathParams?: DerivePathParams
   ): Promise<DryRunTransactionBlockResponse> {
     if (tx instanceof SuiTxBlock) {
@@ -136,7 +137,7 @@ export class SuiKit {
     }
     const txBlock = tx instanceof SuiTxBlock ? tx.txBlock : tx;
     const txBytes =
-      txBlock instanceof TransactionBlock
+      txBlock instanceof Transaction
         ? await txBlock.build({ client: this.client() })
         : txBlock;
     return this.suiInteractor.dryRunTx(txBytes);
@@ -152,10 +153,27 @@ export class SuiKit {
     recipient: string,
     amount: number,
     derivePathParams?: DerivePathParams
+  ): Promise<SuiTransactionBlockResponse>;
+  async transferSui<S extends boolean>(
+    recipient: string,
+    amount: number,
+    sign?: S,
+    derivePathParams?: DerivePathParams
+  ): Promise<SuiKitReturnType<S>>;
+  async transferSui<S extends boolean>(
+    recipient: string,
+    amount: number,
+    sign: S = true as S,
+    derivePathParams?: DerivePathParams
   ) {
     const tx = new SuiTxBlock();
     tx.transferSui(recipient, amount);
-    return this.signAndSendTxn(tx, derivePathParams);
+    return sign
+      ? ((await this.signAndSendTxn(
+          tx,
+          derivePathParams
+        )) as SuiKitReturnType<S>)
+      : (tx as SuiKitReturnType<S>);
   }
 
   /**
@@ -168,10 +186,27 @@ export class SuiKit {
     recipients: string[],
     amounts: number[],
     derivePathParams?: DerivePathParams
+  ): Promise<SuiTransactionBlockResponse>;
+  async transferSuiToMany<S extends boolean>(
+    recipients: string[],
+    amounts: number[],
+    sign?: S,
+    derivePathParams?: DerivePathParams
+  ): Promise<SuiKitReturnType<S>>;
+  async transferSuiToMany<S extends boolean>(
+    recipients: string[],
+    amounts: number[],
+    sign: S = true as S,
+    derivePathParams?: DerivePathParams
   ) {
     const tx = new SuiTxBlock();
     tx.transferSuiToMany(recipients, amounts);
-    return this.signAndSendTxn(tx, derivePathParams);
+    return sign
+      ? ((await this.signAndSendTxn(
+          tx,
+          derivePathParams
+        )) as SuiKitReturnType<S>)
+      : (tx as SuiKitReturnType<S>);
   }
 
   /**
@@ -185,6 +220,20 @@ export class SuiKit {
     recipients: string[],
     amounts: number[],
     coinType: string,
+    derivePathParams?: DerivePathParams
+  ): Promise<SuiTransactionBlockResponse>;
+  async transferCoinToMany<S extends boolean>(
+    recipients: string[],
+    amounts: number[],
+    coinType: string,
+    sign?: S,
+    derivePathParams?: DerivePathParams
+  ): Promise<SuiKitReturnType<S>>;
+  async transferCoinToMany<S extends boolean>(
+    recipients: string[],
+    amounts: number[],
+    coinType: string,
+    sign: S = true as S,
     derivePathParams?: DerivePathParams
   ) {
     const tx = new SuiTxBlock();
@@ -201,7 +250,12 @@ export class SuiKit {
       recipients,
       amounts
     );
-    return this.signAndSendTxn(tx, derivePathParams);
+    return sign
+      ? ((await this.signAndSendTxn(
+          tx,
+          derivePathParams
+        )) as SuiKitReturnType<S>)
+      : (tx as SuiKitReturnType<S>);
   }
 
   async transferCoin(
@@ -209,23 +263,50 @@ export class SuiKit {
     amount: number,
     coinType: string,
     derivePathParams?: DerivePathParams
+  ): Promise<SuiTransactionBlockResponse>;
+  async transferCoin<S extends boolean>(
+    recipient: string,
+    amount: number,
+    coinType: string,
+    sign?: S,
+    derivePathParams?: DerivePathParams
+  ): Promise<SuiKitReturnType<S>>;
+  async transferCoin<S extends boolean>(
+    recipient: string,
+    amount: number,
+    coinType: string,
+    sign: S = true as S,
+    derivePathParams?: DerivePathParams
   ) {
     return this.transferCoinToMany(
       [recipient],
       [amount],
       coinType,
+      sign,
       derivePathParams
     );
   }
 
   async transferObjects(
-    objects: string[],
+    objects: SuiTxArg[],
     recipient: string,
+    derivePathParams?: DerivePathParams
+  ): Promise<SuiTransactionBlockResponse>;
+  async transferObjects<S extends boolean>(
+    objects: SuiTxArg[],
+    recipient: string,
+    sign?: S,
+    derivePathParams?: DerivePathParams
+  ): Promise<SuiKitReturnType<S>>;
+  async transferObjects<S extends boolean>(
+    objects: SuiTxArg[],
+    recipient: string,
+    sign: S = true as S,
     derivePathParams?: DerivePathParams
   ) {
     const tx = new SuiTxBlock();
     tx.transferObjects(objects, recipient);
-    return this.signAndSendTxn(tx, derivePathParams);
+    return sign ? await this.signAndSendTxn(tx, derivePathParams) : tx;
   }
 
   async moveCall(callParams: {
@@ -265,16 +346,34 @@ export class SuiKit {
    * stake the given amount of SUI to the validator
    * @param amount the amount of SUI to stake
    * @param validatorAddr the validator address
+   * @param sign whether to sign and send the transaction, default is true
    * @param derivePathParams the derive path params for the current signer
    */
   async stakeSui(
     amount: number,
     validatorAddr: string,
     derivePathParams?: DerivePathParams
+  ): Promise<SuiTransactionBlockResponse>;
+  async stakeSui<S extends boolean>(
+    amount: number,
+    validatorAddr: string,
+    sign?: S,
+    derivePathParams?: DerivePathParams
+  ): Promise<SuiKitReturnType<S>>;
+  async stakeSui<S extends boolean>(
+    amount: number,
+    validatorAddr: string,
+    sign: S = true as S,
+    derivePathParams?: DerivePathParams
   ) {
     const tx = new SuiTxBlock();
     tx.stakeSui(amount, validatorAddr);
-    return this.signAndSendTxn(tx, derivePathParams);
+    return sign
+      ? ((await this.signAndSendTxn(
+          tx,
+          derivePathParams
+        )) as SuiKitReturnType<S>)
+      : (tx as SuiKitReturnType<S>);
   }
 
   /**
@@ -285,7 +384,7 @@ export class SuiKit {
    * @returns the effects and events of the transaction, such as object changes, gas cost, event emitted.
    */
   async inspectTxn(
-    tx: Uint8Array | TransactionBlock | SuiTxBlock,
+    tx: Uint8Array | Transaction | SuiTxBlock,
     derivePathParams?: DerivePathParams
   ): Promise<DevInspectResults> {
     const txBlock = tx instanceof SuiTxBlock ? tx.txBlock : tx;

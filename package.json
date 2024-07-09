@@ -59,8 +59,8 @@
     "doc": "typedoc --out docs src/index.ts"
   },
   "dependencies": {
-    "@mysten/bcs": "^0.8.1",
-    "@mysten/sui.js": "^0.52.0",
+    "@mysten/bcs": "^1.0.2",
+    "@mysten/sui": "^1.2.1",
     "@noble/curves": "^1.2.0",
     "@noble/hashes": "^1.3.2",
     "@scure/bip39": "^1.2.1",
@@ -69,9 +69,6 @@
     "superstruct": "^1.0.3",
     "ts-retry-promise": "^0.7.1",
     "tweetnacl": "^1.0.3"
-  },
-  "peerDependencies": {
-    "@mysten/sui.js": "^0.52.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^18.0.0",

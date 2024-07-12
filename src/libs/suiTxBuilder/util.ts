@@ -192,10 +192,7 @@ export function convertObjArg(
   throw new Error('Invalid argument type');
 }
 
-export function convertAmounts(
-  txBlock: Transaction,
-  amounts: SuiAmountsArg[]
-): (TransactionArgument | number | bigint)[] {
+export function convertAmounts(txBlock: Transaction, amounts: SuiAmountsArg[]) {
   return amounts.map((amount) => {
     if (typeof amount === 'number' || typeof amount === 'bigint') {
       return amount;

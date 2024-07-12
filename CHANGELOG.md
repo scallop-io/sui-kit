@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.1](https://github.com/scallop-io/sui-kit/compare/v1.0.0...v1.0.1) (2024-07-12)
+
+### Bug Fixes
+
+- Minor fixes ([060761c](https://github.com/scallop-io/sui-kit/pull/28/commits/060761cc32f6c13b541c08c367e1c37ccaad3f2e))
+
 ### [1.0.0](https://github.com/scallop-io/sui-kit/compare/v0.45.0...v1.0.0) (2024-07-9)
 
 ### ⚠ BREAKING CHANGES

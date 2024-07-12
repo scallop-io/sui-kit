@@ -211,9 +211,10 @@ export class SuiTxBlock {
     if (coins.length > 1) {
       this.txBlock.mergeCoins(mergedCoin, coinObjects.slice(1));
     }
-    const [sendCoin] = this.txBlock.splitCoins(mergedCoin, [
-      convertAmounts(this.txBlock, [amount]),
-    ]);
+    const [sendCoin] = this.txBlock.splitCoins(
+      mergedCoin,
+      convertAmounts(this.txBlock, [amount])
+    );
     return [sendCoin, mergedCoin];
   }
 

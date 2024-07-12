@@ -19,6 +19,7 @@ import type {
   SuiTxArg,
   SuiVecTxArg,
   SuiKitReturnType,
+  SuiObjectArg,
 } from './types';
 
 /**
@@ -288,18 +289,18 @@ export class SuiKit {
   }
 
   async transferObjects(
-    objects: SuiTxArg[],
+    objects: SuiObjectArg[],
     recipient: string,
     derivePathParams?: DerivePathParams
   ): Promise<SuiTransactionBlockResponse>;
   async transferObjects<S extends boolean>(
-    objects: SuiTxArg[],
+    objects: SuiObjectArg[],
     recipient: string,
     sign?: S,
     derivePathParams?: DerivePathParams
   ): Promise<SuiKitReturnType<S>>;
   async transferObjects<S extends boolean>(
-    objects: SuiTxArg[],
+    objects: SuiObjectArg[],
     recipient: string,
     sign: S = true as S,
     derivePathParams?: DerivePathParams

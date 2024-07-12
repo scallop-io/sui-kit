@@ -121,7 +121,11 @@ export function convertArgs(
         : makeVecParam(txBlock, arg);
     }
 
-    return arg;
+    if (typeof arg === 'number' || typeof arg === 'bigint') {
+      return txBlock.pure.u64(arg);
+    }
+
+    return convertObjArg(txBlock, arg);
   });
 }
 
@@ -195,7 +199,7 @@ export function convertObjArg(
 export function convertAmounts(txBlock: Transaction, amounts: SuiAmountsArg[]) {
   return amounts.map((amount) => {
     if (typeof amount === 'number' || typeof amount === 'bigint') {
-      return amount;
+      return txBlock.pure.u64(amount);
     } else {
       return convertArgs(txBlock, [amount])[0];
     }

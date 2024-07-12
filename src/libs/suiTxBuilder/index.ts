@@ -44,7 +44,7 @@ export class SuiTxBlock {
   }
 
   get pure() {
-    return this.txBlock.pure.bind(this.txBlock);
+    return this.txBlock.pure;
   }
 
   object(value: string | TransactionObjectInput) {
@@ -137,10 +137,10 @@ export class SuiTxBlock {
     );
   }
 
-  splitCoins(coin: SuiObjectArg, amounts: SuiTxArg[]) {
+  splitCoins(coin: SuiObjectArg, amounts: SuiAmountsArg[]) {
     const res = this.txBlock.splitCoins(
       convertObjArg(this.txBlock, coin),
-      convertArgs(this.txBlock, amounts)
+      convertAmounts(this.txBlock, amounts)
     );
     return amounts.map((_, i) => res[i]);
   }
@@ -218,10 +218,10 @@ export class SuiTxBlock {
     return [sendCoin, mergedCoin];
   }
 
-  splitSUIFromGas(amounts: SuiTxArg[]) {
+  splitSUIFromGas(amounts: SuiAmountsArg[]) {
     return this.txBlock.splitCoins(
       this.txBlock.gas,
-      convertArgs(this.txBlock, amounts)
+      convertAmounts(this.txBlock, amounts)
     );
   }
 
@@ -272,7 +272,7 @@ export class SuiTxBlock {
     coins: SuiObjectArg[],
     sender: SuiAddressArg,
     recipient: SuiAddressArg,
-    amount: SuiTxArg
+    amount: SuiAmountsArg
   ) {
     return this.transferCoinToMany(coins, sender, [recipient], [amount]);
   }

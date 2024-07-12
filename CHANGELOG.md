@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.2](https://github.com/scallop-io/sui-kit/compare/v1.0.1...v1.0.2) (2024-07-12)
+
+### Bug Fixes
+
+- Add `number` and `bigint` check on `convertArgs` ([c73ccb3](https://github.com/scallop-io/sui-kit/pull/30/commits/c73ccb34840e6556e0aaf45ea978a7db99056a6b))
+- Fix types and `pure` getter on `SuiTxBlock` ([6cae48f](https://github.com/scallop-io/sui-kit/pull/30/commits/6cae48f1898d91ced89c0446804196efc9c0daa2))
+
 ### [1.0.1](https://github.com/scallop-io/sui-kit/compare/v1.0.0...v1.0.1) (2024-07-12)
 
 ### Bug Fixes

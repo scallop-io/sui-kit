@@ -59,8 +59,8 @@
     "doc": "typedoc --out docs src/index.ts"
   },
   "dependencies": {
-    "@mysten/bcs": "^1.0.2",
-    "@mysten/sui": "^1.2.1",
+    "@mysten/bcs": "^1.0.3",
+    "@mysten/sui": "^1.3.0",
     "@noble/curves": "^1.2.0",
     "@noble/hashes": "^1.3.2",
     "@scure/bip39": "^1.2.1",

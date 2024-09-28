@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.0](https://github.com/scallop-io/sui-kit/compare/v1.3.0...v1.7.0) (2024-08-29)
+
+### Features
+
+- Upgrade `@mysten/sui` sdk to 1.7.0 and other related packages ([f17e669](https://github.com/scallop-io/sui-kit/pull/33/commits/f17e669099550854ead93edd37f70eafc5400456))
+
 ### [1.3.0](https://github.com/scallop-io/sui-kit/compare/v1.0.1...v1.3.0) (2024-07-25)
 
 ### Features

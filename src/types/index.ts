@@ -75,8 +75,8 @@ export type TransactionPureArgument = Extract<
   }
 >;
 
-export type SuiTxArg = TransactionArgument | SerializedBcs<any>;
-export type SuiAddressArg = Argument | SerializedBcs<any> | string;
+export type SuiTxArg = TransactionArgument | SerializedBcs<unknown>;
+export type SuiAddressArg = Argument | SerializedBcs<unknown> | string;
 export type SuiAmountsArg = SuiTxArg | number | bigint;
 
 export type SuiObjectArg =

@@ -18,7 +18,7 @@ import type {
   SuiVecTxArg,
   SuiInputTypes,
   SuiAmountsArg,
-} from 'src/types';
+} from 'src/kits/types';
 
 export const getDefaultSuiInputType = (
   value: SuiTxArg

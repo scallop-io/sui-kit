@@ -14,7 +14,7 @@ import type {
   SuiObjectArg,
   SuiVecTxArg,
   SuiAmountsArg,
-} from 'src/types';
+} from 'src/kits/types';
 import type { bcs } from '@mysten/sui/bcs';
 
 export class SuiTxBlock {

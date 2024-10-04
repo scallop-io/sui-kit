@@ -1,5 +1,5 @@
 import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
-import type { DerivePathParams } from 'src/types';
+import type { DerivePathParams } from 'src/kits/types';
 
 /**
  * @description Get ed25519 derive path for SUI

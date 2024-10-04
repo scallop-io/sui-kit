@@ -1,5 +1,5 @@
-export { SuiKit } from './suiKit';
+export { SuiKit } from './kits/suiKit';
 export { SuiAccountManager } from './kits/suiAccountManager';
 export { SuiTxBlock } from './kits/suiTxBuilder';
 export { MultiSigClient } from './kits/multiSig';
-export type * from './types';
+export type * from './kits/types';

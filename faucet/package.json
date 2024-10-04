@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "import": "../dist/faucet/index.mjs",
+  "main": "../dist/faucet/index.js",
+  "types": "../dist/faucet/index.d.ts",
+  "sideEffects": false
+}

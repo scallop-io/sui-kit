@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "import": "../dist/bcs/index.mjs",
+  "main": "../dist/bcs/index.js",
+  "types": "../dist/bcs/index.d.ts",
+  "sideEffects": false
+}

@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "import": "../../dist/keypairs/secp256k1/index.mjs",
+  "main": "../../dist/keypairs/secp256k1/index.js",
+  "types": "../../dist/keypairs/secp256k1/index.d.ts",
+  "sideEffects": false
+}

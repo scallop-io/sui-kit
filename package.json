@@ -1,7 +1,9 @@
 {
   "name": "@scallop-io/sui-kit",
-  "version": "1.11.0",
+  "author": "Scallop Labs <team@scallop.io>",
   "description": "Tookit for interacting with SUI network",
+  "version": "1.11.0",
+  "license": "Apache-2.0",
   "keywords": [
     "sui",
     "scallop labs",
@@ -9,42 +11,119 @@
     "blockchain",
     "sui-kit"
   ],
-  "author": "team@scallop.io",
   "homepage": "https://github.com/scallop-io/sui-kit#readme",
   "bugs": "https://github.com/scallop-io/sui-kit/issues",
   "repository": {
     "type": "git",
     "url": "https://github.com/scallop-io/sui-kit.git"
   },
-  "license": "Apache-2.0",
   "publishConfig": {
     "access": "public"
   },
   "engines": {
-    "node": ">=18.18.0"
+    "node": ">=18"
   },
+  "sideEffects": false,
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "source": "./src/index.ts",
-      "import": "./dist/index.mjs",
-      "browser": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    }
-  },
   "files": [
     "dist",
-    "src"
+    "src",
+    "LICENSE",
+    "README.md",
+    "bcs",
+    "builder",
+    "client",
+    "cryptography",
+    "faucet",
+    "graphql",
+    "keypairs",
+    "multisig",
+    "transactions",
+    "utils",
+    "verify",
+    "zklogin"
   ],
+  "type": "commonjs",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./bcs": {
+      "types": "./dist/bcs/index.d.ts",
+      "import": "./dist/bcs/index.mjs",
+      "require": "./dist/bcs/index.js"
+    },
+    "./client": {
+      "types": "./dist/client/index.d.ts",
+      "import": "./dist/client/index.mjs",
+      "require": "./dist/client/index.js"
+    },
+    "./cryptography": {
+      "types": "./dist/cryptography/index.d.ts",
+      "import": "./dist/cryptography/index.mjs",
+      "require": "./dist/cryptography/index.js"
+    },
+    "./faucet": {
+      "types": "./dist/faucet/index.d.ts",
+      "import": "./dist/faucet/index.mjs",
+      "require": "./dist/faucet/index.js"
+    },
+    "./graphql": {
+      "types": "./dist/graphql/index.d.ts",
+      "import": "./dist/graphql/index.mjs",
+      "require": "./dist/graphql/index.js"
+    },
+    "./keypairs/ed25519": {
+      "types": "./dist/keypairs/ed25519/index.d.ts",
+      "import": "./dist/keypairs/ed25519/index.mjs",
+      "require": "./dist/keypairs/ed25519/index.js"
+    },
+    "./keypairs/secp256k1": {
+      "types": "./dist/keypairs/secp256k1/index.d.ts",
+      "import": "./dist/keypairs/secp256k1/index.mjs",
+      "require": "./dist/keypairs/secp256k1/index.js"
+    },
+    "./keypairs/secp256r1": {
+      "types": "./dist/keypairs/secp256r1/index.d.ts",
+      "import": "./dist/keypairs/secp256r1/index.mjs",
+      "require": "./dist/keypairs/secp256r1/index.js"
+    },
+    "./multisig": {
+      "types": "./dist/multisig/index.d.ts",
+      "import": "./dist/multisig/index.mjs",
+      "require": "./dist/multisig/index.js"
+    },
+    "./transactions": {
+      "types": "./dist/transactions/index.d.ts",
+      "import": "./dist/transactions/index.mjs",
+      "require": "./dist/transactions/index.js"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.mjs",
+      "require": "./dist/utils/index.js"
+    },
+    "./verify": {
+      "types": "./dist/verify/index.d.ts",
+      "import": "./dist/verify/index.mjs",
+      "require": "./dist/verify/index.js"
+    },
+    "./zklogin": {
+      "types": "./dist/zklogin/index.d.ts",
+      "import": "./dist/zklogin/index.mjs",
+      "require": "./dist/zklogin/index.js"
+    }
+  },
   "scripts": {
     "clean": "rm -rf tsconfig.tsbuildinfo ./dist",
     "build": "npm run build:types && npm run build:tsup",
-    "build:tsup": "tsup ./src/index.ts --format esm,cjs --sourcemap",
+    "build:tsup": "tsup",
     "build:types": "tsc --build",
     "watch": "pnpm run clean & pnpm run watch:types & pnpm run watch:tsup",
-    "watch:tsup": "tsup ./src/index.ts --format esm,cjs --clean --splitting --watch",
+    "watch:tsup": "tsup --splitting --watch",
     "watch:types": "tsc --watch",
     "test": "pnpm test:types && pnpm test:unit",
     "test:unit": "vitest run --test-timeout=60000",
@@ -54,9 +133,9 @@
     "release:major": "standard-version -r major",
     "release:minor": "standard-version -r minor",
     "release:patch": "standard-version -r patch",
-    "format:fix": "prettier --ignore-path 'dist/* docs/*' --write '**/*.{ts,json,md}'",
+    "format:fix": "prettier --write '**/*.{mts,mjs,ts,json,md}' '!dist/*' '!docs/*'",
     "lint:fix": "eslint .",
-    "prepare": "husky install",
+    "prepare": "husky && echo 'npx lint-staged' > .husky/pre-commit",
     "commit": "commit",
     "doc": "typedoc --out docs src/index.ts"
   },
@@ -91,7 +170,7 @@
     "standard-version": "^9.5.0",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "tsup": "^8.2.4",
+    "tsup": "^8.3.0",
     "typedoc": "^0.26.7",
     "typescript": "^5.6.2",
     "typescript-eslint": "^8.7.0",

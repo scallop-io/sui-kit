@@ -1,0 +1,33 @@
+{
+  // see https://www.typescriptlang.org/tsconfig
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
+  },
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["dom", "esnext"],
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "rootDir": "src",
+    "strict": true,
+    "downlevelIteration": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "preserveSymlinks": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "allowJs": true,
+    "incremental": true,
+    "types": ["node"],
+    "typeRoots": ["node_modules/@types"]
+  },
+  "include": ["src", "types"],
+  "exclude": ["node_modules", "dist"]
+}

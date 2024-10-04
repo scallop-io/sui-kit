@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "import": "../dist/utils/index.mjs",
+  "main": "../dist/utils/index.js",
+  "types": "../dist/utils/index.d.ts",
+  "sideEffects": false
+}

@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "import": "../dist/graphql/index.mjs",
+  "main": "../dist/graphql/index.js",
+  "types": "../dist/graphql/index.d.ts",
+  "sideEffects": false
+}

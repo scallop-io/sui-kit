@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "import": "../dist/zklogin/index.mjs",
+  "main": "../dist/zklogin/index.js",
+  "types": "../dist/zklogin/index.d.ts",
+  "sideEffects": false
+}

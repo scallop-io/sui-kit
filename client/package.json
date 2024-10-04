@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "import": "../dist/client/index.mjs",
+  "main": "../dist/client/index.js",
+  "types": "../dist/client/index.d.ts",
+  "sideEffects": false
+}

@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "import": "../dist/multisig/index.mjs",
+  "main": "../dist/multisig/index.js",
+  "types": "../dist/multisig/index.d.ts",
+  "sideEffects": false
+}

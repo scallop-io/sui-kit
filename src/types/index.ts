@@ -7,7 +7,7 @@ import type {
 } from '@mysten/sui/transactions';
 import type { SerializedBcs } from '@mysten/bcs';
 import { SuiTransactionBlockResponse } from '@mysten/sui/client';
-import { SuiTxBlock } from 'src/libs/suiTxBuilder';
+import { SuiTxBlock } from 'src/kits/suiTxBuilder';
 
 export type SuiKitParams = AccountMangerParams & {
   fullnodeUrls?: string[];

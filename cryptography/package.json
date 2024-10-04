@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "import": "../dist/cryptography/index.mjs",
+  "main": "../dist/cryptography/index.js",
+  "types": "../dist/cryptography/index.d.ts",
+  "sideEffects": false
+}

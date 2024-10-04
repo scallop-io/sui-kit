@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "import": "../dist/transactions/index.mjs",
+  "main": "../dist/transactions/index.js",
+  "types": "../dist/transactions/index.d.ts",
+  "sideEffects": false
+}

@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "import": "../../dist/keypairs/ed25519/index.js",
+  "main": "../../dist/keypairs/ed25519/index.js",
+  "types": "../../dist/keypairs/ed25519/index.d.ts",
+  "sideEffects": false
+}

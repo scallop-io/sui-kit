@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "import": "../dist/verify/index.mjs",
+  "main": "../dist/verify/index.js",
+  "types": "../dist/verify/index.d.ts",
+  "sideEffects": false
+}

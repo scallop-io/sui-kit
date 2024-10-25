@@ -43,7 +43,7 @@ export class SuiTxBlock {
     return this.txBlock.pure.address(value);
   }
 
-  get pure() {
+  get pure(): typeof this.txBlock.pure {
     return this.txBlock.pure;
   }
 

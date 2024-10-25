@@ -55,6 +55,16 @@ export class SuiKit {
   }
 
   /**
+   * Create SuiTxBlock with sender set to the current signer
+   * @returns SuiTxBlock with sender set to the current signer
+   */
+  createTxBlock(): SuiTxBlock {
+    const txb = new SuiTxBlock();
+    txb.setSender(this.accountManager.currentAddress);
+    return txb;
+  }
+
+  /**
    * if derivePathParams is not provided or mnemonics is empty, it will return the keypair.
    * else:
    * it will generate signer from the mnemonic with the given derivePathParams.
@@ -340,7 +350,7 @@ export class SuiKit {
   ) {
     owner = owner || this.accountManager.currentAddress;
     const coins = await this.suiInteractor.selectCoins(owner, amount, coinType);
-    return coins.map((c) => c.objectId);
+    return coins;
   }
 
   /**

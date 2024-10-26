@@ -5,11 +5,12 @@ import type {
   Inputs,
   TransactionArgument,
 } from '@mysten/sui/transactions';
+import type { SignatureScheme } from '@mysten/sui/cryptography';
 import type { SerializedBcs } from '@mysten/bcs';
 import { SuiTransactionBlockResponse } from '@mysten/sui/client';
 import { SuiTxBlock } from 'src/kits/suiTxBuilder';
 
-export type SuiKitParams = AccountMangerParams & {
+export type SuiKitParams = WalletKitParams & {
   fullnodeUrls?: string[];
   faucetUrl?: string;
   networkType?: NetworkType;
@@ -17,11 +18,14 @@ export type SuiKitParams = AccountMangerParams & {
 
 export type NetworkType = 'testnet' | 'mainnet' | 'devnet' | 'localnet';
 
-export type AccountMangerParams = {
+/* Wallet Kit types */
+export type WalletKitParams = {
+  scheme?: DerivePathScheme;
   mnemonics?: string;
   secretKey?: string;
 };
 
+export type DerivePathScheme = Exclude<SignatureScheme, 'MultiSig' | 'ZkLogin'>;
 export type DerivePathParams = {
   accountIndex?: number;
   isExternal?: boolean;

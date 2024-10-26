@@ -3,7 +3,7 @@
  */
 import { getFullnodeUrl } from '@mysten/sui/client';
 import { Transaction } from '@mysten/sui/transactions';
-import { SuiAccountManager } from './suiAccountManager';
+import { WalletKit } from './wallet';
 import { SuiTxBlock } from './suiTxBuilder';
 import { SuiInteractor } from './suiInteractor';
 import type {
@@ -27,7 +27,7 @@ import type {
  * @description This class is used to aggregate the tools that used to interact with SUI network.
  */
 export class SuiKit {
-  public accountManager: SuiAccountManager;
+  public wallet: WalletKit;
   public suiInteractor: SuiInteractor;
 
   /**
@@ -42,13 +42,14 @@ export class SuiKit {
    * @param fullnodeUrl, the fullnode url, default is the preconfig fullnode url for the given network type
    */
   constructor({
+    scheme,
     mnemonics,
     secretKey,
     networkType,
     fullnodeUrls,
   }: SuiKitParams = {}) {
     // Init the account manager
-    this.accountManager = new SuiAccountManager({ mnemonics, secretKey });
+    this.wallet = new WalletKit({ scheme, mnemonics, secretKey });
     // Init the sui interactor
     fullnodeUrls = fullnodeUrls || [getFullnodeUrl(networkType ?? 'mainnet')];
     this.suiInteractor = new SuiInteractor(fullnodeUrls);
@@ -61,7 +62,9 @@ export class SuiKit {
    * @param derivePathParams, such as { accountIndex: 2, isExternal: false, addressIndex: 10 }, comply with the BIP44 standard
    */
   getKeypair(derivePathParams?: DerivePathParams) {
-    return this.accountManager.getKeyPair(derivePathParams);
+    return derivePathParams
+      ? this.wallet.getKeypairFromMnemonics({ derivePathParams })
+      : this.wallet.keypair;
   }
 
   /**
@@ -69,7 +72,7 @@ export class SuiKit {
    * @param derivePathParams, such as { accountIndex: 2, isExternal: false, addressIndex: 10 }, comply with the BIP44 standard
    */
   switchAccount(derivePathParams: DerivePathParams) {
-    this.accountManager.switchAccount(derivePathParams);
+    this.wallet.switchKeypairForMnemonics(derivePathParams);
   }
 
   /**
@@ -77,15 +80,17 @@ export class SuiKit {
    * @param derivePathParams, such as { accountIndex: 2, isExternal: false, addressIndex: 10 }, comply with the BIP44 standard
    */
   getAddress(derivePathParams?: DerivePathParams) {
-    return this.accountManager.getAddress(derivePathParams);
+    return derivePathParams
+      ? this.wallet.getKeypairFromMnemonics({ derivePathParams }).toSuiAddress()
+      : this.wallet.address;
   }
 
-  currentAddress() {
-    return this.accountManager.currentAddress;
+  get currentAddress() {
+    return this.wallet.address;
   }
 
   async getBalance(coinType?: string, derivePathParams?: DerivePathParams) {
-    const owner = this.accountManager.getAddress(derivePathParams);
+    const owner = this.getAddress(derivePathParams);
     return this.suiInteractor.currentClient.getBalance({ owner, coinType });
   }
 
@@ -238,7 +243,7 @@ export class SuiKit {
     derivePathParams?: DerivePathParams
   ) {
     const tx = new SuiTxBlock();
-    const owner = this.accountManager.getAddress(derivePathParams);
+    const owner = this.getAddress(derivePathParams);
     const totalAmount = amounts.reduce((a, b) => a + b, 0);
     const coins = await this.suiInteractor.selectCoins(
       owner,
@@ -338,7 +343,7 @@ export class SuiKit {
     coinType: string,
     owner?: string
   ) {
-    owner = owner || this.accountManager.currentAddress;
+    owner = owner || this.currentAddress;
     const coins = await this.suiInteractor.selectCoins(owner, amount, coinType);
     return coins.map((c) => c.objectId);
   }

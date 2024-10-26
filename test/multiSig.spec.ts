@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { Transaction } from '@mysten/sui/transactions';
 import { SuiClient, getFullnodeUrl } from '@mysten/sui/client';
-import { SuiAccountManager } from '../src/libs/suiAccountManager';
-import { MultiSigClient } from '../src/libs/multiSig';
+import { WalletKit } from '../src/kits/wallet';
+import { MultiSigClient } from '../src/kits/multiSig';
 
 const ENABLE_LOG = false;
 
@@ -12,12 +12,14 @@ const ENABLE_LOG = false;
 describe('Test MultiSigClient', async () => {
   const mnemonics =
     'elite balcony laundry unique quit flee farm dry buddy outside airport service';
-  const accountManager = new SuiAccountManager({ mnemonics });
+  const wallet = new WalletKit({ mnemonics });
   const suiClient = new SuiClient({ url: getFullnodeUrl('mainnet') });
 
   const rawPubkeys: string[] = [];
   for (let i = 0; i < 5; i++) {
-    const keypair = accountManager.getKeyPair({ accountIndex: i });
+    const keypair = wallet.getKeypairFromMnemonics({
+      derivePathParams: { accountIndex: i },
+    });
     const pubkey = keypair.getPublicKey().toSuiPublicKey();
     rawPubkeys.push(pubkey);
   }
@@ -52,11 +54,11 @@ describe('Test MultiSigClient', async () => {
 
     const txBytes = await tx.build({ client: suiClient });
 
-    const sig1 = await accountManager
-      .getKeyPair({ accountIndex: 0 })
+    const sig1 = await wallet
+      .getKeypairFromMnemonics({ derivePathParams: { accountIndex: 0 } })
       .signTransaction(txBytes);
-    const sig2 = await accountManager
-      .getKeyPair({ accountIndex: 1 })
+    const sig2 = await wallet
+      .getKeypairFromMnemonics({ derivePathParams: { accountIndex: 1 } })
       .signTransaction(txBytes);
     const sigs = [sig1.signature, sig2.signature];
 
@@ -87,14 +89,14 @@ describe('Test MultiSigClient', async () => {
 
     const txBytes = await tx.build({ client: suiClient });
 
-    const sig1 = await accountManager
-      .getKeyPair({ accountIndex: 1 })
+    const sig1 = await wallet
+      .getKeypairFromMnemonics({ derivePathParams: { accountIndex: 1 } })
       .signTransaction(txBytes);
-    const sig2 = await accountManager
-      .getKeyPair({ accountIndex: 2 })
+    const sig2 = await wallet
+      .getKeypairFromMnemonics({ derivePathParams: { accountIndex: 2 } })
       .signTransaction(txBytes);
-    const sig3 = await accountManager
-      .getKeyPair({ accountIndex: 3 })
+    const sig3 = await wallet
+      .getKeypairFromMnemonics({ derivePathParams: { accountIndex: 3 } })
       .signTransaction(txBytes);
     const sigs = [sig1.signature, sig2.signature, sig3.signature];
 

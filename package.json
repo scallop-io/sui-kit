@@ -1,6 +1,6 @@
 {
   "name": "@scallop-io/sui-kit",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Tookit for interacting with SUI network",
   "keywords": [
     "sui",
@@ -60,8 +60,8 @@
     "doc": "typedoc --out docs src/index.ts"
   },
   "dependencies": {
-    "@mysten/bcs": "^1.0.4",
-    "@mysten/sui": "^1.7.0",
+    "@mysten/bcs": "^1.2.0",
+    "@mysten/sui": "^1.3.1",
     "@noble/curves": "^1.4.2",
     "@noble/hashes": "^1.4.0",
     "@scure/bip39": "^1.3.0",
@@ -77,8 +77,8 @@
     "@commitlint/prompt-cli": "^18.0.0",
     "@types/node": "^20.8.7",
     "@types/tmp": "^0.2.5",
-    "@typescript-eslint/eslint-plugin": "^6.8.0",
-    "@typescript-eslint/parser": "^6.8.0",
+    "@typescript-eslint/eslint-plugin": "^8.11.0",
+    "@typescript-eslint/parser": "8.10.0",
     "dotenv": "^16.3.1",
     "eslint": "^8.52.0",
     "eslint-config-prettier": "^9.0.0",
@@ -91,8 +91,8 @@
     "tsconfig-paths": "^4.2.0",
     "tsup": "^7.2.0",
     "typedoc": "^0.25.2",
-    "typescript": "^5.2.2",
-    "valibot": "0.36.0",
+    "typescript": "5.5.4",
+    "valibot": "^0.36.0",
     "vitest": "^0.34.6"
   },
   "lint-staged": {

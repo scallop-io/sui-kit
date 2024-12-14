@@ -64,8 +64,10 @@ describe('Test Scallop Kit', async () => {
 
   it('Test Interactor with Sui: get objects', async () => {
     const coinType = `0x2::sui::SUI`;
-    const objectIds = await suiKit.selectCoinsWithAmount(1e8, coinType);
-    const getObjectsRes = await suiKit.getObjects(objectIds);
+    const coinObjects = await suiKit.selectCoinsWithAmount(1e8, coinType);
+    const getObjectsRes = await suiKit.getObjects(
+      coinObjects.map(({ objectId }) => objectId)
+    );
 
     if (ENABLE_LOG) {
       console.info(`Get Objects Response:`);

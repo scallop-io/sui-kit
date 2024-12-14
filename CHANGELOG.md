@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [1.7.0](https://github.com/scallop-io/sui-kit/compare/v1.3.0...v1.7.0) (2024-08-29)
+### [1.3.1](https://github.com/scallop-io/sui-kit/compare/v1.3.0...v1.3.1) (2024-12-14)
+
+### Features
+
+- Export `SuiInteractor` class ([e7109e0](https://github.com/scallop-io/sui-kit/pull/35/commits/e7109e0324e6ffb028d2ab894d2859a2b79041af))
+- Upgrade `@mysten/sui` to version `1.3.1` ([5925815](https://github.com/scallop-io/sui-kit/pull/35/commits/59258155689456736fc05a3c73c52d12680ad5b1))
+- Add `createTxBlock`; update `selectCoinsWithAmount` to return `version` and also `digest` instead of `objectId` only ([569c043](https://github.com/scallop-io/sui-kit/pull/35/commits/569c043a6c7e920a743506941d980e4288e969a7))
 
 ### Features
 

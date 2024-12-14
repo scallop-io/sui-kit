@@ -19,6 +19,7 @@ import type {
   SuiInputTypes,
   SuiAmountsArg,
 } from 'src/types';
+import type { SuiObjectRef } from '@mysten/sui/client';
 
 export const getDefaultSuiInputType = (
   value: SuiTxArg
@@ -33,6 +34,67 @@ export const getDefaultSuiInputType = (
     return undefined;
   }
 };
+
+// =========== TYPE GUARD ============
+/**
+ * Check whether it is an valid input amount;
+ *
+ * @param arg
+ * @returns boolean.
+ */
+function isAmountArg(arg: any): arg is bigint | number | string {
+  return (
+    typeof arg === 'number' ||
+    typeof arg === 'bigint' ||
+    (typeof arg === 'string' && !isValidSuiAddress(arg) && !isNaN(Number(arg)))
+  );
+}
+
+/**
+ * Check whether it is an valid move vec input.
+ *
+ * @param arg The argument to check.
+ * @returns boolean.
+ */
+function isMoveVecArg(arg: SuiTxArg | SuiVecTxArg): arg is SuiVecTxArg {
+  if (typeof arg === 'object' && 'vecType' in arg && 'value' in arg) {
+    return true;
+  } else if (Array.isArray(arg)) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Check whether it is an valid object reference.
+ * @param arg The argument to check
+ * @returns boolean
+ */
+function isObjectRef(arg: SuiObjectArg): arg is SuiObjectRef {
+  return (
+    typeof arg === 'object' &&
+    'digest' in arg &&
+    'version' in arg &&
+    'objectId' in arg
+  );
+}
+
+/**
+ * Check whether it is an valid shared object reference.
+ * @param arg The argument to check
+ * @returns
+ */
+function isSharedObjectRef(
+  arg: SuiObjectArg
+): arg is Parameters<typeof Inputs.SharedObjectRef>[0] {
+  return (
+    typeof arg === 'object' &&
+    'objectId' in arg &&
+    'initialSharedVersion' in arg &&
+    'mutable' in arg
+  );
+}
+// ===================================
 
 /**
  * Since we know the elements in the array are the same type
@@ -84,21 +146,6 @@ export function makeVecParam(
 }
 
 /**
- * Check whether it is an valid move vec input.
- *
- * @param arg The argument to check.
- * @returns boolean.
- */
-export function isMoveVecArg(arg: SuiTxArg | SuiVecTxArg): arg is SuiVecTxArg {
-  if (typeof arg === 'object' && 'vecType' in arg && 'value' in arg) {
-    return true;
-  } else if (Array.isArray(arg)) {
-    return true;
-  }
-  return false;
-}
-
-/**
  * Convert any valid input into array of TransactionArgument.
  *
  * @param txb The Transaction Block
@@ -121,8 +168,8 @@ export function convertArgs(
         : makeVecParam(txBlock, arg);
     }
 
-    if (typeof arg === 'number' || typeof arg === 'bigint') {
-      return txBlock.pure.u64(arg);
+    if (isAmountArg(arg)) {
+      return convertAmounts(txBlock, [arg])[0];
     }
 
     return convertObjArg(txBlock, arg);
@@ -139,7 +186,7 @@ export function convertArgs(
 export function convertAddressArg(
   txBlock: Transaction,
   arg: SuiAddressArg
-): TransactionArgument {
+): SuiTxArg {
   if (typeof arg === 'string' && isValidSuiAddress(arg)) {
     return txBlock.pure.address(normalizeSuiAddress(arg));
   } else {
@@ -162,11 +209,11 @@ export function convertObjArg(
     return txb.object(arg);
   }
 
-  if ('digest' in arg && 'version' in arg && 'objectId' in arg) {
+  if (isObjectRef(arg)) {
     return txb.objectRef(arg);
   }
 
-  if ('objectId' in arg && 'initialSharedVersion' in arg && 'mutable' in arg) {
+  if (isSharedObjectRef(arg)) {
     return txb.sharedObjectRef(arg);
   }
 
@@ -196,9 +243,12 @@ export function convertObjArg(
   throw new Error('Invalid argument type');
 }
 
-export function convertAmounts(txBlock: Transaction, amounts: SuiAmountsArg[]) {
+export function convertAmounts(
+  txBlock: Transaction,
+  amounts: SuiAmountsArg[]
+): TransactionArgument[] {
   return amounts.map((amount) => {
-    if (typeof amount === 'number' || typeof amount === 'bigint') {
+    if (isAmountArg(amount)) {
       return txBlock.pure.u64(amount);
     } else {
       return convertArgs(txBlock, [amount])[0];

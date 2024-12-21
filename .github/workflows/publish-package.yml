@@ -12,29 +12,45 @@ jobs:
       packages: write 
     steps:
       - uses: actions/checkout@v3
+      
       - uses: pnpm/action-setup@v4
         with:
           version: 9.12.3
+      
       - uses: actions/setup-node@v3.6.0
         with:
           node-version: '18'
           cache: 'pnpm'
           registry-url: 'https://registry.npmjs.org'
           scope: '@scallop-io'
+      
       - run: |
           pnpm install --frozen-lockfile
           pnpm run build
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-      - run: pnpm publish --no-git-checks
+      
+      - name: Determine npm tag
+        id: npm_tag
+        run: |
+          if [[ "${{ github.ref_name }}" == *".alpha"* ]]; then
+            echo "tag=alpha" >> $GITHUB_ENV
+          elif [[ "${{ github.ref_name }}" == *".rc"* ]]; then
+            echo "tag=rc" >> $GITHUB_ENV
+          else
+            echo "tag=latest" >> $GITHUB_ENV
+
+      - run: pnpm publish --no-git-checks --tag ${{ env.tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+      
       - uses: actions/setup-node@v3.6.0
         with:
           node-version: '18'
           cache: 'pnpm'
           registry-url: 'https://npm.pkg.github.com'
           scope: '@scallop-io'
-      - run: pnpm publish --no-git-checks --access public --registry https://npm.pkg.github.com
+      
+      - run: pnpm publish --no-git-checks --access public --registry https://npm.pkg.github.com --tag ${{ env.tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

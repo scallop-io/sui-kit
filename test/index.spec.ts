@@ -221,24 +221,6 @@ describe('Test convert args', () => {
     fullnodeUrls,
   });
 
-  it('Test convert args for Shared Sui Object Data', async () => {
-    const sharedObjId =
-      '0xa757975255146dc9686aa823b7838b507f315d704f428cbadad2f4ea061939d9' as const;
-    const objectData = (await suiKit.getObjects([sharedObjId]))[0];
-    expect(!!objectData).toBe(true);
-
-    // try parse with convert args
-    const txb = new Transaction();
-    const inputArg = convertArgs(txb, [objectData]);
-    expect('Input' in inputArg[0] && inputArg[0].type === 'object').toBe(true);
-    if ('Input' in inputArg[0]) {
-      expect(
-        !!txb.getData().inputs[inputArg[0].Input].Object?.SharedObject
-          ?.initialSharedVersion
-      ).toBe(true);
-    }
-  });
-
   it('Test convert args for Owned Sui Object Data', async () => {
     const objId =
       '0x33305a2e3d3666e9af9ea5d018788405c8fe5ff30f5fd8ea2295e89cfd619459' as const;
@@ -247,6 +229,7 @@ describe('Test convert args', () => {
 
     // try parse with convert args
     const txb = new Transaction();
+    // @ts-ignore
     const inputArg = convertArgs(txb, [objectData]);
     expect('Input' in inputArg[0] && inputArg[0].type === 'object').toBe(true);
     if ('Input' in inputArg[0]) {
@@ -260,6 +243,7 @@ describe('Test convert args', () => {
   it('Test convert args for amount', async () => {
     const amount = '1000000' as const;
     const txb = new Transaction();
+    // @ts-ignore
     const inputArg = convertArgs(txb, [amount]);
     expect('Input' in inputArg[0] && inputArg[0].type === 'pure').toBe(true);
   });

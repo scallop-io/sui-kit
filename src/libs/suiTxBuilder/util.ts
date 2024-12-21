@@ -159,19 +159,11 @@ export function makeVecParam(
  */
 export function convertArgs(
   txBlock: Transaction,
-  args: (SuiObjectData | SuiAmountsArg | SuiAddressArg | SuiVecTxArg)[]
+  args: (SuiTxArg | SuiVecTxArg)[]
 ): TransactionArgument[] {
   return args.map((arg) => {
     if (arg instanceof SerializedBcs || isSerializedBcs(arg)) {
       return txBlock.pure(arg);
-    }
-
-    if (isAmountArg(arg)) {
-      return convertAmounts(txBlock, [Number(arg)])[0];
-    }
-
-    if ('objectId' in arg) {
-      return convertObjArg(txBlock, arg);
     }
 
     if (isMoveVecArg(arg)) {
@@ -179,6 +171,10 @@ export function convertArgs(
       return vecType
         ? makeVecParam(txBlock, arg.value, arg.vecType)
         : makeVecParam(txBlock, arg);
+    }
+
+    if (isAmountArg(arg)) {
+      return convertAmounts(txBlock, [arg])[0];
     }
 
     return convertObjArg(txBlock, arg);
@@ -273,13 +269,13 @@ export function convertObjArg(
 
 export function convertAmounts(
   txBlock: Transaction,
-  amounts: SuiAmountsArg[]
+  amounts: (SuiAmountsArg | string)[]
 ): TransactionArgument[] {
   return amounts.map((amount) => {
     if (isAmountArg(amount)) {
       return txBlock.pure.u64(amount);
     } else {
-      return convertArgs(txBlock, [amount])[0];
+      return amount as TransactionArgument;
     }
   });
 }

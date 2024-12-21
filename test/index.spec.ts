@@ -1,13 +1,14 @@
 import * as dotenv from 'dotenv';
 import { describe, it, expect } from 'vitest';
-import { SuiKit, SuiTxBlock } from '../src/index';
+import { SuiKit, SuiTxBlock, Transaction } from '../src/index';
 import { getDerivePathForSUI } from '../src/libs/suiAccountManager/keypair';
+import { convertArgs } from 'src/libs/suiTxBuilder/util';
 
 const ENABLE_LOG = false;
 
 dotenv.config();
 
-describe('Test Scallop Kit', async () => {
+describe('Test Scallop Kit', () => {
   const fullnodeUrls = [
     'https://fullnode.mainnet.sui.io:443',
     'https://sui-mainnet.public.blastapi.io',
@@ -205,5 +206,61 @@ describe('Test Scallop Kit', async () => {
     }
 
     expect(transferCoinsRes.effects.status.status === 'success').toBe(true);
+  });
+});
+
+describe('Test convert args', () => {
+  const fullnodeUrls = [
+    'https://fullnode.mainnet.sui.io:443',
+    'https://sui-mainnet.public.blastapi.io',
+    'https://sui-mainnet-rpc.allthatnode.com',
+  ];
+  const suiKit = new SuiKit({
+    secretKey: process.env.SECRET_KEY,
+    // mnemonics: process.env.MNEMONICS,
+    fullnodeUrls,
+  });
+
+  it('Test convert args for Shared Sui Object Data', async () => {
+    const sharedObjId =
+      '0xa757975255146dc9686aa823b7838b507f315d704f428cbadad2f4ea061939d9' as const;
+    const objectData = (await suiKit.getObjects([sharedObjId]))[0];
+    expect(!!objectData).toBe(true);
+
+    // try parse with convert args
+    const txb = new Transaction();
+    const inputArg = convertArgs(txb, [objectData]);
+    expect('Input' in inputArg[0] && inputArg[0].type === 'object').toBe(true);
+    if ('Input' in inputArg[0]) {
+      expect(
+        !!txb.getData().inputs[inputArg[0].Input].Object?.SharedObject
+          ?.initialSharedVersion
+      ).toBe(true);
+    }
+  });
+
+  it('Test convert args for Owned Sui Object Data', async () => {
+    const objId =
+      '0x33305a2e3d3666e9af9ea5d018788405c8fe5ff30f5fd8ea2295e89cfd619459' as const;
+    const objectData = (await suiKit.getObjects([objId]))[0];
+    expect(!!objectData).toBe(true);
+
+    // try parse with convert args
+    const txb = new Transaction();
+    const inputArg = convertArgs(txb, [objectData]);
+    expect('Input' in inputArg[0] && inputArg[0].type === 'object').toBe(true);
+    if ('Input' in inputArg[0]) {
+      expect(
+        !!txb.getData().inputs[inputArg[0].Input].Object?.ImmOrOwnedObject
+          ?.version
+      ).toBe(true);
+    }
+  });
+
+  it('Test convert args for amount', async () => {
+    const amount = '1000000' as const;
+    const txb = new Transaction();
+    const inputArg = convertArgs(txb, [amount]);
+    expect('Input' in inputArg[0] && inputArg[0].type === 'pure').toBe(true);
   });
 });

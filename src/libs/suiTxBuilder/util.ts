@@ -86,7 +86,7 @@ function isObjectRef(arg: SuiObjectArg): arg is SuiObjectRef {
  */
 function isSharedObjectRef(
   arg: SuiObjectArg | SuiObjectData
-): arg is Parameters<typeof Inputs.SharedObjectRef>[0] {
+): arg is Parameters<typeof Inputs.SharedObjectRef>[0] | SuiObjectData {
   const isObjectWithId = typeof arg === 'object' && 'objectId' in arg;
   const isInputSharedObjectRef =
     isObjectWithId && 'initialSharedVersion' in arg && 'mutable' in arg;
@@ -159,11 +159,19 @@ export function makeVecParam(
  */
 export function convertArgs(
   txBlock: Transaction,
-  args: (SuiTxArg | SuiVecTxArg)[]
+  args: (SuiObjectData | SuiAmountsArg | SuiAddressArg | SuiVecTxArg)[]
 ): TransactionArgument[] {
   return args.map((arg) => {
     if (arg instanceof SerializedBcs || isSerializedBcs(arg)) {
       return txBlock.pure(arg);
+    }
+
+    if (isAmountArg(arg)) {
+      return convertAmounts(txBlock, [Number(arg)])[0];
+    }
+
+    if ('objectId' in arg) {
+      return convertObjArg(txBlock, arg);
     }
 
     if (isMoveVecArg(arg)) {
@@ -171,10 +179,6 @@ export function convertArgs(
       return vecType
         ? makeVecParam(txBlock, arg.value, arg.vecType)
         : makeVecParam(txBlock, arg);
-    }
-
-    if (isAmountArg(arg)) {
-      return convertAmounts(txBlock, [arg])[0];
     }
 
     return convertObjArg(txBlock, arg);
@@ -208,14 +212,33 @@ export function convertAddressArg(
  */
 export function convertObjArg(
   txb: Transaction,
-  arg: SuiObjectArg
+  arg: SuiObjectArg | SuiObjectData
 ): TransactionObjectArgument {
   if (typeof arg === 'string') {
     return txb.object(arg);
   }
 
   if (isSharedObjectRef(arg)) {
-    return txb.sharedObjectRef(arg);
+    const isSuiObjectData = 'objectId' in arg;
+    if (!isSuiObjectData) {
+      return txb.sharedObjectRef(arg);
+    }
+    if (
+      isSuiObjectData &&
+      'owner' in arg &&
+      !!arg.owner &&
+      typeof arg.owner === 'object' &&
+      'Shared' in arg.owner
+    ) {
+      const isMutable =
+        arg.content?.dataType === 'moveObject' && arg.content.hasPublicTransfer;
+      return txb.sharedObjectRef({
+        objectId: arg.objectId,
+        initialSharedVersion: arg.owner.Shared.initial_shared_version,
+        mutable: isMutable,
+      });
+    }
+    throw new Error(`Cannot parse ${JSON.stringify(arg)} as shared object`);
   }
 
   if (isObjectRef(arg)) {

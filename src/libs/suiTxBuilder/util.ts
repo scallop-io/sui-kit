@@ -19,7 +19,7 @@ import type {
   SuiInputTypes,
   SuiAmountsArg,
 } from 'src/types';
-import type { SuiObjectRef } from '@mysten/sui/client';
+import type { SuiObjectData, SuiObjectRef } from '@mysten/sui/client';
 
 export const getDefaultSuiInputType = (
   value: SuiTxArg
@@ -85,14 +85,19 @@ function isObjectRef(arg: SuiObjectArg): arg is SuiObjectRef {
  * @returns
  */
 function isSharedObjectRef(
-  arg: SuiObjectArg
+  arg: SuiObjectArg | SuiObjectData
 ): arg is Parameters<typeof Inputs.SharedObjectRef>[0] {
-  return (
-    typeof arg === 'object' &&
-    'objectId' in arg &&
-    'initialSharedVersion' in arg &&
-    'mutable' in arg
-  );
+  const isObjectWithId = typeof arg === 'object' && 'objectId' in arg;
+  const isInputSharedObjectRef =
+    isObjectWithId && 'initialSharedVersion' in arg && 'mutable' in arg;
+  const isSharedSuiObjectData =
+    isObjectWithId &&
+    'owner' in arg &&
+    !!arg.owner &&
+    typeof arg.owner === 'object' &&
+    'Shared' in arg.owner &&
+    'initial_shared_version' in arg.owner.Shared;
+  return isInputSharedObjectRef || isSharedSuiObjectData;
 }
 // ===================================
 
@@ -209,12 +214,12 @@ export function convertObjArg(
     return txb.object(arg);
   }
 
-  if (isObjectRef(arg)) {
-    return txb.objectRef(arg);
-  }
-
   if (isSharedObjectRef(arg)) {
     return txb.sharedObjectRef(arg);
+  }
+
+  if (isObjectRef(arg)) {
+    return txb.objectRef(arg);
   }
 
   if ('Object' in arg) {

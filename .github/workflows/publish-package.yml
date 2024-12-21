@@ -1,4 +1,4 @@
-name: Publish package to GitHub Packages
+name: Publish package to GitHub and npm
 
 on:
   release:
@@ -11,30 +11,52 @@ jobs:
       contents: read
       packages: write 
     steps:
+      # Step 1: Check out the code
       - uses: actions/checkout@v3
+      
+      # Step 2: Set up pnpm
       - uses: pnpm/action-setup@v4
         with:
           version: 9.12.3
+      
+      # Step 3: Set up Node.js for npm publishing
       - uses: actions/setup-node@v3.6.0
         with:
           node-version: '18'
           cache: 'pnpm'
           registry-url: 'https://registry.npmjs.org'
           scope: '@scallop-io'
+
+      # Step 4: Install dependencies and build the project
       - run: |
           pnpm install --frozen-lockfile
           pnpm run build
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-      - run: pnpm publish --no-git-checks
+      
+      # Step 5: Determine npm tag based on the release type
+      - id: determine-tag
+        run: |
+          if [[ "${{ github.event.release.tag_name }}" == *"alpha"* ]]; then
+            echo "tag=alpha" >> $GITHUB_ENV
+          else
+            echo "tag=latest" >> $GITHUB_ENV
+          fi
+
+      # Step 6: Publish to npm with the appropriate tag
+      - run: pnpm publish --no-git-checks --tag ${{ env.tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+
+      # Step 7: Set up Node.js for GitHub Packages
       - uses: actions/setup-node@v3.6.0
         with:
           node-version: '18'
           cache: 'pnpm'
           registry-url: 'https://npm.pkg.github.com'
           scope: '@scallop-io'
+
+      # Step 8: Publish to GitHub Packages
       - run: pnpm publish --no-git-checks --access public --registry https://npm.pkg.github.com
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -2,7 +2,7 @@ import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
 import { getKeyPair } from './keypair';
 import { hexOrBase64ToUint8Array, normalizePrivateKey } from './util';
 import { generateMnemonic } from './crypto';
-import type { AccountMangerParams, DerivePathParams } from 'src/types';
+import type { AccountManagerParams, DerivePathParams } from 'src/types';
 import {
   SUI_PRIVATE_KEY_PREFIX,
   decodeSuiPrivateKey,
@@ -23,7 +23,7 @@ export class SuiAccountManager {
    * @param mnemonics, 12 or 24 mnemonics words, separated by space
    * @param secretKey, base64 or hex string or Bech32 string, when mnemonics is provided, secretKey will be ignored
    */
-  constructor({ mnemonics, secretKey }: AccountMangerParams = {}) {
+  constructor({ mnemonics, secretKey }: AccountManagerParams = {}) {
     // If the mnemonics or secretKey is provided, use it
     // Otherwise, generate a random mnemonics with 24 words
     this.mnemonics = mnemonics || '';

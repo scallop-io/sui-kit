@@ -9,7 +9,7 @@ import type { SerializedBcs } from '@mysten/bcs';
 import { SuiTransactionBlockResponse } from '@mysten/sui/client';
 import { SuiTxBlock } from 'src/libs/suiTxBuilder';
 
-export type SuiKitParams = AccountMangerParams & {
+export type SuiKitParams = AccountManagerParams & {
   fullnodeUrls?: string[];
   faucetUrl?: string;
   networkType?: NetworkType;
@@ -17,7 +17,7 @@ export type SuiKitParams = AccountMangerParams & {
 
 export type NetworkType = 'testnet' | 'mainnet' | 'devnet' | 'localnet';
 
-export type AccountMangerParams = {
+export type AccountManagerParams = {
   mnemonics?: string;
   secretKey?: string;
 };

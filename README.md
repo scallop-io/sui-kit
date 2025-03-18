@@ -1,4 +1,4 @@
-# Tookit for interacting with SUI network
+# Toolkit for interacting with SUI network
 
 ## Features
 

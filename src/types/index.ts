@@ -6,18 +6,26 @@ import type {
   TransactionArgument,
 } from '@mysten/sui/transactions';
 import type { SerializedBcs } from '@mysten/bcs';
-import { SuiTransactionBlockResponse } from '@mysten/sui/client';
+import { SuiClient, SuiTransactionBlockResponse } from '@mysten/sui/client';
 import { SuiTxBlock } from 'src/libs/suiTxBuilder';
 
-export type SuiKitParams = AccountMangerParams & {
-  fullnodeUrls?: string[];
+export type SuiKitParams = (AccountManagerParams & {
   faucetUrl?: string;
   networkType?: NetworkType;
-};
+}) &
+  SuiInteractorParams;
+
+export type SuiInteractorParams =
+  | {
+      fullnodeUrls: string[];
+    }
+  | {
+      suiClients: SuiClient[];
+    };
 
 export type NetworkType = 'testnet' | 'mainnet' | 'devnet' | 'localnet';
 
-export type AccountMangerParams = {
+export type AccountManagerParams = {
   mnemonics?: string;
   secretKey?: string;
 };

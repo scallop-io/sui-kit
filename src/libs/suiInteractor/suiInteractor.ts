@@ -1,29 +1,34 @@
-import { SuiClient } from '@mysten/sui/client';
+import { SuiInteractorParams } from 'src/types';
 import { SuiOwnedObject, SuiSharedObject } from '../suiModel';
 import { delay } from './util';
-import type {
-  SuiTransactionBlockResponseOptions,
-  SuiTransactionBlockResponse,
-  SuiObjectDataOptions,
-  SuiObjectData,
-  DryRunTransactionBlockResponse,
+import {
+  type SuiTransactionBlockResponseOptions,
+  type SuiTransactionBlockResponse,
+  type SuiObjectDataOptions,
+  type SuiObjectData,
+  type DryRunTransactionBlockResponse,
+  SuiClient,
 } from '@mysten/sui/client';
 
 /**
  * Encapsulates all functions that interact with the sui sdk
  */
 export class SuiInteractor {
-  public readonly clients: SuiClient[];
+  public readonly clients: SuiClient[] = [];
   public currentClient: SuiClient;
-  public readonly fullNodes: string[];
-  public currentFullNode: string;
+  public readonly fullNodes: string[] = [];
 
-  constructor(fullNodeUrls: string[]) {
-    if (fullNodeUrls.length === 0)
-      throw new Error('fullNodeUrls must not be empty');
-    this.fullNodes = fullNodeUrls;
-    this.clients = fullNodeUrls.map((url) => new SuiClient({ url }));
-    this.currentFullNode = fullNodeUrls[0];
+  constructor(params: SuiInteractorParams) {
+    if ('fullnodeUrls' in params) {
+      this.fullNodes = params.fullnodeUrls;
+      this.clients = this.fullNodes.map((url) => new SuiClient({ url }));
+    } else if ('suiClients' in params) {
+      this.clients = params.suiClients;
+    } else {
+      throw new Error(
+        'Invalid params, must provide fullNodeUrls or suiClients'
+      );
+    }
     this.currentClient = this.clients[0];
   }
 
@@ -31,8 +36,6 @@ export class SuiInteractor {
     const currentClientIdx = this.clients.indexOf(this.currentClient);
     this.currentClient =
       this.clients[(currentClientIdx + 1) % this.clients.length];
-    this.currentFullNode =
-      this.fullNodes[(currentClientIdx + 1) % this.clients.length];
   }
 
   async sendTx(

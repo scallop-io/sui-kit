@@ -39,19 +39,25 @@ export class SuiKit {
    * @param mnemonics, 12 or 24 mnemonics words, separated by space
    * @param secretKey, base64 or hex string or bech32, when mnemonics is provided, secretKey will be ignored
    * @param networkType, 'testnet' | 'mainnet' | 'devnet' | 'localnet', default is 'mainnet'
-   * @param fullnodeUrl, the fullnode url, default is the preconfig fullnode url for the given network type
+   * @param fullnodeUrls, the fullnode url, default is the preconfig fullnode url for the given network type
    */
-  constructor({
-    mnemonics,
-    secretKey,
-    networkType,
-    fullnodeUrls,
-  }: SuiKitParams = {}) {
+  constructor(params: SuiKitParams) {
+    const { mnemonics, secretKey, networkType } = params;
     // Init the account manager
     this.accountManager = new SuiAccountManager({ mnemonics, secretKey });
-    // Init the sui interactor
-    fullnodeUrls = fullnodeUrls || [getFullnodeUrl(networkType ?? 'mainnet')];
-    this.suiInteractor = new SuiInteractor(fullnodeUrls);
+
+    let suiInteractorParams;
+    if ('fullnodeUrls' in params) {
+      suiInteractorParams = { fullnodeUrls: params.fullnodeUrls };
+    } else if ('suiClients' in params) {
+      suiInteractorParams = { suiClients: params.suiClients };
+    } else {
+      suiInteractorParams = {
+        fullnodeUrls: [getFullnodeUrl(networkType ?? 'mainnet')],
+      };
+    }
+
+    this.suiInteractor = new SuiInteractor(suiInteractorParams);
   }
 
   /**

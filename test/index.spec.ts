@@ -2,6 +2,7 @@ import * as dotenv from 'dotenv';
 import { describe, it, expect } from 'vitest';
 import { SuiKit, SuiTxBlock } from '../src/index';
 import { getDerivePathForSUI } from '../src/libs/suiAccountManager/keypair';
+import { SuiClient } from '@mysten/sui/client';
 
 const ENABLE_LOG = false;
 
@@ -16,7 +17,7 @@ describe('Test Scallop Kit', async () => {
   const suiKit = new SuiKit({
     secretKey: process.env.SECRET_KEY,
     // mnemonics: process.env.MNEMONICS,
-    fullnodeUrls,
+    suiClients: fullnodeUrls.map((url) => new SuiClient({ url })),
   });
 
   it('Test Manage Account', async () => {

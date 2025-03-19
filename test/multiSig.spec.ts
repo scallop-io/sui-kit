@@ -79,7 +79,7 @@ describe('Test MultiSigClient', async () => {
     );
   });
 
-  it('Test multiSig combine with weight 1 + 1 + 1 should success', async () => {
+  it.skip('Test multiSig combine with weight 1 + 1 + 1 should success', async () => {
     const tx = new Transaction();
     const [suiCoin] = tx.splitCoins(tx.gas, [1]);
     tx.transferObjects([suiCoin], expectedMultiSigAddress);

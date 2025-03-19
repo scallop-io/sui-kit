@@ -4,25 +4,17 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### [1.3.3](https://github.com/scallop-io/sui-kit/compare/v1.3.2...v1.3.3) (2025-03-19)
 
-
 ### Features
 
-* add suiClients to class params ([f23186c](https://github.com/scallop-io/sui-kit/commit/f23186c0430149145b9ed2dcc9ea118481f53245))
-* allow multiple tag for npm package ([aecd0c5](https://github.com/scallop-io/sui-kit/commit/aecd0c5a659aaf4b7c2722010ad5002b88f0ed7e))
-
+- add suiClients to class params ([f23186c](https://github.com/scallop-io/sui-kit/commit/f23186c0430149145b9ed2dcc9ea118481f53245))
+- allow multiple tag for npm package ([aecd0c5](https://github.com/scallop-io/sui-kit/commit/aecd0c5a659aaf4b7c2722010ad5002b88f0ed7e))
 
 ### Bug Fixes
 
-* correct typo in README and package.json ([39d1ec7](https://github.com/scallop-io/sui-kit/commit/39d1ec7942502f345c6904b112b7f7a48fd47302))
-* github workflow ([4f125c4](https://github.com/scallop-io/sui-kit/commit/4f125c44f39ca3cd2d2128afb4da9cccf6be18c7))
-* minor ([100aa02](https://github.com/scallop-io/sui-kit/commit/100aa02646652f5d04eeb7270e8d0e4328080cd7))
-* typo and prettier ([3b9760f](https://github.com/scallop-io/sui-kit/commit/3b9760fb4fbb0f7c701ab60704f6fabecb799af5))
-
-### [1.18.0](https://github.com/scallop-io/sui-kit/compare/v1.3.2...v1.18.0) (2024-12-21)
-
-### Features
-
-- Upgrade `@mysten/sui` to `v1.18.0` ([100aa02](https://github.com/scallop-io/sui-kit/pull/37/commits/100aa02646652f5d04eeb7270e8d0e4328080cd7))
+- correct typo in README and package.json ([39d1ec7](https://github.com/scallop-io/sui-kit/commit/39d1ec7942502f345c6904b112b7f7a48fd47302))
+- github workflow ([4f125c4](https://github.com/scallop-io/sui-kit/commit/4f125c44f39ca3cd2d2128afb4da9cccf6be18c7))
+- minor ([100aa02](https://github.com/scallop-io/sui-kit/commit/100aa02646652f5d04eeb7270e8d0e4328080cd7))
+- typo and prettier ([3b9760f](https://github.com/scallop-io/sui-kit/commit/3b9760fb4fbb0f7c701ab60704f6fabecb799af5))
 
 ### [1.3.2](https://github.com/scallop-io/sui-kit/compare/v1.3.1...v1.3.2) (2024-12-21)
 

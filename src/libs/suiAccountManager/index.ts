@@ -11,8 +11,6 @@ import {
 export class SuiAccountManager {
   private mnemonics: string;
   private secretKey: string;
-  private isRandomMnemonics: boolean;
-  private allowRandomMnemonics: boolean;
   public currentKeyPair: Ed25519Keypair;
   public currentAddress: string;
 
@@ -25,41 +23,24 @@ export class SuiAccountManager {
    * @param mnemonics, 12 or 24 mnemonics words, separated by space
    * @param secretKey, base64 or hex string or Bech32 string, when mnemonics is provided, secretKey will be ignored
    */
-  constructor({
-    mnemonics,
-    secretKey,
-    allowRandomMnemonics = true,
-  }: AccountManagerParams = {}) {
+  constructor({ mnemonics, secretKey }: AccountManagerParams = {}) {
     // If the mnemonics or secretKey is provided, use it
     // Otherwise, generate a random mnemonics with 24 words
     this.mnemonics = mnemonics || '';
     this.secretKey = secretKey || '';
-    this.isRandomMnemonics = false;
-
-    // If random mnemonics is not allowed, set the currentAddress to empty string
-    this.allowRandomMnemonics = allowRandomMnemonics;
-
     if (!this.mnemonics && !this.secretKey) {
       this.mnemonics = generateMnemonic(24);
-      this.isRandomMnemonics = true;
     }
 
     // Init the current account
     this.currentKeyPair = this.secretKey
       ? this.parseSecretKey(this.secretKey)
       : getKeyPair(this.mnemonics);
-    this.currentAddress = this.getCurrentAddress();
-  }
-
-  private getCurrentAddress() {
-    if (this.isRandomMnemonics && !this.allowRandomMnemonics) {
-      return '';
-    }
-    return this.currentKeyPair.getPublicKey().toSuiAddress();
+    this.currentAddress = this.currentKeyPair.getPublicKey().toSuiAddress();
   }
 
   /**
-   * Check if the secretKey starts with bech32 format
+   * Check if the secretKey starts with bench32 format
    */
   parseSecretKey(secretKey: string) {
     if (secretKey.startsWith(SUI_PRIVATE_KEY_PREFIX)) {

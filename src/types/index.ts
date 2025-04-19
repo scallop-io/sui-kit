@@ -13,7 +13,7 @@ export type SuiKitParams = (AccountManagerParams & {
   faucetUrl?: string;
   networkType?: NetworkType;
 }) &
-  SuiInteractorParams;
+  Partial<SuiInteractorParams>;
 
 export type SuiInteractorParams =
   | {
@@ -28,6 +28,7 @@ export type NetworkType = 'testnet' | 'mainnet' | 'devnet' | 'localnet';
 export type AccountManagerParams = {
   mnemonics?: string;
   secretKey?: string;
+  allowRandomMnemonics?: boolean;
 };
 
 export type DerivePathParams = {

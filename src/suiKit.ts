@@ -42,9 +42,13 @@ export class SuiKit {
    * @param fullnodeUrls, the fullnode url, default is the preconfig fullnode url for the given network type
    */
   constructor(params: SuiKitParams) {
-    const { mnemonics, secretKey, networkType } = params;
+    const { mnemonics, secretKey, networkType, allowRandomMnemonics } = params;
     // Init the account manager
-    this.accountManager = new SuiAccountManager({ mnemonics, secretKey });
+    this.accountManager = new SuiAccountManager({
+      mnemonics,
+      secretKey,
+      allowRandomMnemonics,
+    });
 
     let suiInteractorParams;
     if ('fullnodeUrls' in params) {

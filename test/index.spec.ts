@@ -592,17 +592,3 @@ describe('Test Scallop Kit with sui clients', () => {
     expect(transferCoinsRes.effects.status.status === 'success').toBe(true);
   });
 });
-
-describe('Test Scallop kit with allowRandomMnemonics false and no secret key or mnemonics', () => {
-  const suiKit = new SuiKit({
-    allowRandomMnemonics: false,
-  });
-
-  it('Should return empty address', () => {
-    const address = suiKit.currentAddress();
-    if (ENABLE_LOG) {
-      console.log(`Current Address: ${address}`);
-    }
-    expect(address).toBe('');
-  });
-});

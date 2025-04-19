@@ -79,6 +79,9 @@
     "@types/tmp": "^0.2.5",
     "@typescript-eslint/eslint-plugin": "^8.11.0",
     "@typescript-eslint/parser": "8.10.0",
+    "@vitest/expect": "^3.1.1",
+    "@vitest/runner": "^3.1.1",
+    "@vitest/spy": "^3.1.1",
     "dotenv": "^16.3.1",
     "eslint": "^8.52.0",
     "eslint-config-prettier": "^9.0.0",
@@ -93,7 +96,7 @@
     "typedoc": "^0.25.2",
     "typescript": "5.5.4",
     "valibot": "^0.36.0",
-    "vitest": "^0.34.6"
+    "vitest": "^3.1.1"
   },
   "lint-staged": {
     "**/*.ts": [

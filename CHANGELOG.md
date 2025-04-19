@@ -2,11 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.3.7](https://github.com/scallop-io/sui-kit/compare/v1.3.6...v1.3.7) (2025-04-20)
+
+### Features
+
+- bump version
+
 ### [1.3.6](https://github.com/scallop-io/sui-kit/compare/v1.3.5...v1.3.6) (2025-04-20)
 
 ### Features
 
-- add `allowRandomMnemonics` param ([ec73143](https://github.com/scallop-io/sui-kit/pull/41/commits/ec73143438fe6738b674a696fe44c746d9f223df))
 - update `vitest` package ([e2bd98b](https://github.com/scallop-io/sui-kit/pull/41/commits/e2bd98b5e0fc72e86968598b8bc9098d5b84326b))
 - add more tests ([f18c3d4](https://github.com/scallop-io/sui-kit/pull/41/commits/f18c3d487f1bb9ebe87d5573fd784ad14abc1803))
 

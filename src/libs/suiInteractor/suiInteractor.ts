@@ -8,6 +8,7 @@ import {
   type SuiObjectData,
   type DryRunTransactionBlockResponse,
   SuiClient,
+  getFullnodeUrl,
 } from '@mysten/sui/client';
 
 /**
@@ -18,16 +19,14 @@ export class SuiInteractor {
   public currentClient: SuiClient;
   public readonly fullNodes: string[] = [];
 
-  constructor(params: SuiInteractorParams) {
+  constructor(params: Partial<SuiInteractorParams>) {
     if ('fullnodeUrls' in params) {
-      this.fullNodes = params.fullnodeUrls;
+      this.fullNodes = params.fullnodeUrls ?? [getFullnodeUrl('mainnet')];
       this.clients = this.fullNodes.map((url) => new SuiClient({ url }));
-    } else if ('suiClients' in params) {
+    } else if ('suiClients' in params && params.suiClients) {
       this.clients = params.suiClients;
     } else {
-      throw new Error(
-        'Invalid params, must provide fullNodeUrls or suiClients'
-      );
+      this.clients = [new SuiClient({ url: getFullnodeUrl('mainnet') })];
     }
     this.currentClient = this.clients[0];
   }

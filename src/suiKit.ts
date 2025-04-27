@@ -96,7 +96,7 @@ export class SuiKit {
     return this.accountManager.getAddress(derivePathParams);
   }
 
-  currentAddress() {
+  get currentAddress() {
     return this.accountManager.currentAddress;
   }
 
@@ -105,11 +105,17 @@ export class SuiKit {
     return this.suiInteractor.currentClient.getBalance({ owner, coinType });
   }
 
-  client() {
+  get client() {
     return this.suiInteractor.currentClient;
   }
 
-  async getObjects(objectIds: string[], options?: SuiObjectDataOptions) {
+  async getObjects(
+    objectIds: string[],
+    options?: SuiObjectDataOptions & {
+      batchSize?: number;
+      switchClientDelay?: number;
+    }
+  ) {
     return this.suiInteractor.getObjects(objectIds, options);
   }
 
@@ -131,7 +137,7 @@ export class SuiKit {
     const txBlock = tx instanceof SuiTxBlock ? tx.txBlock : tx;
     const txBytes =
       txBlock instanceof Transaction
-        ? await txBlock.build({ client: this.client() })
+        ? await txBlock.build({ client: this.client })
         : txBlock;
     const keyPair = this.getKeypair(derivePathParams);
     return await keyPair.signTransaction(txBytes);
@@ -155,7 +161,7 @@ export class SuiKit {
     const txBlock = tx instanceof SuiTxBlock ? tx.txBlock : tx;
     const txBytes =
       txBlock instanceof Transaction
-        ? await txBlock.build({ client: this.client() })
+        ? await txBlock.build({ client: this.client })
         : txBlock;
     return this.suiInteractor.dryRunTx(txBytes);
   }

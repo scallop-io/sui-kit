@@ -1,6 +1,6 @@
 {
   "name": "@scallop-io/sui-kit",
-  "version": "1.3.7",
+  "version": "1.4.0-alpha.1",
   "description": "Toolkit for interacting with SUI network",
   "keywords": [
     "sui",
@@ -60,16 +60,11 @@
     "doc": "typedoc --out docs src/index.ts"
   },
   "dependencies": {
-    "@mysten/bcs": "^1.2.0",
-    "@mysten/sui": "^1.3.1",
-    "@noble/curves": "^1.4.2",
-    "@noble/hashes": "^1.4.0",
-    "@scure/bip39": "^1.3.0",
+    "@mysten/bcs": "^1.6.0",
+    "@mysten/sui": "^1.28.2",
+    "@scure/bip39": "^1.5.4",
     "assert": "^2.1.0",
-    "bech32": "^2.0.0",
-    "superstruct": "^1.0.3",
-    "ts-retry-promise": "^0.7.1",
-    "tweetnacl": "^1.0.3"
+    "bech32": "^2.0.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^18.0.0",

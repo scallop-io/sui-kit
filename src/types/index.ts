@@ -28,7 +28,6 @@ export type NetworkType = 'testnet' | 'mainnet' | 'devnet' | 'localnet';
 export type AccountManagerParams = {
   mnemonics?: string;
   secretKey?: string;
-  allowRandomMnemonics?: boolean;
 };
 
 export type DerivePathParams = {

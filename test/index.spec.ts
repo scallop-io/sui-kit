@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 import { describe, it, expect } from 'vitest';
 import { SuiKit, SuiTxBlock } from '../src/index';
 import { getDerivePathForSUI } from '../src/libs/suiAccountManager/keypair';
-import { SuiClient } from '@mysten/sui/client';
+import { getFullnodeUrl } from '@mysten/sui/client';
 // import { SuiClient } from '@mysten/sui/client';
 
 const ENABLE_LOG = false;
@@ -413,7 +413,7 @@ describe('Test Scallop Kit with sui clients', () => {
   const fullnodeUrls = ['https://sui-mainnet.public.blastapi.io'];
   const suiKit = new SuiKit({
     secretKey: process.env.SECRET_KEY,
-    suiClients: fullnodeUrls.map((url) => new SuiClient({ url })),
+    fullnodeUrls,
   });
 
   it('Test Manage Account', async () => {
@@ -608,5 +608,12 @@ describe('Test Scallop Kit with sui clients', () => {
     }
 
     expect(transferCoinsRes.effects.status.status === 'success').toBe(true);
+  });
+
+  it('Test switching fullnodes', async () => {
+    const fullNode = getFullnodeUrl('mainnet');
+    suiKit.suiInteractor.switchFullNodes([fullNode]);
+
+    expect(suiKit.suiInteractor.currentFullNode).toEqual(fullNode);
   });
 });

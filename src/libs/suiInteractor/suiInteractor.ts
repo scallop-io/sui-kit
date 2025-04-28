@@ -15,9 +15,9 @@ import {
  * Encapsulates all functions that interact with the sui sdk
  */
 export class SuiInteractor {
-  public readonly clients: SuiClient[] = [];
+  private clients: SuiClient[] = [];
   public currentClient: SuiClient;
-  public readonly fullNodes: string[] = [];
+  private fullNodes: string[] = [];
 
   constructor(params: Partial<SuiInteractorParams>) {
     if ('fullnodeUrls' in params) {
@@ -35,6 +35,28 @@ export class SuiInteractor {
     const currentClientIdx = this.clients.indexOf(this.currentClient);
     this.currentClient =
       this.clients[(currentClientIdx + 1) % this.clients.length];
+  }
+
+  switchFullNodes(fullNodes: string[]) {
+    if (fullNodes.length === 0) {
+      throw new Error('fullNodes cannot be empty');
+    }
+    this.fullNodes = fullNodes;
+    this.clients = fullNodes.map((url) => new SuiClient({ url }));
+    this.currentClient = this.clients[0];
+  }
+
+  get currentFullNode() {
+    if (this.fullNodes.length === 0) {
+      throw new Error('No full nodes available');
+    }
+
+    const clientIdx = this.clients.indexOf(this.currentClient);
+    if (clientIdx === -1) {
+      throw new Error('Current client not found');
+    }
+
+    return this.fullNodes[clientIdx];
   }
 
   async sendTx(

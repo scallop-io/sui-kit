@@ -1,6 +1,6 @@
 import { SuiInteractorParams } from 'src/types';
 import { SuiOwnedObject, SuiSharedObject } from '../suiModel';
-import { delay } from './util';
+import { batch, delay } from './util';
 import {
   type SuiTransactionBlockResponseOptions,
   type SuiTransactionBlockResponse,
@@ -15,9 +15,9 @@ import {
  * Encapsulates all functions that interact with the sui sdk
  */
 export class SuiInteractor {
-  public readonly clients: SuiClient[] = [];
+  private clients: SuiClient[] = [];
   public currentClient: SuiClient;
-  public readonly fullNodes: string[] = [];
+  private fullNodes: string[] = [];
 
   constructor(params: Partial<SuiInteractorParams>) {
     if ('fullnodeUrls' in params) {
@@ -35,6 +35,28 @@ export class SuiInteractor {
     const currentClientIdx = this.clients.indexOf(this.currentClient);
     this.currentClient =
       this.clients[(currentClientIdx + 1) % this.clients.length];
+  }
+
+  switchFullNodes(fullNodes: string[]) {
+    if (fullNodes.length === 0) {
+      throw new Error('fullNodes cannot be empty');
+    }
+    this.fullNodes = fullNodes;
+    this.clients = fullNodes.map((url) => new SuiClient({ url }));
+    this.currentClient = this.clients[0];
+  }
+
+  get currentFullNode() {
+    if (this.fullNodes.length === 0) {
+      throw new Error('No full nodes available');
+    }
+
+    const clientIdx = this.clients.indexOf(this.currentClient);
+    if (clientIdx === -1) {
+      throw new Error('Current client not found');
+    }
+
+    return this.fullNodes[clientIdx];
   }
 
   async sendTx(
@@ -86,7 +108,10 @@ export class SuiInteractor {
 
   async getObjects(
     ids: string[],
-    options?: SuiObjectDataOptions
+    options?: SuiObjectDataOptions & {
+      batchSize?: number;
+      switchClientDelay?: number;
+    }
   ): Promise<SuiObjectData[]> {
     const opts: SuiObjectDataOptions = options ?? {
       showContent: true,
@@ -95,26 +120,41 @@ export class SuiInteractor {
       showOwner: true,
     };
 
-    for (const clientIdx in this.clients) {
-      try {
-        const objects = await this.clients[clientIdx].multiGetObjects({
-          ids,
-          options: opts,
-        });
-        const parsedObjects = objects
-          .map((object) => {
-            return object.data;
-          })
-          .filter((object) => object !== null && object !== undefined);
-        return parsedObjects as SuiObjectData[];
-      } catch (err) {
-        await delay(2000);
-        console.warn(
-          `Failed to get objects with fullnode ${this.fullNodes[clientIdx]}: ${err}`
+    const batchIds = batch(ids, Math.max(options?.batchSize ?? 50, 50));
+    const results: SuiObjectData[] = [];
+    let lastError = null;
+
+    for (const batch of batchIds) {
+      for (const clientIdx in this.clients) {
+        try {
+          const objects = await this.clients[clientIdx].multiGetObjects({
+            ids: batch,
+            options: opts,
+          });
+          const parsedObjects = objects
+            .map((object) => {
+              return object.data;
+            })
+            .filter((object) => object !== null && object !== undefined);
+          results.push(...(parsedObjects as SuiObjectData[]));
+          lastError = null;
+          break; // Exit the client loop if successful
+        } catch (err) {
+          lastError = err instanceof Error ? err : new Error(String(err));
+          await delay(options?.switchClientDelay ?? 2000);
+          console.warn(
+            `Failed to get objects with fullnode ${this.fullNodes[clientIdx]}: ${err}`
+          );
+        }
+      }
+      if (lastError) {
+        throw new Error(
+          `Failed to get objects with all fullnodes: ${lastError}`
         );
       }
     }
-    throw new Error('Failed to get objects with all fullnodes');
+
+    return results;
   }
 
   async getObject(id: string, options?: SuiObjectDataOptions) {

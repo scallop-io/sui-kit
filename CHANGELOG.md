@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.4.0](https://github.com/scallop-io/sui-kit/compare/v1.3.7...v1.4.0) (2025-05-03)
+
+### Features
+
+- Add batching for `multiGetObjects` ([6228c03](https://github.com/scallop-io/sui-kit/pull/43/commits/6228c03057450c452f8d07c38d7e2324e541f085))
+
+- Improve `SuiInteractor` to allow fullnode switching ([5e56a46](https://github.com/scallop-io/sui-kit/pull/43/commits/5e56a46811d9efee63f7f26397a834fcd0fa3af7))
+
 ### [1.3.7](https://github.com/scallop-io/sui-kit/compare/v1.3.6...v1.3.7) (2025-04-20)
 
 ### Features

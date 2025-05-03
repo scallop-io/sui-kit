@@ -75,7 +75,29 @@ describe('Test Scallop Kit with secret key', () => {
       console.dir(getObjectsRes);
     }
 
-    expect(getObjectsRes.length > 0).toBe(true);
+    expect(getObjectsRes.length).toBe(objIds.length);
+  });
+
+  it('Test Interactor with Sui: get objects with batching', async () => {
+    const objIds = [
+      '0x5dec622733a204ca27f5a90d8c2fad453cc6665186fd5dff13a83d0b6c9027ab',
+      '0x24c0247fb22457a719efac7f670cdc79be321b521460bd6bd2ccfa9f80713b14',
+      '0x7c5b7837c44a69b469325463ac0673ac1aa8435ff44ddb4191c9ae380463647f',
+      '0x9d0d275efbd37d8a8855f6f2c761fa5983293dd8ce202ee5196626de8fcd4469',
+      '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
+      '0x9193fd47f9a0ab99b6e365a464c8a9ae30e6150fc37ed2a89c1586631f6fc4ab',
+    ];
+    const getObjectsRes = await suiKit.getObjects(objIds, {
+      showContent: false,
+      batchSize: 2,
+    });
+
+    if (ENABLE_LOG) {
+      console.info(`Get Objects Response:`);
+      console.dir(getObjectsRes);
+    }
+
+    expect(getObjectsRes.length).toBe(objIds.length);
   });
 
   it('Test Interactor with Sui: select coins', async () => {
@@ -275,7 +297,29 @@ describe('Test Scallop Kit with mnemonics', () => {
       console.dir(getObjectsRes);
     }
 
-    expect(getObjectsRes.length > 0).toBe(true);
+    expect(getObjectsRes.length).toBe(objIds.length);
+  });
+
+  it('Test Interactor with Sui: get objects with batching', async () => {
+    const objIds = [
+      '0x5dec622733a204ca27f5a90d8c2fad453cc6665186fd5dff13a83d0b6c9027ab',
+      '0x24c0247fb22457a719efac7f670cdc79be321b521460bd6bd2ccfa9f80713b14',
+      '0x7c5b7837c44a69b469325463ac0673ac1aa8435ff44ddb4191c9ae380463647f',
+      '0x9d0d275efbd37d8a8855f6f2c761fa5983293dd8ce202ee5196626de8fcd4469',
+      '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
+      '0x9193fd47f9a0ab99b6e365a464c8a9ae30e6150fc37ed2a89c1586631f6fc4ab',
+    ];
+    const getObjectsRes = await suiKit.getObjects(objIds, {
+      showContent: false,
+      batchSize: 2,
+    });
+
+    if (ENABLE_LOG) {
+      console.info(`Get Objects Response:`);
+      console.dir(getObjectsRes);
+    }
+
+    expect(getObjectsRes.length).toBe(objIds.length);
   });
 
   it('Test Interactor with Sui: select coins', async () => {
@@ -477,7 +521,29 @@ describe('Test Scallop Kit with sui clients', () => {
       console.dir(getObjectsRes);
     }
 
-    expect(getObjectsRes.length > 0).toBe(true);
+    expect(getObjectsRes.length).toBe(objIds.length);
+  });
+
+  it('Test Interactor with Sui: get objects with batching', async () => {
+    const objIds = [
+      '0x5dec622733a204ca27f5a90d8c2fad453cc6665186fd5dff13a83d0b6c9027ab',
+      '0x24c0247fb22457a719efac7f670cdc79be321b521460bd6bd2ccfa9f80713b14',
+      '0x7c5b7837c44a69b469325463ac0673ac1aa8435ff44ddb4191c9ae380463647f',
+      '0x9d0d275efbd37d8a8855f6f2c761fa5983293dd8ce202ee5196626de8fcd4469',
+      '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
+      '0x9193fd47f9a0ab99b6e365a464c8a9ae30e6150fc37ed2a89c1586631f6fc4ab',
+    ];
+    const getObjectsRes = await suiKit.getObjects(objIds, {
+      showContent: false,
+      batchSize: 2,
+    });
+
+    if (ENABLE_LOG) {
+      console.info(`Get Objects Response:`);
+      console.dir(getObjectsRes);
+    }
+
+    expect(getObjectsRes.length).toBe(objIds.length);
   });
 
   it('Test Interactor with Sui: select coins', async () => {

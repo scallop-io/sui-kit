@@ -185,7 +185,7 @@ const pkgId =
 (async () => {
   const mnemonics = process.env.MNEMONICS;
   const suiKit = new SuiKit({ mnemonics });
-  const sender = suiKit.currentAddress();
+  const sender = suiKit.currentAddress;
 
   const tx = new SuiTxBlock();
   // 1. Make a flash loan for coinB

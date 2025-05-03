@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 import { describe, it, expect } from 'vitest';
 import { SuiKit, SuiTxBlock } from '../src/index';
 import { getDerivePathForSUI } from '../src/libs/suiAccountManager/keypair';
-import { SuiClient } from '@mysten/sui/client';
+import { getFullnodeUrl } from '@mysten/sui/client';
 // import { SuiClient } from '@mysten/sui/client';
 
 const ENABLE_LOG = false;
@@ -16,7 +16,7 @@ describe('Test Scallop Kit with secret key', () => {
 
   it('Test Manage Account', async () => {
     const coinType = '0x2::sui::SUI';
-    const currentAddress = suiKit.currentAddress();
+    const currentAddress = suiKit.currentAddress;
     const derivePathParams = {
       accountIndex: 0,
       isExternal: false,
@@ -47,7 +47,7 @@ describe('Test Scallop Kit with secret key', () => {
   });
   it('Test Interactor with Sui: sign and send txn', async () => {
     const tx = new SuiTxBlock();
-    tx.setSender(suiKit.currentAddress());
+    tx.setSender(suiKit.currentAddress);
     const signAndSendTxnRes = await suiKit.signAndSendTxn(tx);
 
     if (ENABLE_LOG) {
@@ -58,18 +58,46 @@ describe('Test Scallop Kit with secret key', () => {
   });
 
   it('Test Interactor with Sui: get objects', async () => {
-    const coinType = `0x2::sui::SUI`;
-    const coinObjects = await suiKit.selectCoinsWithAmount(1e8, coinType);
-    const getObjectsRes = await suiKit.getObjects(
-      coinObjects.map(({ objectId }) => objectId)
-    );
+    const objIds = [
+      '0x5dec622733a204ca27f5a90d8c2fad453cc6665186fd5dff13a83d0b6c9027ab',
+      '0x24c0247fb22457a719efac7f670cdc79be321b521460bd6bd2ccfa9f80713b14',
+      '0x7c5b7837c44a69b469325463ac0673ac1aa8435ff44ddb4191c9ae380463647f',
+      '0x9d0d275efbd37d8a8855f6f2c761fa5983293dd8ce202ee5196626de8fcd4469',
+      '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
+      '0x9193fd47f9a0ab99b6e365a464c8a9ae30e6150fc37ed2a89c1586631f6fc4ab',
+    ];
+    const getObjectsRes = await suiKit.getObjects(objIds, {
+      showContent: false,
+    });
 
     if (ENABLE_LOG) {
       console.info(`Get Objects Response:`);
       console.dir(getObjectsRes);
     }
 
-    expect(getObjectsRes.length > 0).toBe(true);
+    expect(getObjectsRes.length).toBe(objIds.length);
+  });
+
+  it('Test Interactor with Sui: get objects with batching', async () => {
+    const objIds = [
+      '0x5dec622733a204ca27f5a90d8c2fad453cc6665186fd5dff13a83d0b6c9027ab',
+      '0x24c0247fb22457a719efac7f670cdc79be321b521460bd6bd2ccfa9f80713b14',
+      '0x7c5b7837c44a69b469325463ac0673ac1aa8435ff44ddb4191c9ae380463647f',
+      '0x9d0d275efbd37d8a8855f6f2c761fa5983293dd8ce202ee5196626de8fcd4469',
+      '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
+      '0x9193fd47f9a0ab99b6e365a464c8a9ae30e6150fc37ed2a89c1586631f6fc4ab',
+    ];
+    const getObjectsRes = await suiKit.getObjects(objIds, {
+      showContent: false,
+      batchSize: 2,
+    });
+
+    if (ENABLE_LOG) {
+      console.info(`Get Objects Response:`);
+      console.dir(getObjectsRes);
+    }
+
+    expect(getObjectsRes.length).toBe(objIds.length);
   });
 
   it('Test Interactor with Sui: select coins', async () => {
@@ -85,7 +113,7 @@ describe('Test Scallop Kit with secret key', () => {
 
   it('Test Interactor with Sui: transfer coin', async () => {
     const coinType = '0x2::sui::SUI';
-    const receiver = suiKit.currentAddress();
+    const receiver = suiKit.currentAddress;
     console.log(`Receiver: ${receiver}`);
     const amount = 10 ** 7; // 0.01 SUI
     const tx = await suiKit.transferCoin(receiver, amount, coinType, false);
@@ -125,7 +153,7 @@ describe('Test Scallop Kit with secret key', () => {
   });
 
   it('Test Interactor with Sui: transfer sui', async () => {
-    const receiver = suiKit.currentAddress();
+    const receiver = suiKit.currentAddress;
     const amount = 10 ** 7; // 0.01 SUI
     const tx = await suiKit.transferSui(receiver, amount, false);
     const transferCoinsRes = await suiKit.inspectTxn(tx); // inspect txn should be enough to check if the txn is valid
@@ -181,18 +209,18 @@ describe('Test Scallop Kit with secret key', () => {
 
   it('Test Interactor with sui: transfer object', async () => {
     const object = (
-      await suiKit.client().getOwnedObjects({
-        owner: suiKit.currentAddress(),
+      await suiKit.client.getOwnedObjects({
+        owner: suiKit.currentAddress,
         limit: 1,
       })
     ).data[0].data;
 
     if (!object)
       throw new Error(
-        `No object found for wallet address: ${suiKit.currentAddress()}`
+        `No object found for wallet address: ${suiKit.currentAddress}`
       );
 
-    const receiver = suiKit.currentAddress();
+    const receiver = suiKit.currentAddress;
     const tx = await suiKit.transferObjects([object], receiver, false);
     const transferCoinsRes = await suiKit.inspectTxn(tx); // inspect txn should be enough to check if the txn is valid
     if (ENABLE_LOG) {
@@ -210,7 +238,7 @@ describe('Test Scallop Kit with mnemonics', () => {
 
   it('Test Manage Account', async () => {
     const coinType = '0x2::sui::SUI';
-    const currentAddress = suiKit.currentAddress();
+    const currentAddress = suiKit.currentAddress;
     const derivePathParams = {
       accountIndex: 0,
       isExternal: false,
@@ -241,7 +269,7 @@ describe('Test Scallop Kit with mnemonics', () => {
   });
   it('Test Interactor with Sui: sign and send txn', async () => {
     const tx = new SuiTxBlock();
-    tx.setSender(suiKit.currentAddress());
+    tx.setSender(suiKit.currentAddress);
     const signAndSendTxnRes = await suiKit.signAndSendTxn(tx);
 
     if (ENABLE_LOG) {
@@ -252,18 +280,46 @@ describe('Test Scallop Kit with mnemonics', () => {
   });
 
   it('Test Interactor with Sui: get objects', async () => {
-    const coinType = `0x2::sui::SUI`;
-    const coinObjects = await suiKit.selectCoinsWithAmount(1e8, coinType);
-    const getObjectsRes = await suiKit.getObjects(
-      coinObjects.map(({ objectId }) => objectId)
-    );
+    const objIds = [
+      '0x5dec622733a204ca27f5a90d8c2fad453cc6665186fd5dff13a83d0b6c9027ab',
+      '0x24c0247fb22457a719efac7f670cdc79be321b521460bd6bd2ccfa9f80713b14',
+      '0x7c5b7837c44a69b469325463ac0673ac1aa8435ff44ddb4191c9ae380463647f',
+      '0x9d0d275efbd37d8a8855f6f2c761fa5983293dd8ce202ee5196626de8fcd4469',
+      '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
+      '0x9193fd47f9a0ab99b6e365a464c8a9ae30e6150fc37ed2a89c1586631f6fc4ab',
+    ];
+    const getObjectsRes = await suiKit.getObjects(objIds, {
+      showContent: false,
+    });
 
     if (ENABLE_LOG) {
       console.info(`Get Objects Response:`);
       console.dir(getObjectsRes);
     }
 
-    expect(getObjectsRes.length > 0).toBe(true);
+    expect(getObjectsRes.length).toBe(objIds.length);
+  });
+
+  it('Test Interactor with Sui: get objects with batching', async () => {
+    const objIds = [
+      '0x5dec622733a204ca27f5a90d8c2fad453cc6665186fd5dff13a83d0b6c9027ab',
+      '0x24c0247fb22457a719efac7f670cdc79be321b521460bd6bd2ccfa9f80713b14',
+      '0x7c5b7837c44a69b469325463ac0673ac1aa8435ff44ddb4191c9ae380463647f',
+      '0x9d0d275efbd37d8a8855f6f2c761fa5983293dd8ce202ee5196626de8fcd4469',
+      '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
+      '0x9193fd47f9a0ab99b6e365a464c8a9ae30e6150fc37ed2a89c1586631f6fc4ab',
+    ];
+    const getObjectsRes = await suiKit.getObjects(objIds, {
+      showContent: false,
+      batchSize: 2,
+    });
+
+    if (ENABLE_LOG) {
+      console.info(`Get Objects Response:`);
+      console.dir(getObjectsRes);
+    }
+
+    expect(getObjectsRes.length).toBe(objIds.length);
   });
 
   it('Test Interactor with Sui: select coins', async () => {
@@ -279,7 +335,7 @@ describe('Test Scallop Kit with mnemonics', () => {
 
   it('Test Interactor with Sui: transfer coin', async () => {
     const coinType = '0x2::sui::SUI';
-    const receiver = suiKit.currentAddress();
+    const receiver = suiKit.currentAddress;
     console.log(`Receiver: ${receiver}`);
     const amount = 10 ** 7; // 0.01 SUI
     const tx = await suiKit.transferCoin(receiver, amount, coinType, false);
@@ -319,7 +375,7 @@ describe('Test Scallop Kit with mnemonics', () => {
   });
 
   it('Test Interactor with Sui: transfer sui', async () => {
-    const receiver = suiKit.currentAddress();
+    const receiver = suiKit.currentAddress;
     const amount = 10 ** 7; // 0.01 SUI
     const tx = await suiKit.transferSui(receiver, amount, false);
     const transferCoinsRes = await suiKit.inspectTxn(tx); // inspect txn should be enough to check if the txn is valid
@@ -375,18 +431,18 @@ describe('Test Scallop Kit with mnemonics', () => {
 
   it('Test Interactor with sui: transfer object', async () => {
     const object = (
-      await suiKit.client().getOwnedObjects({
-        owner: suiKit.currentAddress(),
+      await suiKit.client.getOwnedObjects({
+        owner: suiKit.currentAddress,
         limit: 1,
       })
     ).data[0].data;
 
     if (!object)
       throw new Error(
-        `No object found for wallet address: ${suiKit.currentAddress()}`
+        `No object found for wallet address: ${suiKit.currentAddress}`
       );
 
-    const receiver = suiKit.currentAddress();
+    const receiver = suiKit.currentAddress;
     const tx = await suiKit.transferObjects([object], receiver, false);
     const transferCoinsRes = await suiKit.inspectTxn(tx); // inspect txn should be enough to check if the txn is valid
     if (ENABLE_LOG) {
@@ -401,12 +457,12 @@ describe('Test Scallop Kit with sui clients', () => {
   const fullnodeUrls = ['https://sui-mainnet.public.blastapi.io'];
   const suiKit = new SuiKit({
     secretKey: process.env.SECRET_KEY,
-    suiClients: fullnodeUrls.map((url) => new SuiClient({ url })),
+    fullnodeUrls,
   });
 
   it('Test Manage Account', async () => {
     const coinType = '0x2::sui::SUI';
-    const currentAddress = suiKit.currentAddress();
+    const currentAddress = suiKit.currentAddress;
     const derivePathParams = {
       accountIndex: 0,
       isExternal: false,
@@ -437,7 +493,7 @@ describe('Test Scallop Kit with sui clients', () => {
   });
   it('Test Interactor with Sui: sign and send txn', async () => {
     const tx = new SuiTxBlock();
-    tx.setSender(suiKit.currentAddress());
+    tx.setSender(suiKit.currentAddress);
     const signAndSendTxnRes = await suiKit.signAndSendTxn(tx);
 
     if (ENABLE_LOG) {
@@ -448,18 +504,46 @@ describe('Test Scallop Kit with sui clients', () => {
   });
 
   it('Test Interactor with Sui: get objects', async () => {
-    const coinType = `0x2::sui::SUI`;
-    const coinObjects = await suiKit.selectCoinsWithAmount(1e8, coinType);
-    const getObjectsRes = await suiKit.getObjects(
-      coinObjects.map(({ objectId }) => objectId)
-    );
+    const objIds = [
+      '0x5dec622733a204ca27f5a90d8c2fad453cc6665186fd5dff13a83d0b6c9027ab',
+      '0x24c0247fb22457a719efac7f670cdc79be321b521460bd6bd2ccfa9f80713b14',
+      '0x7c5b7837c44a69b469325463ac0673ac1aa8435ff44ddb4191c9ae380463647f',
+      '0x9d0d275efbd37d8a8855f6f2c761fa5983293dd8ce202ee5196626de8fcd4469',
+      '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
+      '0x9193fd47f9a0ab99b6e365a464c8a9ae30e6150fc37ed2a89c1586631f6fc4ab',
+    ];
+    const getObjectsRes = await suiKit.getObjects(objIds, {
+      showContent: false,
+    });
 
     if (ENABLE_LOG) {
       console.info(`Get Objects Response:`);
       console.dir(getObjectsRes);
     }
 
-    expect(getObjectsRes.length > 0).toBe(true);
+    expect(getObjectsRes.length).toBe(objIds.length);
+  });
+
+  it('Test Interactor with Sui: get objects with batching', async () => {
+    const objIds = [
+      '0x5dec622733a204ca27f5a90d8c2fad453cc6665186fd5dff13a83d0b6c9027ab',
+      '0x24c0247fb22457a719efac7f670cdc79be321b521460bd6bd2ccfa9f80713b14',
+      '0x7c5b7837c44a69b469325463ac0673ac1aa8435ff44ddb4191c9ae380463647f',
+      '0x9d0d275efbd37d8a8855f6f2c761fa5983293dd8ce202ee5196626de8fcd4469',
+      '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
+      '0x9193fd47f9a0ab99b6e365a464c8a9ae30e6150fc37ed2a89c1586631f6fc4ab',
+    ];
+    const getObjectsRes = await suiKit.getObjects(objIds, {
+      showContent: false,
+      batchSize: 2,
+    });
+
+    if (ENABLE_LOG) {
+      console.info(`Get Objects Response:`);
+      console.dir(getObjectsRes);
+    }
+
+    expect(getObjectsRes.length).toBe(objIds.length);
   });
 
   it('Test Interactor with Sui: select coins', async () => {
@@ -475,7 +559,7 @@ describe('Test Scallop Kit with sui clients', () => {
 
   it('Test Interactor with Sui: transfer coin', async () => {
     const coinType = '0x2::sui::SUI';
-    const receiver = suiKit.currentAddress();
+    const receiver = suiKit.currentAddress;
     console.log(`Receiver: ${receiver}`);
     const amount = 10 ** 7; // 0.01 SUI
     const tx = await suiKit.transferCoin(receiver, amount, coinType, false);
@@ -515,7 +599,7 @@ describe('Test Scallop Kit with sui clients', () => {
   });
 
   it('Test Interactor with Sui: transfer sui', async () => {
-    const receiver = suiKit.currentAddress();
+    const receiver = suiKit.currentAddress;
     const amount = 10 ** 7; // 0.01 SUI
     const tx = await suiKit.transferSui(receiver, amount, false);
     const transferCoinsRes = await suiKit.inspectTxn(tx); // inspect txn should be enough to check if the txn is valid
@@ -571,18 +655,18 @@ describe('Test Scallop Kit with sui clients', () => {
 
   it('Test Interactor with sui: transfer object', async () => {
     const object = (
-      await suiKit.client().getOwnedObjects({
-        owner: suiKit.currentAddress(),
+      await suiKit.client.getOwnedObjects({
+        owner: suiKit.currentAddress,
         limit: 1,
       })
     ).data[0].data;
 
     if (!object)
       throw new Error(
-        `No object found for wallet address: ${suiKit.currentAddress()}`
+        `No object found for wallet address: ${suiKit.currentAddress}`
       );
 
-    const receiver = suiKit.currentAddress();
+    const receiver = suiKit.currentAddress;
     const tx = await suiKit.transferObjects([object], receiver, false);
     const transferCoinsRes = await suiKit.inspectTxn(tx); // inspect txn should be enough to check if the txn is valid
     if (ENABLE_LOG) {
@@ -590,5 +674,12 @@ describe('Test Scallop Kit with sui clients', () => {
     }
 
     expect(transferCoinsRes.effects.status.status === 'success').toBe(true);
+  });
+
+  it('Test switching fullnodes', async () => {
+    const fullNode = getFullnodeUrl('mainnet');
+    suiKit.suiInteractor.switchFullNodes([fullNode]);
+
+    expect(suiKit.suiInteractor.currentFullNode).toEqual(fullNode);
   });
 });

@@ -5,6 +5,7 @@ import {
   convertAddressArg,
   convertObjArg,
   convertAmounts,
+  partitionArray,
 } from './util';
 import type { SuiClient, SuiObjectRef } from '@mysten/sui/client';
 import type { Keypair } from '@mysten/sui/cryptography';
@@ -206,16 +207,12 @@ export class SuiTxBlock {
   }
 
   takeAmountFromCoins(coins: SuiObjectArg[], amount: SuiAmountsArg) {
-    const coinObjects = coins.map((coin) => convertObjArg(this.txBlock, coin));
-    const mergedCoin = coinObjects[0];
-    if (coins.length > 1) {
-      this.txBlock.mergeCoins(mergedCoin, coinObjects.slice(1));
-    }
-    const [sendCoin] = this.txBlock.splitCoins(
-      mergedCoin,
+    const { splitedCoins, mergedCoin } = this.splitMultiCoins(
+      coins,
       convertAmounts(this.txBlock, [amount])
     );
-    return [sendCoin, mergedCoin];
+
+    return [splitedCoins, mergedCoin];
   }
 
   splitSUIFromGas(amounts: SuiAmountsArg[]) {
@@ -226,10 +223,17 @@ export class SuiTxBlock {
   }
 
   splitMultiCoins(coins: SuiObjectArg[], amounts: SuiAmountsArg[]) {
-    const coinObjects = coins.map((coin) => convertObjArg(this.txBlock, coin));
-    const mergedCoin = coinObjects[0];
-    if (coins.length > 1) {
-      this.txBlock.mergeCoins(mergedCoin, coinObjects.slice(1));
+    if (coins.length === 0) {
+      throw new Error('takeAmountFromCoins: coins array is empty');
+    }
+
+    const partitions = partitionArray(coins.slice(1), 511);
+    const mergedCoin = convertObjArg(this.txBlock, coins[0]);
+    for (const partition of partitions) {
+      const coinObjects = partition.map((coin) =>
+        convertObjArg(this.txBlock, coin)
+      );
+      this.txBlock.mergeCoins(mergedCoin, coinObjects);
     }
     const splitedCoins = this.txBlock.splitCoins(
       mergedCoin,

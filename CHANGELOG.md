@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.4.1](https://github.com/scallop-io/sui-kit/compare/v1.4.0...v1.4.1) (2025-06-01)
+
+### Features
+
+- Better handling on coin objects in `SuiTxBlock` class ([3b7d6bf](https://github.com/scallop-io/sui-kit/commit/3b7d6bfbcfd98660fa6f3245867a40f386d8dccf))
+
 ### [1.4.0](https://github.com/scallop-io/sui-kit/compare/v1.3.7...v1.4.0) (2025-05-03)
 
 ### Features

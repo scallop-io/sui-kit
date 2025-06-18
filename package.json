@@ -74,6 +74,7 @@
     "@types/tmp": "^0.2.5",
     "@typescript-eslint/eslint-plugin": "^8.11.0",
     "@typescript-eslint/parser": "8.10.0",
+    "@vitest/coverage-v8": "3.1.1",
     "@vitest/expect": "^3.1.1",
     "@vitest/runner": "^3.1.1",
     "@vitest/spy": "^3.1.1",

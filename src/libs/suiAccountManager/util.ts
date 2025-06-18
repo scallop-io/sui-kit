@@ -1,4 +1,6 @@
-import { fromB64 } from '@mysten/sui/utils';
+import { fromBase64, fromHex } from '@mysten/bcs';
+
+// TODO: remove this file after all usages are migrated to @mysten/bcs and update is functions
 
 /**
  * @description This regular expression matches any string that contains only hexadecimal digits (0-9, A-F, a-f).
@@ -15,35 +17,17 @@ export const isHex = (str: string) =>
 export const isBase64 = (str: string) => /^[a-zA-Z0-9+/]+={0,2}$/g.test(str);
 
 /**
- * Convert a hex string to Uint8Array
- * @param hexStr
- */
-export const fromHEX = (hexStr: string): Uint8Array => {
-  if (!hexStr) {
-    throw new Error('cannot parse empty string to Uint8Array');
-  }
-  const intArr = hexStr
-    .replace('0x', '')
-    .match(/.{1,2}/g)
-    ?.map((byte) => parseInt(byte, 16));
-
-  if (!intArr || intArr.length === 0) {
-    throw new Error(`Unable to parse HEX: ${hexStr}`);
-  }
-  return Uint8Array.from(intArr);
-};
-
-/**
+ * @deprecated Use fromHex or fromBase64 from @mysten/bcs directly instead.
  * @description Convert a hex or base64 string to Uint8Array
  */
 export const hexOrBase64ToUint8Array = (str: string): Uint8Array => {
   if (isHex(str)) {
-    return fromHEX(str);
-  } else if (isBase64(str)) {
-    return fromB64(str);
-  } else {
-    throw new Error('The string is not a valid hex or base64 string.');
+    return fromHex(str);
   }
+  if (isBase64(str)) {
+    return fromBase64(str);
+  }
+  throw new Error('The string is not a valid hex or base64 string.');
 };
 
 const PRIVATE_KEY_SIZE = 32;
@@ -58,13 +42,18 @@ const LEGACY_PRIVATE_KEY_SIZE = 64;
  */
 export const normalizePrivateKey = (key: Uint8Array): Uint8Array => {
   if (key.length === LEGACY_PRIVATE_KEY_SIZE) {
-    // This is a legacy secret key, we need to strip the public key bytes and only read the first 32 bytes
-    key = key.slice(0, PRIVATE_KEY_SIZE);
-  } else if (key.length === PRIVATE_KEY_SIZE + 1 && key[0] === 0) {
-    // sui.keystore key is a Base64 string with scheme flag 0x00 at the beginning
+    return key.slice(0, PRIVATE_KEY_SIZE);
+  }
+  if (key.length === PRIVATE_KEY_SIZE + 1 && key[0] === 0) {
     return key.slice(1);
-  } else if (key.length === PRIVATE_KEY_SIZE) {
+  }
+  if (key.length === PRIVATE_KEY_SIZE) {
     return key;
   }
   throw new Error('invalid secret key');
 };
+
+/**
+ * @deprecated Please use fromHex and fromBase64 from '@mysten/bcs' directly.
+ */
+export { fromHex, fromBase64 } from '@mysten/bcs';

@@ -6,9 +6,6 @@ import { MultiSigClient } from '../src/libs/multiSig';
 
 const ENABLE_LOG = false;
 
-/**
- *  Remove `.skip` to proceed with testing according to requirements.
- */
 describe('Test MultiSigClient', async () => {
   const mnemonics =
     'elite balcony laundry unique quit flee farm dry buddy outside airport service';

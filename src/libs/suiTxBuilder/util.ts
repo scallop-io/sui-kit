@@ -21,18 +21,20 @@ import type {
 } from 'src/types';
 import type { SuiObjectRef } from '@mysten/sui/client';
 
+// TODO: unclear why we need this function and types
 export const getDefaultSuiInputType = (
   value: SuiTxArg
 ): 'u64' | 'bool' | 'object' | undefined => {
   if (typeof value === 'string' && isValidSuiObjectId(value)) {
     return 'object';
-  } else if (typeof value === 'number' || typeof value === 'bigint') {
-    return 'u64';
-  } else if (typeof value === 'boolean') {
-    return 'bool';
-  } else {
-    return undefined;
   }
+  if (typeof value === 'number' || typeof value === 'bigint') {
+    return 'u64';
+  }
+  if (typeof value === 'boolean') {
+    return 'bool';
+  }
+  return undefined;
 };
 
 // =========== TYPE GUARD ============
@@ -117,6 +119,7 @@ export function makeVecParam(
   if (args.length === 0)
     throw new Error('Transaction builder error: Empty array is not allowed');
   // Using first element value as default type
+  // TODO: unclear why we need this function and types
   const defaultSuiType = getDefaultSuiInputType(args[0]);
   const VECTOR_REGEX = /^vector<(.+)>$/;
   const STRUCT_REGEX = /^([^:]+)::([^:]+)::([^<]+)(<(.+)>)?/;

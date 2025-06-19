@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateMnemonic } from '../../src/libs/suiAccountManager/crypto';
+import { generateMnemonic } from '../../../src/libs/suiAccountManager/crypto';
 
 describe.only('generateMnemonic', () => {
   it('should generate a 24-word mnemonic by default', () => {

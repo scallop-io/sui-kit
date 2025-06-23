@@ -3,7 +3,6 @@ import { describe, it, expect } from 'vitest';
 import { SuiKit, SuiTxBlock } from '../src/index';
 import { getDerivePathForSUI } from '../src/libs/suiAccountManager/keypair';
 import { getFullnodeUrl } from '@mysten/sui/client';
-// import { SuiClient } from '@mysten/sui/client';
 
 const ENABLE_LOG = false;
 

@@ -1,7 +1,5 @@
 import { fromBase64, fromHex } from '@mysten/bcs';
 
-// TODO: remove this file after all usages are migrated to @mysten/bcs and update is functions
-
 /**
  * @description This regular expression matches any string that contains only hexadecimal digits (0-9, A-F, a-f).
  * @param str
@@ -17,7 +15,7 @@ export const isHex = (str: string) =>
 export const isBase64 = (str: string) => /^[a-zA-Z0-9+/]+={0,2}$/g.test(str);
 
 /**
- * @deprecated Use fromHex or fromBase64 from @mysten/bcs directly instead.
+ * Use fromHex or fromBase64 from @mysten/bcs directly instead.
  * @description Convert a hex or base64 string to Uint8Array
  */
 export const hexOrBase64ToUint8Array = (str: string): Uint8Array => {

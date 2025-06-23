@@ -6,7 +6,7 @@ import {
   normalizePrivateKey,
   fromHex,
   fromBase64,
-} from '../../../src/libs/suiAccountManager/util';
+} from '../../../../src/libs/suiAccountManager/util';
 
 describe('isHex', () => {
   it('should return true for 0x hex', () => {

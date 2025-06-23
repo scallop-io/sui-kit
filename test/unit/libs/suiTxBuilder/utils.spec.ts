@@ -7,7 +7,7 @@ import {
   convertObjArg,
   convertAmounts,
   partitionArray,
-} from '../../../src/libs/suiTxBuilder/util';
+} from '../../../../src/libs/suiTxBuilder/util';
 import { Transaction } from '@mysten/sui/transactions';
 
 // Mock types

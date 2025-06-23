@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ed25519PublicKeyFromBase64 } from '../../../src/libs/multiSig/publickey';
+import { ed25519PublicKeyFromBase64 } from '../../../../src/libs/multiSig/publickey';
 import { toBase64 } from '@mysten/sui/utils';
 
 describe('ed25519PublicKeyFromBase64', () => {

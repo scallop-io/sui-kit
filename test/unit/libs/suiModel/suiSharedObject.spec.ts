@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { SuiSharedObject } from '../../../src/libs/suiModel/suiSharedObject';
+import { SuiSharedObject } from '../../../../src/libs/suiModel/suiSharedObject';
 
 describe('SuiSharedObject', () => {
   it('should initialize with objectId', () => {

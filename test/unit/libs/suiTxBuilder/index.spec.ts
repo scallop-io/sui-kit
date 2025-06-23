@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { SuiTxBlock } from '../../../src/libs/suiTxBuilder';
+import { SuiTxBlock } from '../../../../src/libs/suiTxBuilder';
 import { SuiKit } from 'src/suiKit';
 
 function createTxBlock() {

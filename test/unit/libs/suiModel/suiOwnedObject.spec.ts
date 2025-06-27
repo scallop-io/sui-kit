@@ -1,5 +1,5 @@
+import { SuiOwnedObject } from 'src/libs/suiModel/suiOwnedObject';
 import { describe, it, expect } from 'vitest';
-import { SuiOwnedObject } from '../../../../src/libs/suiModel/suiOwnedObject';
 
 describe('SuiOwnedObject', () => {
   it('should initialize with objectId', () => {

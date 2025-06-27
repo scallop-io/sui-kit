@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 import { describe, it, expect } from 'vitest';
-import { SuiKit, SuiTxBlock } from '../../src/index';
-import { getDerivePathForSUI } from '../../src/libs/suiAccountManager/keypair';
+import { SuiKit, SuiTxBlock } from 'src/index';
+import { getDerivePathForSUI } from 'src/libs/suiAccountManager/keypair';
 import { getFullnodeUrl } from '@mysten/sui/client';
 
 const ENABLE_LOG = false;

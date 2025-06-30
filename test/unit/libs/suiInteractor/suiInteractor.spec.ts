@@ -1,17 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SuiInteractor } from 'src/libs/suiInteractor/suiInteractor';
 import { SuiOwnedObject, SuiSharedObject } from 'src/libs/suiModel';
-
-vi.mock('src/libs/suiInteractor/util', () => ({
-  delay: vi.fn(() => Promise.resolve()),
-  batch: vi.fn((arr, size) => {
-    const batches = [];
-    for (let i = 0; i < arr.length; i += size) {
-      batches.push(arr.slice(i, i + size));
-    }
-    return batches;
-  }),
-}));
+import { batch, delay } from 'src/libs/suiInteractor/util';
 
 vi.mock('@mysten/sui/client', () => {
   return {
@@ -193,5 +183,32 @@ describe('SuiInteractor', () => {
     await expect(interactor.selectCoins('addr', 100)).rejects.toThrow(
       'No valid coins found for the transaction.'
     );
+  });
+});
+
+describe('SuiInteractor Utils', () => {
+  it('delay should resolve after given time', async () => {
+    // Enable fake timers
+    vi.useFakeTimers();
+
+    const start = Date.now();
+    const delayPromise = delay(100); // Start the delay
+
+    // Fast-forward time
+    vi.advanceTimersToNextTimer();
+
+    await delayPromise; // Wait for the delay to complete
+
+    const duration = Date.now() - start;
+    expect(duration).toBeGreaterThanOrEqual(100);
+
+    // Restore real timers
+    vi.useRealTimers();
+  });
+
+  it('batch should split array into chunks of given size', () => {
+    const arr = [1, 2, 3, 4, 5];
+    const result = batch(arr, 2);
+    expect(result).toEqual([[1, 2], [3, 4], [5]]);
   });
 });

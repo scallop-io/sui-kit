@@ -1,13 +1,12 @@
-import * as dotenv from 'dotenv';
+import { config as dotenvConfig } from 'dotenv';
 import { describe, it, expect } from 'vitest';
-import { SuiKit, SuiTxBlock } from '../src/index';
-import { getDerivePathForSUI } from '../src/libs/suiAccountManager/keypair';
+import { SuiKit, SuiTxBlock } from 'src/index';
+import { getDerivePathForSUI } from 'src/libs/suiAccountManager/keypair';
 import { getFullnodeUrl } from '@mysten/sui/client';
-// import { SuiClient } from '@mysten/sui/client';
 
 const ENABLE_LOG = false;
 
-dotenv.config();
+dotenvConfig();
 
 describe('Test Scallop Kit with secret key', () => {
   const suiKit = new SuiKit({

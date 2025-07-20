@@ -33,6 +33,7 @@ export class SuiTxBlock {
   }
   /** @deprecated Use `getData()` instead. */
   get blockData() {
+    // TODO: need to update this method to use the new blockData method
     return this.txBlock.blockData;
   }
 
@@ -84,6 +85,7 @@ export class SuiTxBlock {
    * For synchronous serialization, you can use `getData()`
    * */
   serialize() {
+    // TODO: need to update this method to use the new serialize method
     return this.txBlock.serialize();
   }
 

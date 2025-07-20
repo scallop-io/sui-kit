@@ -1,3 +1,4 @@
+// TODO: I think we can remove this file or update to NormalizedCallArg
 import type { CallArg } from '@mysten/sui/transactions';
 
 export class SuiSharedObject {

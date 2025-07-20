@@ -1,14 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { Transaction } from '@mysten/sui/transactions';
 import { SuiClient, getFullnodeUrl } from '@mysten/sui/client';
-import { SuiAccountManager } from '../src/libs/suiAccountManager';
-import { MultiSigClient } from '../src/libs/multiSig';
+import { SuiAccountManager } from 'src/libs/suiAccountManager';
+import { MultiSigClient } from 'src/libs/multiSig';
 
 const ENABLE_LOG = false;
 
-/**
- *  Remove `.skip` to proceed with testing according to requirements.
- */
 describe('Test MultiSigClient', async () => {
   const mnemonics =
     'elite balcony laundry unique quit flee farm dry buddy outside airport service';

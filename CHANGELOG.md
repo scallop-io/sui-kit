@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.4.2](https://github.com/scallop-io/sui-kit/compare/v1.4.1...v1.4.2) (2025-07-21)
+
+### Features
+- Add more unit tests and integration tests ([PR](https://github.com/scallop-io/sui-kit/pull/47))
+- Add deepwiki badge ([ebb6c18](https://github.com/scallop-io/sui-kit/pull/48/commits/ebb6c18fc293c17a82eb9f6e781c4b57bb6b9e6f))
+
 ### [1.4.1](https://github.com/scallop-io/sui-kit/compare/v1.4.0...v1.4.1) (2025-06-01)
 
 ### Features

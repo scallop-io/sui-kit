@@ -266,3 +266,5 @@ internalTransferSui(suiKit, 0, 1, 1000).then(() => {});
 We have a standalone npm package to help you publish and upgrade Move package based on sui-kit.
 
 Please refer to the repository: [sui-package-kit](https://docs.sui.io/devnet/build/install)
+
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/scallop-io/sui-kit)

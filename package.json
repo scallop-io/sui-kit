@@ -65,6 +65,7 @@
   },
   "dependencies": {
     "@mysten/bcs": "^1.6.0",
+    "@mysten/graphql-transport": "^0.4.2",
     "@mysten/sui": "^1.28.2",
     "@scure/bip39": "^1.5.4",
     "assert": "^2.1.0",

@@ -10,6 +10,7 @@ import {
   SuiClient,
   getFullnodeUrl,
 } from '@mysten/sui/client';
+import { SuiClientGraphQLTransport } from '@mysten/graphql-transport';
 
 /**
  * Encapsulates all functions that interact with the sui sdk
@@ -22,11 +23,25 @@ export class SuiInteractor {
   constructor(params: Partial<SuiInteractorParams>) {
     if ('fullnodeUrls' in params) {
       this.fullNodes = params.fullnodeUrls ?? [getFullnodeUrl('mainnet')];
-      this.clients = this.fullNodes.map((url) => new SuiClient({ url }));
+      this.clients = this.fullNodes.map((url) => {
+        return new SuiClient({
+          transport: new SuiClientGraphQLTransport({
+            url: 'https://graphql.mainnet.sui.io/graphql',
+            fallbackFullNodeUrl: url,
+          }),
+        });
+      });
     } else if ('suiClients' in params && params.suiClients) {
       this.clients = params.suiClients;
     } else {
-      this.clients = [new SuiClient({ url: getFullnodeUrl('mainnet') })];
+      this.clients = [
+        new SuiClient({
+          transport: new SuiClientGraphQLTransport({
+            url: 'https://graphql.mainnet.sui.io/graphql',
+            fallbackFullNodeUrl: getFullnodeUrl('mainnet'),
+          }),
+        }),
+      ];
     }
     this.currentClient = this.clients[0];
   }
@@ -42,7 +57,14 @@ export class SuiInteractor {
       throw new Error('fullNodes cannot be empty');
     }
     this.fullNodes = fullNodes;
-    this.clients = fullNodes.map((url) => new SuiClient({ url }));
+    this.clients = fullNodes.map((url) => {
+      return new SuiClient({
+        transport: new SuiClientGraphQLTransport({
+          url: 'https://graphql.mainnet.sui.io/graphql',
+          fallbackFullNodeUrl: url,
+        }),
+      });
+    });
     this.currentClient = this.clients[0];
   }
 

@@ -28,6 +28,17 @@ export class SuiInteractor {
           transport: new SuiClientGraphQLTransport({
             url: 'https://graphql.mainnet.sui.io/graphql',
             fallbackFullNodeUrl: url,
+            fallbackMethods: [
+              'executeTransactionBlock',
+              'dryRunTransactionBlock',
+              'devInspectTransactionBlock',
+              'getCoins',
+              'getBalance',
+              'getOwnedObjects',
+              'getAllBalances',
+              'multiGetObjects',
+              'getObject',
+            ],
           }),
         });
       });
@@ -39,6 +50,17 @@ export class SuiInteractor {
           transport: new SuiClientGraphQLTransport({
             url: 'https://graphql.mainnet.sui.io/graphql',
             fallbackFullNodeUrl: getFullnodeUrl('mainnet'),
+            fallbackMethods: [
+              'executeTransactionBlock',
+              'dryRunTransactionBlock',
+              'devInspectTransactionBlock',
+              'getCoins',
+              'getBalance',
+              'getOwnedObjects',
+              'getAllBalances',
+              'multiGetObjects',
+              'getObject',
+            ],
           }),
         }),
       ];
@@ -62,6 +84,15 @@ export class SuiInteractor {
         transport: new SuiClientGraphQLTransport({
           url: 'https://graphql.mainnet.sui.io/graphql',
           fallbackFullNodeUrl: url,
+          fallbackMethods: [
+            'executeTransactionBlock',
+            'dryRunTransactionBlock',
+            'devInspectTransactionBlock',
+            'getCoins',
+            'getBalance',
+            'getOwnedObjects',
+            'getAllBalances',
+          ],
         }),
       });
     });

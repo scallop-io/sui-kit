@@ -83,7 +83,10 @@ export type TransactionPureArgument = Extract<
   }
 >;
 
-export type SuiTxArg = TransactionArgument | SerializedBcs<any>;
+export type SuiTxArg =
+  | TransactionArgument
+  | SerializedBcs<any>
+  | ((tx: Transaction) => Promise<TransactionArgument | void>);
 export type SuiAddressArg = Argument | SerializedBcs<any> | string;
 export type SuiAmountsArg = SuiTxArg | number | bigint;
 
@@ -92,7 +95,8 @@ export type SuiObjectArg =
   | string
   | Parameters<typeof Inputs.ObjectRef>[0]
   | Parameters<typeof Inputs.SharedObjectRef>[0]
-  | ObjectCallArg;
+  | ObjectCallArg
+  | ((tx: Transaction) => Promise<TransactionArgument | void>);
 
 export type SuiVecTxArg =
   | { value: SuiTxArg[]; vecType: SuiInputTypes }

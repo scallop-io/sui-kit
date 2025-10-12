@@ -136,7 +136,7 @@ export class SuiTxBlock {
   transferObjects(objects: SuiObjectArg[], address: SuiAddressArg) {
     return this.txBlock.transferObjects(
       objects.map((object) => convertObjArg(this.txBlock, object)),
-      convertAddressArg(this.txBlock, address)
+      convertAddressArg(this.txBlock, address) as any
     );
   }
 
@@ -199,7 +199,7 @@ export class SuiTxBlock {
       convertAddressArg(this.txBlock, recipient)
     );
     recipientObjects.forEach((address, index) => {
-      this.txBlock.transferObjects([coins[index]], address);
+      this.txBlock.transferObjects([coins[index]], address as any);
     });
     return this;
   }
@@ -265,11 +265,11 @@ export class SuiTxBlock {
       convertAddressArg(this.txBlock, recipient)
     );
     recipientObjects.forEach((address, index) => {
-      this.txBlock.transferObjects([splitedCoins[index]], address);
+      this.txBlock.transferObjects([splitedCoins[index]], address as any);
     });
     this.txBlock.transferObjects(
       [mergedCoin],
-      convertAddressArg(this.txBlock, sender)
+      convertAddressArg(this.txBlock, sender) as any
     );
     return this;
   }

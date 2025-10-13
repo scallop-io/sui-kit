@@ -9,6 +9,7 @@ import {
   type DryRunTransactionBlockResponse,
   SuiClient,
   getFullnodeUrl,
+  SuiClientOptions,
 } from '@mysten/sui/client';
 import { SuiClientGraphQLTransport } from '@mysten/graphql-transport';
 
@@ -21,51 +22,50 @@ export class SuiInteractor {
   private fullNodes: string[] = [];
 
   constructor(params: Partial<SuiInteractorParams>) {
-    if ('fullnodeUrls' in params) {
-      this.fullNodes = params.fullnodeUrls ?? [getFullnodeUrl('mainnet')];
-      this.clients = this.fullNodes.map((url) => {
-        return new SuiClient({
-          transport: new SuiClientGraphQLTransport({
-            url: 'https://graphql.mainnet.sui.io/graphql',
-            fallbackFullNodeUrl: url,
-            fallbackMethods: [
-              'executeTransactionBlock',
-              'dryRunTransactionBlock',
-              'devInspectTransactionBlock',
-              'getCoins',
-              'getBalance',
-              'getOwnedObjects',
-              'getAllBalances',
-              'multiGetObjects',
-              'getObject',
-            ],
-          }),
-        });
-      });
-    } else if ('suiClients' in params && params.suiClients) {
+    if ('suiClients' in params && params.suiClients) {
       this.clients = params.suiClients;
     } else {
-      this.clients = [
-        new SuiClient({
-          transport: new SuiClientGraphQLTransport({
-            url: 'https://graphql.mainnet.sui.io/graphql',
-            fallbackFullNodeUrl: getFullnodeUrl('mainnet'),
-            fallbackMethods: [
-              'executeTransactionBlock',
-              'dryRunTransactionBlock',
-              'devInspectTransactionBlock',
-              'getCoins',
-              'getBalance',
-              'getOwnedObjects',
-              'getAllBalances',
-              'multiGetObjects',
-              'getObject',
-            ],
-          }),
-        }),
-      ];
+      this.clients = this.#constructClientParams(params).map(
+        (param) => new SuiClient(param)
+      );
     }
+
     this.currentClient = this.clients[0];
+  }
+
+  #constructClientParams(
+    params: Partial<Omit<SuiInteractorParams, 'suiClients'>>
+  ): SuiClientOptions[] {
+    const defaultFullNode = getFullnodeUrl('mainnet');
+    const fullNodes =
+      'fullnodeUrls' in params
+        ? params.fullnodeUrls ?? [defaultFullNode]
+        : [defaultFullNode];
+
+    if (params.useGraphql) {
+      const graphqlUrl = 'https://graphql.mainnet.sui.io/graphql';
+      // Only include allowed fallback methods for SuiClientGraphQLTransport
+      this.fullNodes = fullNodes;
+      return fullNodes.map((url) => ({
+        transport: new SuiClientGraphQLTransport({
+          url: graphqlUrl,
+          fallbackFullNodeUrl: url,
+          fallbackMethods: [
+            'executeTransactionBlock',
+            'dryRunTransactionBlock',
+            'devInspectTransactionBlock',
+            'getCoins',
+            'getBalance',
+            'getAllBalances',
+            'multiGetObjects',
+            'getObject',
+          ],
+        }),
+      }));
+    } else {
+      this.fullNodes = fullNodes;
+      return fullNodes.map((url) => ({ url, network: params.networkType }));
+    }
   }
 
   switchToNextClient() {

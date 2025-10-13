@@ -1,4 +1,4 @@
-import { Transaction, TransactionObjectInput } from '@mysten/sui/transactions';
+import { Transaction } from '@mysten/sui/transactions';
 import { SUI_SYSTEM_STATE_OBJECT_ID } from '@mysten/sui/utils';
 import {
   convertArgs,
@@ -49,7 +49,7 @@ export class SuiTxBlock {
     return this.txBlock.pure;
   }
 
-  object(value: string | TransactionObjectInput) {
+  object(value: SuiTxArg) {
     return this.txBlock.object(value);
   }
 
@@ -136,7 +136,7 @@ export class SuiTxBlock {
   transferObjects(objects: SuiObjectArg[], address: SuiAddressArg) {
     return this.txBlock.transferObjects(
       objects.map((object) => convertObjArg(this.txBlock, object)),
-      convertAddressArg(this.txBlock, address) as any
+      convertAddressArg(this.txBlock, address)
     );
   }
 
@@ -199,7 +199,7 @@ export class SuiTxBlock {
       convertAddressArg(this.txBlock, recipient)
     );
     recipientObjects.forEach((address, index) => {
-      this.txBlock.transferObjects([coins[index]], address as any);
+      this.txBlock.transferObjects([coins[index]], address);
     });
     return this;
   }
@@ -209,10 +209,7 @@ export class SuiTxBlock {
   }
 
   takeAmountFromCoins(coins: SuiObjectArg[], amount: SuiAmountsArg) {
-    const { splitedCoins, mergedCoin } = this.splitMultiCoins(
-      coins,
-      convertAmounts(this.txBlock, [amount])
-    );
+    const { splitedCoins, mergedCoin } = this.splitMultiCoins(coins, [amount]);
 
     return [splitedCoins, mergedCoin];
   }
@@ -259,17 +256,17 @@ export class SuiTxBlock {
     const coinObjects = coins.map((coin) => convertObjArg(this.txBlock, coin));
     const { splitedCoins, mergedCoin } = this.splitMultiCoins(
       coinObjects,
-      convertAmounts(this.txBlock, amounts)
+      amounts
     );
     const recipientObjects = recipients.map((recipient) =>
       convertAddressArg(this.txBlock, recipient)
     );
     recipientObjects.forEach((address, index) => {
-      this.txBlock.transferObjects([splitedCoins[index]], address as any);
+      this.txBlock.transferObjects([splitedCoins[index]], address);
     });
     this.txBlock.transferObjects(
       [mergedCoin],
-      convertAddressArg(this.txBlock, sender) as any
+      convertAddressArg(this.txBlock, sender)
     );
     return this;
   }
@@ -293,7 +290,7 @@ export class SuiTxBlock {
       arguments: convertArgs(this.txBlock, [
         this.txBlock.object(SUI_SYSTEM_STATE_OBJECT_ID),
         stakeCoin,
-        convertAddressArg(this.txBlock, validatorAddr),
+        validatorAddr,
       ]),
     });
   }

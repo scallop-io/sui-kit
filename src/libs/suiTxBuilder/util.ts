@@ -176,7 +176,7 @@ export function convertArgs(
     }
 
     if (typeof arg === 'function') {
-      return arg as any;
+      return arg;
     }
 
     return convertObjArg(txBlock, arg);
@@ -193,7 +193,7 @@ export function convertArgs(
 export function convertAddressArg(
   txBlock: Transaction,
   arg: SuiAddressArg
-): SuiTxArg {
+): TransactionArgument {
   if (typeof arg === 'string' && isValidSuiAddress(arg)) {
     return txBlock.pure.address(normalizeSuiAddress(arg));
   } else if (typeof arg === 'function') {

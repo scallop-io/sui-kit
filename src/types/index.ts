@@ -7,7 +7,8 @@ import type {
   Command,
 } from '@mysten/sui/transactions';
 import type { SerializedBcs } from '@mysten/bcs';
-import { SuiClient, SuiTransactionBlockResponse } from '@mysten/sui/client';
+import { SuiTransactionBlockResponse } from '@mysten/sui/client';
+import type { ClientWithCoreApi } from '@mysten/sui/experimental';
 import { SuiTxBlock } from 'src/libs/suiTxBuilder';
 
 export type SuiKitParams = (AccountManagerParams & {
@@ -15,17 +16,17 @@ export type SuiKitParams = (AccountManagerParams & {
 }) &
   Partial<SuiInteractorParams>;
 
+export type SuiKitClient = ClientWithCoreApi;
+
 export type SuiInteractorParams =
   | {
-      useGraphql: boolean;
       networkType: NetworkType;
       fullnodeUrls: string[];
       suiClients: never;
     }
   | {
-      useGraphql: boolean;
       networkType: NetworkType;
-      suiClients: SuiClient[];
+      suiClients: SuiKitClient[];
       fullnodeUrls: never;
     };
 

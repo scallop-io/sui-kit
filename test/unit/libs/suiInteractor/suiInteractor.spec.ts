@@ -8,10 +8,14 @@ vi.mock('@mysten/sui/client', () => {
     SuiClient: vi.fn().mockImplementation(({ url }) => {
       const client: any = {
         url,
-        executeTransactionBlock: vi.fn(),
-        dryRunTransactionBlock: vi.fn(),
         multiGetObjects: vi.fn(),
+      };
+      client.core = {
+        executeTransaction: vi.fn(),
+        dryRunTransaction: vi.fn(),
         getCoins: vi.fn(),
+        getBalance: vi.fn(),
+        getObjects: vi.fn(),
       };
       return client;
     }),
@@ -70,45 +74,43 @@ describe('SuiInteractor', () => {
   });
 
   it('should try all clients and throw if all fail in sendTx', async () => {
-    client0.executeTransactionBlock.mockRejectedValue(new Error('fail'));
-    client1.executeTransactionBlock.mockRejectedValue(new Error('fail'));
+    client0.core.executeTransaction.mockRejectedValue(new Error('fail'));
+    client1.core.executeTransaction.mockRejectedValue(new Error('fail'));
     await expect(interactor.sendTx('tx', 'sig')).rejects.toThrow(
       'Failed to send transaction with all fullnodes'
     );
   });
 
   it('should return result if a client succeeds in sendTx', async () => {
-    client0.executeTransactionBlock.mockRejectedValue(new Error('fail'));
-    client1.executeTransactionBlock.mockResolvedValue('ok');
+    client0.core.executeTransaction.mockRejectedValue(new Error('fail'));
+    client1.core.executeTransaction.mockResolvedValue('ok');
     await expect(interactor.sendTx('tx', 'sig')).resolves.toBe('ok');
   });
 
   it('should try all clients and throw if all fail in dryRunTx', async () => {
-    client0.dryRunTransactionBlock.mockRejectedValue(new Error('fail'));
-    client1.dryRunTransactionBlock.mockRejectedValue(new Error('fail'));
+    client0.core.dryRunTransaction.mockRejectedValue(new Error('fail'));
+    client1.core.dryRunTransaction.mockRejectedValue(new Error('fail'));
     await expect(interactor.dryRunTx(new Uint8Array())).rejects.toThrow(
       'Failed to dry run transaction with all fullnodes'
     );
   });
 
   it('should return result if a client succeeds in dryRunTx', async () => {
-    client0.dryRunTransactionBlock.mockRejectedValue(new Error('fail'));
-    client1.dryRunTransactionBlock.mockResolvedValue('ok');
+    client0.core.dryRunTransaction.mockRejectedValue(new Error('fail'));
+    client1.core.dryRunTransaction.mockResolvedValue('ok');
     await expect(interactor.dryRunTx(new Uint8Array())).resolves.toBe('ok');
   });
 
-  it('should get objects from multiGetObjects', async () => {
-    client0.multiGetObjects.mockResolvedValue([{ data: { objectId: 'a' } }]);
+  it('should get objects from core.getObjects', async () => {
+    client0.core.getObjects.mockResolvedValue({ objects: [{ objectId: 'a' }] });
     const res = await interactor.getObjects(['a']);
     expect(res).toEqual([{ objectId: 'a' }]);
   });
 
   it('should filter out null/undefined objects in getObjects', async () => {
-    client0.multiGetObjects.mockResolvedValue([
-      { data: null },
-      { data: undefined },
-      { data: { objectId: 'b' } },
-    ]);
+    client0.core.getObjects.mockResolvedValue({
+      objects: [null, undefined, { objectId: 'b' }],
+    });
     const res = await interactor.getObjects(['b']);
     expect(res).toEqual([{ objectId: 'b' }]);
   });
@@ -160,13 +162,13 @@ describe('SuiInteractor', () => {
   });
 
   it('should select coins and sum up to amount', async () => {
-    client0.getCoins = vi.fn().mockResolvedValueOnce({
-      data: [
-        { coinObjectId: 'a', digest: 'd', version: '1', balance: '60' },
-        { coinObjectId: 'b', digest: 'e', version: '2', balance: '50' },
+    client0.core.getCoins = vi.fn().mockResolvedValueOnce({
+      objects: [
+        { id: 'a', digest: 'd', version: '1', balance: '60' },
+        { id: 'b', digest: 'e', version: '2', balance: '50' },
       ],
       hasNextPage: false,
-      nextCursor: null,
+      cursor: null,
     });
     interactor.currentClient = client0;
     const coins = await interactor.selectCoins('addr', 100);
@@ -176,9 +178,9 @@ describe('SuiInteractor', () => {
   });
 
   it('should throw if no coins found in selectCoins', async () => {
-    client0.getCoins = vi
+    client0.core.getCoins = vi
       .fn()
-      .mockResolvedValue({ data: [], hasNextPage: false });
+      .mockResolvedValue({ objects: [], hasNextPage: false, cursor: null });
     interactor.currentClient = client0;
     await expect(interactor.selectCoins('addr', 100)).rejects.toThrow(
       'No valid coins found for the transaction.'

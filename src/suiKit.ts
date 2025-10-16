@@ -88,9 +88,12 @@ export class SuiKit {
     return this.accountManager.currentAddress;
   }
 
-  async getBalance(coinType?: string, derivePathParams?: DerivePathParams) {
+  async getBalance(coinType: string, derivePathParams?: DerivePathParams) {
     const owner = this.accountManager.getAddress(derivePathParams);
-    return this.suiInteractor.currentClient.getBalance({ owner, coinType });
+    return await this.suiInteractor.currentClient.core.getBalance({
+      address: owner,
+      coinType,
+    });
   }
 
   get client() {
@@ -399,9 +402,11 @@ export class SuiKit {
     derivePathParams?: DerivePathParams
   ): Promise<DevInspectResults> {
     const txBlock = tx instanceof SuiTxBlock ? tx.txBlock : tx;
-    return this.suiInteractor.currentClient.devInspectTransactionBlock({
-      transactionBlock: txBlock,
-      sender: this.getAddress(derivePathParams),
-    });
+    return (this.suiInteractor.currentClient.core as any).devInspectTransaction(
+      {
+        transaction: txBlock,
+        sender: this.getAddress(derivePathParams),
+      }
+    );
   }
 }

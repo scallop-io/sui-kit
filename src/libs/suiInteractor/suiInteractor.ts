@@ -2,33 +2,47 @@ import { SuiInteractorParams } from 'src/types';
 import { SuiOwnedObject, SuiSharedObject } from '../suiModel';
 import { batch, delay } from './util';
 import {
-  type SuiTransactionBlockResponseOptions,
   type SuiTransactionBlockResponse,
   type SuiObjectDataOptions,
   type SuiObjectData,
   type DryRunTransactionBlockResponse,
   SuiClient,
   getFullnodeUrl,
+  SuiClientOptions,
 } from '@mysten/sui/client';
+import type { SuiKitClient } from 'src/types';
 
 /**
  * Encapsulates all functions that interact with the sui sdk
  */
 export class SuiInteractor {
-  private clients: SuiClient[] = [];
-  public currentClient: SuiClient;
+  private clients: SuiKitClient[] = [];
+  public currentClient: SuiKitClient;
   private fullNodes: string[] = [];
 
   constructor(params: Partial<SuiInteractorParams>) {
-    if ('fullnodeUrls' in params) {
-      this.fullNodes = params.fullnodeUrls ?? [getFullnodeUrl('mainnet')];
-      this.clients = this.fullNodes.map((url) => new SuiClient({ url }));
-    } else if ('suiClients' in params && params.suiClients) {
+    if ('suiClients' in params && params.suiClients) {
       this.clients = params.suiClients;
     } else {
-      this.clients = [new SuiClient({ url: getFullnodeUrl('mainnet') })];
+      this.clients = this.#constructClientParams(params).map(
+        (param) => new SuiClient(param)
+      );
     }
+
     this.currentClient = this.clients[0];
+  }
+
+  #constructClientParams(
+    params: Partial<Omit<SuiInteractorParams, 'suiClients'>>
+  ): SuiClientOptions[] {
+    const defaultFullNode = getFullnodeUrl('mainnet');
+    const fullNodes =
+      'fullnodeUrls' in params
+        ? params.fullnodeUrls ?? [defaultFullNode]
+        : [defaultFullNode];
+
+    this.fullNodes = fullNodes;
+    return fullNodes.map((url) => ({ url, network: params.networkType }));
   }
 
   switchToNextClient() {
@@ -42,7 +56,9 @@ export class SuiInteractor {
       throw new Error('fullNodes cannot be empty');
     }
     this.fullNodes = fullNodes;
-    this.clients = fullNodes.map((url) => new SuiClient({ url }));
+    this.clients = fullNodes.map((url) => {
+      return new SuiClient({ url });
+    });
     this.currentClient = this.clients[0];
   }
 
@@ -63,21 +79,13 @@ export class SuiInteractor {
     transactionBlock: Uint8Array | string,
     signature: string | string[]
   ): Promise<SuiTransactionBlockResponse> {
-    const txResOptions: SuiTransactionBlockResponseOptions = {
-      showEvents: true,
-      showEffects: true,
-      showRawEffects: true,
-      showObjectChanges: true,
-      showBalanceChanges: true,
-    };
-
     for (const clientIdx in this.clients) {
       try {
-        return await this.clients[clientIdx].executeTransactionBlock({
-          transactionBlock,
-          signature,
-          options: txResOptions,
+        const res = await this.clients[clientIdx].core.executeTransaction({
+          transaction: transactionBlock as Uint8Array,
+          signatures: Array.isArray(signature) ? signature : [signature],
         });
+        return res as unknown as SuiTransactionBlockResponse;
       } catch (err) {
         console.warn(
           `Failed to send transaction with fullnode ${this.fullNodes[clientIdx]}: ${err}`
@@ -93,9 +101,10 @@ export class SuiInteractor {
   ): Promise<DryRunTransactionBlockResponse> {
     for (const clientIdx in this.clients) {
       try {
-        return await this.clients[clientIdx].dryRunTransactionBlock({
-          transactionBlock,
+        const res = await this.clients[clientIdx].core.dryRunTransaction({
+          transaction: transactionBlock,
         });
+        return res as unknown as DryRunTransactionBlockResponse;
       } catch (err) {
         console.warn(
           `Failed to dry run transaction with fullnode ${this.fullNodes[clientIdx]}: ${err}`
@@ -113,13 +122,6 @@ export class SuiInteractor {
       switchClientDelay?: number;
     }
   ): Promise<SuiObjectData[]> {
-    const opts: SuiObjectDataOptions = options ?? {
-      showContent: true,
-      showDisplay: true,
-      showType: true,
-      showOwner: true,
-    };
-
     const batchIds = batch(ids, Math.max(options?.batchSize ?? 50, 50));
     const results: SuiObjectData[] = [];
     let lastError = null;
@@ -127,15 +129,13 @@ export class SuiInteractor {
     for (const batch of batchIds) {
       for (const clientIdx in this.clients) {
         try {
-          const objects = await this.clients[clientIdx].multiGetObjects({
-            ids: batch,
-            options: opts,
+          const coreResult = await this.clients[clientIdx].core.getObjects({
+            objectIds: batch,
           });
-          const parsedObjects = objects
-            .map((object) => {
-              return object.data;
-            })
-            .filter((object) => object !== null && object !== undefined);
+          const objects = coreResult.objects as any[];
+          const parsedObjects = objects.filter((object) => {
+            return object !== null && object !== undefined;
+          });
           results.push(...(parsedObjects as SuiObjectData[]));
           lastError = null;
           break; // Exit the client loop if successful
@@ -212,16 +212,16 @@ export class SuiInteractor {
     let hasNext = true,
       nextCursor: string | null | undefined = null;
     while (hasNext && totalAmount < amount) {
-      const coins = await this.currentClient.getCoins({
-        owner: addr,
+      const coins = await this.currentClient.core.getCoins({
+        address: addr,
         coinType: coinType,
         cursor: nextCursor,
       });
       // Sort the coins by balance in descending order
-      coins.data.sort((a, b) => parseInt(b.balance) - parseInt(a.balance));
-      for (const coinData of coins.data) {
+      coins.objects.sort((a, b) => parseInt(b.balance) - parseInt(a.balance));
+      for (const coinData of coins.objects) {
         selectedCoins.push({
-          objectId: coinData.coinObjectId,
+          objectId: coinData.id,
           digest: coinData.digest,
           version: coinData.version,
           balance: coinData.balance,
@@ -232,7 +232,7 @@ export class SuiInteractor {
         }
       }
 
-      nextCursor = coins.nextCursor;
+      nextCursor = coins.cursor;
       hasNext = coins.hasNextPage;
     }
 

@@ -175,6 +175,10 @@ export function convertArgs(
       return convertAmounts(txBlock, [arg])[0];
     }
 
+    if (typeof arg === 'function') {
+      return arg;
+    }
+
     return convertObjArg(txBlock, arg);
   });
 }
@@ -189,9 +193,11 @@ export function convertArgs(
 export function convertAddressArg(
   txBlock: Transaction,
   arg: SuiAddressArg
-): SuiTxArg {
+): TransactionArgument {
   if (typeof arg === 'string' && isValidSuiAddress(arg)) {
     return txBlock.pure.address(normalizeSuiAddress(arg));
+  } else if (typeof arg === 'function') {
+    return arg as any;
   } else {
     return convertArgs(txBlock, [arg])[0];
   }
@@ -231,7 +237,7 @@ export function convertObjArg(
   }
 
   if (typeof arg === 'function') {
-    return arg;
+    return arg as any;
   }
 
   if (

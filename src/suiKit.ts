@@ -1,7 +1,6 @@
 /**
  * @description This file is used to aggregate the tools that used to interact with SUI network.
  */
-import { getFullnodeUrl } from '@mysten/sui/client';
 import { Transaction } from '@mysten/sui/transactions';
 import { SuiAccountManager } from './libs/suiAccountManager';
 import { SuiTxBlock } from './libs/suiTxBuilder';
@@ -42,22 +41,11 @@ export class SuiKit {
    * @param fullnodeUrls, the fullnode url, default is the preconfig fullnode url for the given network type
    */
   constructor(params: SuiKitParams) {
-    const { mnemonics, secretKey, networkType } = params;
+    const { mnemonics, secretKey } = params;
     // Init the account manager
     this.accountManager = new SuiAccountManager({ mnemonics, secretKey });
-
-    let suiInteractorParams;
-    if ('fullnodeUrls' in params) {
-      suiInteractorParams = { fullnodeUrls: params.fullnodeUrls };
-    } else if ('suiClients' in params) {
-      suiInteractorParams = { suiClients: params.suiClients };
-    } else {
-      suiInteractorParams = {
-        fullnodeUrls: [getFullnodeUrl(networkType ?? 'mainnet')],
-      };
-    }
-
-    this.suiInteractor = new SuiInteractor(suiInteractorParams);
+    // Init the SuiInteractor
+    this.suiInteractor = new SuiInteractor(params);
   }
 
   /**
@@ -100,9 +88,12 @@ export class SuiKit {
     return this.accountManager.currentAddress;
   }
 
-  async getBalance(coinType?: string, derivePathParams?: DerivePathParams) {
+  async getBalance(coinType: string, derivePathParams?: DerivePathParams) {
     const owner = this.accountManager.getAddress(derivePathParams);
-    return this.suiInteractor.currentClient.getBalance({ owner, coinType });
+    return await this.suiInteractor.currentClient.core.getBalance({
+      address: owner,
+      coinType,
+    });
   }
 
   get client() {
@@ -411,9 +402,11 @@ export class SuiKit {
     derivePathParams?: DerivePathParams
   ): Promise<DevInspectResults> {
     const txBlock = tx instanceof SuiTxBlock ? tx.txBlock : tx;
-    return this.suiInteractor.currentClient.devInspectTransactionBlock({
-      transactionBlock: txBlock,
-      sender: this.getAddress(derivePathParams),
-    });
+    return (this.suiInteractor.currentClient.core as any).devInspectTransaction(
+      {
+        transaction: txBlock,
+        sender: this.getAddress(derivePathParams),
+      }
+    );
   }
 }

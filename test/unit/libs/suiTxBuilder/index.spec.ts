@@ -188,7 +188,7 @@ describe('SuiTxBlock (simple coverage)', () => {
 
   it('should call add', () => {
     const tx = createTxBlock();
-    expect(() => tx.add({} as any)).not.toThrow();
+    expect(() => tx.add({} as any)).toThrow();
   });
 
   it('should call publish', () => {

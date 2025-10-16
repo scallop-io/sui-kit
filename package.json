@@ -64,8 +64,8 @@
     "doc": "typedoc --out docs src/index.ts"
   },
   "dependencies": {
-    "@mysten/bcs": "^1.6.0",
-    "@mysten/sui": "^1.28.2",
+    "@mysten/bcs": "^1.8.0",
+    "@mysten/sui": "^1.40.0",
     "@scure/bip39": "^1.5.4",
     "assert": "^2.1.0",
     "bech32": "^2.0.0"

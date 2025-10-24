@@ -2,9 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.4.3](https://github.com/scallop-io/sui-kit/compare/v1.4.2...v1.4.3) (2025-10-24)
+
+### Changed
+
+- Use `instanceof Uint8Array` instead of `instanceof Transaction` ([82e1e27](https://github.com/scallop-io/sui-kit/pull/53/commits/82e1e276a31838387d1fb5c58397607d49063784))
+
 ### [1.4.2](https://github.com/scallop-io/sui-kit/compare/v1.4.1...v1.4.2) (2025-07-21)
 
 ### Features
+
 - Add more unit tests and integration tests ([PR](https://github.com/scallop-io/sui-kit/pull/47))
 - Add deepwiki badge ([ebb6c18](https://github.com/scallop-io/sui-kit/pull/48/commits/ebb6c18fc293c17a82eb9f6e781c4b57bb6b9e6f))
 

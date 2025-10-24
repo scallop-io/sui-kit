@@ -136,9 +136,9 @@ export class SuiKit {
     }
     const txBlock = tx instanceof SuiTxBlock ? tx.txBlock : tx;
     const txBytes =
-      txBlock instanceof Transaction
-        ? await txBlock.build({ client: this.client })
-        : txBlock;
+      txBlock instanceof Uint8Array
+        ? txBlock
+        : await txBlock.build({ client: this.client });
     const keyPair = this.getKeypair(derivePathParams);
     return await keyPair.signTransaction(txBytes);
   }
@@ -160,9 +160,9 @@ export class SuiKit {
     }
     const txBlock = tx instanceof SuiTxBlock ? tx.txBlock : tx;
     const txBytes =
-      txBlock instanceof Transaction
-        ? await txBlock.build({ client: this.client })
-        : txBlock;
+      txBlock instanceof Uint8Array
+        ? txBlock
+        : await txBlock.build({ client: this.client });
     return this.suiInteractor.dryRunTx(txBytes);
   }
 

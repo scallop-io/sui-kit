@@ -6,8 +6,8 @@ import {
   convertObjArg,
   convertAmounts,
   partitionArray,
-} from './util';
-import type { SuiClient, SuiObjectRef } from '@mysten/sui/client';
+} from './util.js';
+import type { ClientWithCoreApi } from '@mysten/sui/client';
 import type { Keypair } from '@mysten/sui/cryptography';
 import type {
   SuiTxArg,
@@ -15,8 +15,15 @@ import type {
   SuiObjectArg,
   SuiVecTxArg,
   SuiAmountsArg,
-} from 'src/types';
+} from '../../types/index.js';
 import type { bcs } from '@mysten/sui/bcs';
+
+// Object reference type
+interface SuiObjectRef {
+  objectId: string;
+  version: number | string;
+  digest: string;
+}
 
 export class SuiTxBlock {
   public txBlock: Transaction;
@@ -31,13 +38,8 @@ export class SuiTxBlock {
   get gas() {
     return this.txBlock.gas;
   }
-  /** @deprecated Use `getData()` instead. */
-  get blockData() {
-    // TODO: need to update this method to use the new blockData method
-    return this.txBlock.blockData;
-  }
 
-  get getData() {
+  getData() {
     return this.txBlock.getData();
   }
 
@@ -95,20 +97,20 @@ export class SuiTxBlock {
 
   sign(params: {
     signer: Keypair;
-    client?: SuiClient;
+    client?: ClientWithCoreApi;
     onlyTransactionKind?: boolean;
   }) {
     return this.txBlock.sign(params);
   }
   build(
     params: {
-      client?: SuiClient;
+      client?: ClientWithCoreApi;
       onlyTransactionKind?: boolean;
     } = {}
   ) {
     return this.txBlock.build(params);
   }
-  getDigest(params: { client?: SuiClient } = {}) {
+  getDigest(params: { client?: ClientWithCoreApi } = {}) {
     return this.txBlock.getDigest(params);
   }
   add(...args: Parameters<typeof this.txBlock.add>) {

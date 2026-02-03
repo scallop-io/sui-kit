@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { SuiKit } from 'src/suiKit';
-import { SuiTxBlock } from 'src/libs/suiTxBuilder';
+import { SuiKit } from 'src/suiKit.js';
+import { SuiTxBlock } from 'src/libs/suiTxBuilder/index.js';
 
 function createTxBlock() {
   return new SuiTxBlock();
@@ -95,14 +95,9 @@ describe('SuiTxBlock (simple coverage)', () => {
     expect(tx.gas).toBeDefined();
   });
 
-  it('should get blockData', () => {
-    const tx = new SuiTxBlock();
-    expect(tx.txBlock.getData()).toBeDefined();
-  });
-
   it('should get getData', () => {
     const tx = new SuiTxBlock();
-    expect(tx.getData).toBeDefined();
+    expect(tx.getData()).toBeDefined();
   });
 
   it('should get pure', () => {
@@ -186,9 +181,10 @@ describe('SuiTxBlock (simple coverage)', () => {
     expect(() => tx.toJSON()).not.toThrow();
   });
 
-  it('should call add', () => {
+  it('should call add with invalid input throws in SDK v2', () => {
     const tx = createTxBlock();
-    expect(() => tx.add({} as any)).not.toThrow();
+    // SDK v2 validates transaction commands and throws for invalid input
+    expect(() => tx.add({} as any)).toThrow();
   });
 
   it('should call publish', () => {

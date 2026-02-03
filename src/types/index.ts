@@ -6,8 +6,8 @@ import type {
   TransactionArgument,
 } from '@mysten/sui/transactions';
 import type { SerializedBcs } from '@mysten/bcs';
-import { SuiClient, SuiTransactionBlockResponse } from '@mysten/sui/client';
-import { SuiTxBlock } from 'src/libs/suiTxBuilder';
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client';
+import { SuiTxBlock } from 'src/libs/suiTxBuilder/index.js';
 
 export type SuiKitParams = (AccountManagerParams & {
   faucetUrl?: string;
@@ -18,9 +18,10 @@ export type SuiKitParams = (AccountManagerParams & {
 export type SuiInteractorParams =
   | {
       fullnodeUrls: string[];
+      network: NetworkType;
     }
   | {
-      suiClients: SuiClient[];
+      suiClients: ClientWithCoreApi[];
     };
 
 export type NetworkType = 'testnet' | 'mainnet' | 'devnet' | 'localnet';
@@ -112,6 +113,19 @@ export type SuiBasicTypes =
   | 'u256';
 
 export type SuiInputTypes = 'object' | SuiBasicTypes;
+
+// Transaction result type from SDK v2
+export type SuiTransactionResult<
+  Include extends SuiClientTypes.TransactionInclude = {},
+> = SuiClientTypes.TransactionResult<Include>;
+
+// Full transaction response with all includes enabled
+export type SuiTransactionBlockResponse = SuiClientTypes.TransactionResult<{
+  balanceChanges: true;
+  effects: true;
+  events: true;
+  objectTypes: true;
+}>;
 
 export type SuiKitReturnType<T extends boolean> = T extends true
   ? SuiTransactionBlockResponse

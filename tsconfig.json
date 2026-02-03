@@ -3,14 +3,14 @@
     "require": ["tsconfig-paths/register"]
   },
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2022",
     "lib": ["dom", "dom.iterable", "esnext"],
     "baseUrl": ".",
     "downlevelIteration": true,
     "rootDir": "src",
     "outDir": "dist",
-    "module": "CommonJS",
-    "moduleResolution": "node",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "strict": true,
     "sourceMap": true,
     "declaration": true,

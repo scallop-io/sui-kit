@@ -111,7 +111,7 @@ export class SuiKit {
       owner,
       coinType,
     });
-    return result.balance;
+    return result;
   }
 
   get client() {

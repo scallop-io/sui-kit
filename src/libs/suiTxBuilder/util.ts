@@ -29,20 +29,24 @@ interface SuiObjectRef {
 }
 
 // Simple types that can be converted to OpenSignatureBody
-type SimpleBcsType =
-  | 'u8'
-  | 'u16'
-  | 'u32'
-  | 'u64'
-  | 'u128'
-  | 'u256'
-  | 'bool'
-  | 'address';
+const SIMPLE_BCS_TYPES = [
+  'u8',
+  'u16',
+  'u32',
+  'u64',
+  'u128',
+  'u256',
+  'bool',
+  'address',
+] as const;
+
+type SimpleBcsType = (typeof SIMPLE_BCS_TYPES)[number];
 
 // Convert simple type string to OpenSignatureBody
-function toOpenSignatureBody(
-  type: SimpleBcsType
-): SuiClientTypes.OpenSignatureBody {
+function toOpenSignatureBody(type: string): SuiClientTypes.OpenSignatureBody {
+  if (!SIMPLE_BCS_TYPES.includes(type as SimpleBcsType)) {
+    throw new Error(`Invalid SimpleBcsType: ${type}`);
+  }
   return { $kind: type } as SuiClientTypes.OpenSignatureBody;
 }
 

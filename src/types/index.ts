@@ -18,7 +18,7 @@ export type SuiKitParams = (AccountManagerParams & {
 export type SuiInteractorParams =
   | {
       fullnodeUrls: string[];
-      network: NetworkType;
+      network?: NetworkType;
     }
   | {
       suiClients: ClientWithCoreApi[];

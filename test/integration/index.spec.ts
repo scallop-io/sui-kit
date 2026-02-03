@@ -462,7 +462,7 @@ describe('Test Scallop Kit with mnemonics', () => {
 });
 
 describe('Test Scallop Kit with sui clients', () => {
-  const fullnodeUrls = ['https://sui-mainnet.public.blastapi.io'];
+  const fullnodeUrls = [getFullnodeUrl('mainnet')];
   const suiKit = new SuiKit({
     secretKey: process.env.SECRET_KEY,
     fullnodeUrls,

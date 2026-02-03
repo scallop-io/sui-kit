@@ -20,6 +20,7 @@ import type {
   SuiObjectArg,
   SuiTransactionBlockResponse,
 } from './types/index.js';
+import { normalizeStructTag, SUI_TYPE_ARG } from '@mysten/sui/utils';
 
 /**
  * @class SuiKit
@@ -107,11 +108,11 @@ export class SuiKit {
 
   async getBalance(coinType?: string, derivePathParams?: DerivePathParams) {
     const owner = this.accountManager.getAddress(derivePathParams);
-    const result = await this.suiInteractor.currentClient.core.getBalance({
+    const { balance } = await this.suiInteractor.currentClient.core.getBalance({
       owner,
       coinType,
     });
-    return result;
+    return balance;
   }
 
   get client() {
@@ -272,17 +273,23 @@ export class SuiKit {
     const tx = new SuiTxBlock();
     const owner = this.accountManager.getAddress(derivePathParams);
     const totalAmount = amounts.reduce((a, b) => a + b, 0);
-    const coins = await this.suiInteractor.selectCoins(
-      owner,
-      totalAmount,
-      coinType
-    );
-    tx.transferCoinToMany(
-      coins.map((c) => c.objectId),
-      owner,
-      recipients,
-      amounts
-    );
+    if (normalizeStructTag(coinType) === normalizeStructTag(SUI_TYPE_ARG)) {
+      tx.transferSuiToMany(recipients, amounts);
+    } else {
+      const coins = await this.suiInteractor.selectCoins(
+        owner,
+        totalAmount,
+        coinType
+      );
+
+      tx.transferCoinToMany(
+        coins.map((coin) => ('objectId' in coin ? tx.objectRef(coin) : coin)),
+        owner,
+        recipients,
+        amounts
+      );
+    }
+
     return sign
       ? ((await this.signAndSendTxn(
           tx,

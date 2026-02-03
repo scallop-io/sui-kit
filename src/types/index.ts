@@ -6,7 +6,7 @@ import type {
   TransactionArgument,
 } from '@mysten/sui/transactions';
 import type { SerializedBcs } from '@mysten/bcs';
-import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client';
+import type { BaseClient, SuiClientTypes } from '@mysten/sui/client';
 import { SuiTxBlock } from 'src/libs/suiTxBuilder/index.js';
 
 export type SuiKitParams = (AccountManagerParams & {
@@ -21,7 +21,7 @@ export type SuiInteractorParams =
       network?: NetworkType;
     }
   | {
-      suiClients: ClientWithCoreApi[];
+      suiClients: BaseClient[];
     };
 
 export type NetworkType = 'testnet' | 'mainnet' | 'devnet' | 'localnet';

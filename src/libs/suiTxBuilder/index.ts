@@ -197,12 +197,16 @@ export class SuiTxBlock {
       this.txBlock.gas,
       convertAmounts(this.txBlock, amounts)
     );
+
     const recipientObjects = recipients.map((recipient) =>
       convertAddressArg(this.txBlock, recipient)
     );
+
+    // Transfer splitted coins to recipients
     recipientObjects.forEach((address, index) => {
       this.txBlock.transferObjects([coins[index]], address);
     });
+
     return this;
   }
 
@@ -255,7 +259,7 @@ export class SuiTxBlock {
     // require recipients.length === amounts.length
     if (recipients.length !== amounts.length) {
       throw new Error(
-        'transferSuiToMany: recipients.length !== amounts.length'
+        'transferCoinToMany: recipients.length !== amounts.length'
       );
     }
     const coinObjects = coins.map((coin) => convertObjArg(this.txBlock, coin));
@@ -266,13 +270,18 @@ export class SuiTxBlock {
     const recipientObjects = recipients.map((recipient) =>
       convertAddressArg(this.txBlock, recipient)
     );
+
+    // Transfer splitted coins to recipients
     recipientObjects.forEach((address, index) => {
       this.txBlock.transferObjects([splitedCoins[index]], address);
     });
+
+    // Return the remaining coin back to sender
     this.txBlock.transferObjects(
       [mergedCoin],
       convertAddressArg(this.txBlock, sender)
     );
+
     return this;
   }
 

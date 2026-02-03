@@ -2,14 +2,16 @@ import { SuiInteractorParams, NetworkType } from '../../types/index.js';
 import { SuiOwnedObject, SuiSharedObject } from '../suiModel/index.js';
 import { batch, delay } from './util.js';
 import { SuiGrpcClient, type SuiGrpcClientOptions } from '@mysten/sui/grpc';
-import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client';
+import type { BaseClient, SuiClientTypes } from '@mysten/sui/client';
+
+const MAX_OBJECTS_PER_REQUEST = 50;
 
 // Helper to create gRPC client options with baseUrl
 function createGrpcClientOptions(
   url: string,
   network: NetworkType
 ): SuiGrpcClientOptions {
-  return { baseUrl: url, network } as SuiGrpcClientOptions;
+  return { baseUrl: url, network } satisfies SuiGrpcClientOptions;
 }
 
 // Helper to get fullnode URLs for each network
@@ -50,8 +52,8 @@ export type SimulateTransactionResponse =
  * Encapsulates all functions that interact with the sui sdk
  */
 export class SuiInteractor {
-  private clients: ClientWithCoreApi[] = [];
-  public currentClient: ClientWithCoreApi;
+  private clients: BaseClient[] = [];
+  public currentClient: BaseClient;
   private fullNodes: string[] = [];
   private network: NetworkType;
 
@@ -185,7 +187,13 @@ export class SuiInteractor {
   ): Promise<SuiObjectData[]> {
     const include = options?.include ?? { content: true, json: true };
 
-    const batchIds = batch(ids, Math.max(options?.batchSize ?? 50, 50));
+    const batchIds = batch(
+      ids,
+      Math.max(
+        options?.batchSize ?? MAX_OBJECTS_PER_REQUEST,
+        MAX_OBJECTS_PER_REQUEST
+      )
+    );
     const results: SuiObjectData[] = [];
     let lastError = null;
 
@@ -280,14 +288,15 @@ export class SuiInteractor {
     let hasNext = true,
       nextCursor: string | null | undefined = null;
     while (hasNext && totalAmount < amount) {
-      const coins = await this.currentClient.core.listCoins({
-        owner: addr,
-        coinType: coinType,
-        cursor: nextCursor,
-      });
+      const { objects, hasNextPage, cursor } =
+        await this.currentClient.core.listCoins({
+          owner: addr,
+          coinType: coinType,
+          cursor: nextCursor,
+        });
       // Sort the coins by balance in descending order
-      coins.objects.sort((a, b) => parseInt(b.balance) - parseInt(a.balance));
-      for (const coinData of coins.objects) {
+      objects.sort((a, b) => parseInt(b.balance) - parseInt(a.balance));
+      for (const coinData of objects) {
         selectedCoins.push({
           objectId: coinData.objectId,
           digest: coinData.digest,
@@ -300,8 +309,8 @@ export class SuiInteractor {
         }
       }
 
-      nextCursor = coins.cursor;
-      hasNext = coins.hasNextPage;
+      nextCursor = cursor;
+      hasNext = hasNextPage;
     }
 
     if (!selectedCoins.length) {

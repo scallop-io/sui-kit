@@ -73,6 +73,8 @@
     "@commitlint/cli": "^18.0.0",
     "@commitlint/config-conventional": "^18.0.0",
     "@commitlint/prompt-cli": "^18.0.0",
+    "@protobuf-ts/grpcweb-transport": "^2.11.1",
+    "@protobuf-ts/runtime-rpc": "^2.11.1",
     "@types/node": "^20.8.7",
     "@types/tmp": "^0.2.5",
     "@typescript-eslint/eslint-plugin": "^8.11.0",

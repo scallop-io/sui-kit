@@ -1,6 +1,12 @@
 import { config as dotenvConfig } from 'dotenv';
 import { describe, it, expect } from 'vitest';
-import { SuiKit, SuiTxBlock, getFullnodeUrl } from 'src/index.js';
+import {
+  SUI_TYPE_ARG,
+  SuiKit,
+  SuiTxBlock,
+  getFullnodeUrl,
+  normalizeStructTag,
+} from 'src/index.js';
 import { getDerivePathForSUI } from 'src/libs/suiAccountManager/keypair.js';
 import type {
   SuiTransactionBlockResponse,
@@ -220,9 +226,15 @@ describe('Test Scallop Kit with secret key', () => {
   it('Test Interactor with sui: transfer object', async () => {
     const objectsResult = await suiKit.client.core.listOwnedObjects({
       owner: suiKit.currentAddress,
-      limit: 1,
+      limit: 2,
     });
-    const object = objectsResult.objects[0];
+    const object = objectsResult.objects.find(
+      (t) =>
+        t.type !==
+        normalizeStructTag(
+          `0x0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<${SUI_TYPE_ARG}>`
+        )
+    );
 
     if (!object)
       throw new Error(
@@ -441,9 +453,15 @@ describe('Test Scallop Kit with mnemonics', () => {
   it('Test Interactor with sui: transfer object', async () => {
     const objectsResult = await suiKit.client.core.listOwnedObjects({
       owner: suiKit.currentAddress,
-      limit: 1,
+      limit: 2,
     });
-    const object = objectsResult.objects[0];
+    const object = objectsResult.objects.find(
+      (t) =>
+        t.type !==
+        normalizeStructTag(
+          `0x0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<${SUI_TYPE_ARG}>`
+        )
+    );
 
     if (!object)
       throw new Error(
@@ -664,9 +682,15 @@ describe('Test Scallop Kit with sui clients', () => {
   it('Test Interactor with sui: transfer object', async () => {
     const objectsResult = await suiKit.client.core.listOwnedObjects({
       owner: suiKit.currentAddress,
-      limit: 1,
+      limit: 2,
     });
-    const object = objectsResult.objects[0];
+    const object = objectsResult.objects.find(
+      (t) =>
+        t.type !==
+        normalizeStructTag(
+          `0x0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<${SUI_TYPE_ARG}>`
+        )
+    );
 
     if (!object)
       throw new Error(

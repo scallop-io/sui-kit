@@ -2,7 +2,7 @@ import { SuiInteractorParams, NetworkType } from '../../types/index.js';
 import { SuiOwnedObject, SuiSharedObject } from '../suiModel/index.js';
 import { batch, delay } from './util.js';
 import { SuiGrpcClient, type SuiGrpcClientOptions } from '@mysten/sui/grpc';
-import type { BaseClient, SuiClientTypes } from '@mysten/sui/client';
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client';
 
 const MAX_OBJECTS_PER_REQUEST = 50;
 
@@ -52,8 +52,8 @@ export type SimulateTransactionResponse =
  * Encapsulates all functions that interact with the sui sdk
  */
 export class SuiInteractor {
-  private clients: BaseClient[] = [];
-  public currentClient: BaseClient;
+  private clients: ClientWithCoreApi[] = [];
+  public currentClient: ClientWithCoreApi;
   private fullNodes: string[] = [];
   private network: NetworkType;
 

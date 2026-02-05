@@ -2,17 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [2.0.0](https://github.com/scallop-io/sui-kit/compare/v1.4.3...v2.0.0) (2025-10-24)
+### [2.0.0](https://github.com/scallop-io/sui-kit/compare/v1.4.3...v2.0.0) (2026-02-05)
+
+### ⚠ BREAKING CHANGES
+
+- Migrate to `@mysten/sui@2` and `@mysten/bcs@2` with gRPC support ([5bcae16](https://github.com/scallop-io/sui-kit/commit/5bcae16))
+- Minimum Node.js version changed to >=22 ([5bcae16](https://github.com/scallop-io/sui-kit/commit/5bcae16))
+- Migrate to ESM-only package, CommonJS support removed ([5bcae16](https://github.com/scallop-io/sui-kit/commit/5bcae16))
 
 ### Added
 
+- gRPC client support using `SuiGrpcClient` ([5bcae16](https://github.com/scallop-io/sui-kit/commit/5bcae16))
+- Export `getFullnodeUrl` and `SimulateTransactionResponse` ([5bcae16](https://github.com/scallop-io/sui-kit/commit/5bcae16))
+
 ### Changed
 
-### Deprecated
-
-### Removed
-
-### Fixed
+- Client type from `SuiClient` to `ClientWithCoreApi` ([5bcae16](https://github.com/scallop-io/sui-kit/commit/5bcae16))
 
 ### [1.4.3](https://github.com/scallop-io/sui-kit/compare/v1.4.2...v1.4.3) (2025-10-24)
 

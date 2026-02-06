@@ -1,6 +1,6 @@
 {
   "name": "@scallop-io/sui-kit",
-  "version": "1.4.3",
+  "version": "2.0.0",
   "description": "Toolkit for interacting with SUI network",
   "keywords": [
     "sui",
@@ -21,16 +21,15 @@
     "access": "public"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=22"
   },
+  "type": "module",
   "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "source": "./src/index.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
   },
   "files": [
@@ -39,12 +38,12 @@
   ],
   "scripts": {
     "clean": "rm -rf tsconfig.tsbuildinfo ./dist",
-    "build": "npm run build:types && npm run build:tsup",
-    "build:tsup": "tsup ./src/index.ts --format esm,cjs --splitting --minify --treeshake",
+    "build": "npm run build:types && npm run build:prod",
+    "build:prod": "tsup --env.NODE_ENV production",
+    "build:dev": "tsup",
     "build:types": "tsc --build",
-    "watch:tsup": "tsup ./src/index.ts --format esm,cjs --clean --splitting --watch",
-    "watch:types": "tsc --watch",
-    "watch": "pnpm run clean & pnpm run watch:types & pnpm run watch:tsup",
+    "watch:tsup": "tsup --watch",
+    "watch": "pnpm run clean && pnpm run watch:tsup",
     "test": "pnpm test:typecheck && pnpm test:unit && pnpm test:integration",
     "test:typecheck": "tsc -p ./test",
     "test:unit": "vitest run test/unit --test-timeout=60000",
@@ -64,8 +63,8 @@
     "doc": "typedoc --out docs src/index.ts"
   },
   "dependencies": {
-    "@mysten/bcs": "^1.6.0",
-    "@mysten/sui": "^1.28.2",
+    "@mysten/bcs": "^2.0.0",
+    "@mysten/sui": "^2.0.0",
     "@scure/bip39": "^1.5.4",
     "assert": "^2.1.0",
     "bech32": "^2.0.0"
@@ -74,6 +73,8 @@
     "@commitlint/cli": "^18.0.0",
     "@commitlint/config-conventional": "^18.0.0",
     "@commitlint/prompt-cli": "^18.0.0",
+    "@protobuf-ts/grpcweb-transport": "^2.11.1",
+    "@protobuf-ts/runtime-rpc": "^2.11.1",
     "@types/node": "^20.8.7",
     "@types/tmp": "^0.2.5",
     "@typescript-eslint/eslint-plugin": "^8.11.0",

@@ -1,32 +1,81 @@
-import { SuiInteractorParams } from 'src/types';
-import { SuiOwnedObject, SuiSharedObject } from '../suiModel';
-import { batch, delay } from './util';
-import {
-  type SuiTransactionBlockResponseOptions,
-  type SuiTransactionBlockResponse,
-  type SuiObjectDataOptions,
-  type SuiObjectData,
-  type DryRunTransactionBlockResponse,
-  SuiClient,
-  getFullnodeUrl,
-} from '@mysten/sui/client';
+import { SuiInteractorParams, NetworkType } from '../../types/index.js';
+import { SuiOwnedObject, SuiSharedObject } from '../suiModel/index.js';
+import { batch, delay } from './util.js';
+import { SuiGrpcClient, type SuiGrpcClientOptions } from '@mysten/sui/grpc';
+import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client';
+
+const MAX_OBJECTS_PER_REQUEST = 50;
+
+// Helper to create gRPC client options with baseUrl
+function createGrpcClientOptions(
+  url: string,
+  network: NetworkType
+): SuiGrpcClientOptions {
+  return { baseUrl: url, network } satisfies SuiGrpcClientOptions;
+}
+
+// Helper to get fullnode URLs for each network
+function getFullnodeUrl(network: NetworkType): string {
+  switch (network) {
+    case 'mainnet':
+      return 'https://fullnode.mainnet.sui.io:443';
+    case 'testnet':
+      return 'https://fullnode.testnet.sui.io:443';
+    case 'devnet':
+      return 'https://fullnode.devnet.sui.io:443';
+    case 'localnet':
+      return 'http://127.0.0.1:9000';
+    default:
+      throw new Error(`Unknown network: ${network}`);
+  }
+}
+
+// Object data type from SDK v2
+export type SuiObjectData = SuiClientTypes.Object<{
+  content: true;
+  json: true;
+}>;
+
+// Options for getObjects (SDK v2 naming)
+export type SuiObjectDataOptions = SuiClientTypes.ObjectInclude;
+
+// Simulate transaction response type
+export type SimulateTransactionResponse =
+  SuiClientTypes.SimulateTransactionResult<{
+    effects: true;
+    events: true;
+    balanceChanges: true;
+    commandResults: true;
+  }>;
 
 /**
  * Encapsulates all functions that interact with the sui sdk
  */
 export class SuiInteractor {
-  private clients: SuiClient[] = [];
-  public currentClient: SuiClient;
+  private clients: ClientWithCoreApi[] = [];
+  public currentClient: ClientWithCoreApi;
   private fullNodes: string[] = [];
+  private network: NetworkType;
 
   constructor(params: Partial<SuiInteractorParams>) {
-    if ('fullnodeUrls' in params) {
-      this.fullNodes = params.fullnodeUrls ?? [getFullnodeUrl('mainnet')];
-      this.clients = this.fullNodes.map((url) => new SuiClient({ url }));
+    // Default network
+    this.network = 'mainnet';
+
+    if ('fullnodeUrls' in params && params.fullnodeUrls) {
+      this.network = params.network ?? 'mainnet';
+      this.fullNodes = params.fullnodeUrls;
+      this.clients = this.fullNodes.map(
+        (url) => new SuiGrpcClient(createGrpcClientOptions(url, this.network))
+      );
     } else if ('suiClients' in params && params.suiClients) {
       this.clients = params.suiClients;
     } else {
-      this.clients = [new SuiClient({ url: getFullnodeUrl('mainnet') })];
+      this.fullNodes = [getFullnodeUrl(this.network)];
+      this.clients = [
+        new SuiGrpcClient(
+          createGrpcClientOptions(this.fullNodes[0], this.network)
+        ),
+      ];
     }
     this.currentClient = this.clients[0];
   }
@@ -37,12 +86,17 @@ export class SuiInteractor {
       this.clients[(currentClientIdx + 1) % this.clients.length];
   }
 
-  switchFullNodes(fullNodes: string[]) {
+  switchFullNodes(fullNodes: string[], network?: NetworkType) {
     if (fullNodes.length === 0) {
       throw new Error('fullNodes cannot be empty');
     }
     this.fullNodes = fullNodes;
-    this.clients = fullNodes.map((url) => new SuiClient({ url }));
+    if (network) {
+      this.network = network;
+    }
+    this.clients = fullNodes.map(
+      (url) => new SuiGrpcClient(createGrpcClientOptions(url, this.network))
+    );
     this.currentClient = this.clients[0];
   }
 
@@ -62,21 +116,32 @@ export class SuiInteractor {
   async sendTx(
     transactionBlock: Uint8Array | string,
     signature: string | string[]
-  ): Promise<SuiTransactionBlockResponse> {
-    const txResOptions: SuiTransactionBlockResponseOptions = {
-      showEvents: true,
-      showEffects: true,
-      showRawEffects: true,
-      showObjectChanges: true,
-      showBalanceChanges: true,
-    };
+  ): Promise<
+    SuiClientTypes.TransactionResult<{
+      balanceChanges: true;
+      effects: true;
+      events: true;
+      objectTypes: true;
+    }>
+  > {
+    const txBytes =
+      typeof transactionBlock === 'string'
+        ? Uint8Array.from(Buffer.from(transactionBlock, 'base64'))
+        : transactionBlock;
+
+    const signatures = Array.isArray(signature) ? signature : [signature];
 
     for (const clientIdx in this.clients) {
       try {
-        return await this.clients[clientIdx].executeTransactionBlock({
-          transactionBlock,
-          signature,
-          options: txResOptions,
+        return await this.clients[clientIdx].core.executeTransaction({
+          transaction: txBytes,
+          signatures,
+          include: {
+            balanceChanges: true,
+            effects: true,
+            events: true,
+            objectTypes: true,
+          },
         });
       } catch (err) {
         console.warn(
@@ -90,11 +155,17 @@ export class SuiInteractor {
 
   async dryRunTx(
     transactionBlock: Uint8Array
-  ): Promise<DryRunTransactionBlockResponse> {
+  ): Promise<SimulateTransactionResponse> {
     for (const clientIdx in this.clients) {
       try {
-        return await this.clients[clientIdx].dryRunTransactionBlock({
-          transactionBlock,
+        return await this.clients[clientIdx].core.simulateTransaction({
+          transaction: transactionBlock,
+          include: {
+            effects: true,
+            events: true,
+            balanceChanges: true,
+            commandResults: true,
+          },
         });
       } catch (err) {
         console.warn(
@@ -108,35 +179,42 @@ export class SuiInteractor {
 
   async getObjects(
     ids: string[],
-    options?: SuiObjectDataOptions & {
+    options?: {
+      include?: SuiObjectDataOptions;
       batchSize?: number;
       switchClientDelay?: number;
     }
   ): Promise<SuiObjectData[]> {
-    const opts: SuiObjectDataOptions = options ?? {
-      showContent: true,
-      showDisplay: true,
-      showType: true,
-      showOwner: true,
-    };
+    const include = options?.include ?? { content: true, json: true };
 
-    const batchIds = batch(ids, Math.max(options?.batchSize ?? 50, 50));
+    const batchIds = batch(
+      ids,
+      Math.max(
+        options?.batchSize ?? MAX_OBJECTS_PER_REQUEST,
+        MAX_OBJECTS_PER_REQUEST
+      )
+    );
     const results: SuiObjectData[] = [];
     let lastError = null;
 
-    for (const batch of batchIds) {
+    for (const batchChunk of batchIds) {
       for (const clientIdx in this.clients) {
         try {
-          const objects = await this.clients[clientIdx].multiGetObjects({
-            ids: batch,
-            options: opts,
+          const response = await this.clients[clientIdx].core.getObjects({
+            objectIds: batchChunk,
+            include,
           });
-          const parsedObjects = objects
-            .map((object) => {
-              return object.data;
+
+          const parsedObjects = response.objects
+            .map((obj) => {
+              if (obj instanceof Error) {
+                return null;
+              }
+              return obj as SuiObjectData;
             })
-            .filter((object) => object !== null && object !== undefined);
-          results.push(...(parsedObjects as SuiObjectData[]));
+            .filter((object): object is SuiObjectData => object !== null);
+
+          results.push(...parsedObjects);
           lastError = null;
           break; // Exit the client loop if successful
         } catch (err) {
@@ -157,7 +235,7 @@ export class SuiInteractor {
     return results;
   }
 
-  async getObject(id: string, options?: SuiObjectDataOptions) {
+  async getObject(id: string, options?: { include?: SuiObjectDataOptions }) {
     const objects = await this.getObjects([id], options);
     return objects[0];
   }
@@ -174,13 +252,11 @@ export class SuiInteractor {
         (obj) => obj.objectId === object?.objectId
       );
       if (suiObject instanceof SuiSharedObject) {
-        if (
-          object.owner &&
-          typeof object.owner === 'object' &&
-          'Shared' in object.owner
-        ) {
-          suiObject.initialSharedVersion =
-            object.owner.Shared.initial_shared_version;
+        const owner = object.owner;
+        if (owner && typeof owner === 'object' && 'Shared' in owner) {
+          suiObject.initialSharedVersion = (
+            owner as { Shared: { initialSharedVersion: string } }
+          ).Shared.initialSharedVersion;
         } else {
           suiObject.initialSharedVersion = undefined;
         }
@@ -212,16 +288,17 @@ export class SuiInteractor {
     let hasNext = true,
       nextCursor: string | null | undefined = null;
     while (hasNext && totalAmount < amount) {
-      const coins = await this.currentClient.getCoins({
-        owner: addr,
-        coinType: coinType,
-        cursor: nextCursor,
-      });
+      const { objects, hasNextPage, cursor } =
+        await this.currentClient.core.listCoins({
+          owner: addr,
+          coinType: coinType,
+          cursor: nextCursor,
+        });
       // Sort the coins by balance in descending order
-      coins.data.sort((a, b) => parseInt(b.balance) - parseInt(a.balance));
-      for (const coinData of coins.data) {
+      objects.sort((a, b) => parseInt(b.balance) - parseInt(a.balance));
+      for (const coinData of objects) {
         selectedCoins.push({
-          objectId: coinData.coinObjectId,
+          objectId: coinData.objectId,
           digest: coinData.digest,
           version: coinData.version,
           balance: coinData.balance,
@@ -232,8 +309,8 @@ export class SuiInteractor {
         }
       }
 
-      nextCursor = coins.nextCursor;
-      hasNext = coins.hasNextPage;
+      nextCursor = cursor;
+      hasNext = hasNextPage;
     }
 
     if (!selectedCoins.length) {
@@ -242,3 +319,5 @@ export class SuiInteractor {
     return selectedCoins;
   }
 }
+
+export { getFullnodeUrl };

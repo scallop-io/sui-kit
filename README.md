@@ -229,7 +229,7 @@ async function checkAccounts(suiKit: SuiKit) {
     const coinType = '0x2::sui::SUI';
     const addr = suiKit.getAddress({ accountIndex });
     const balance = (await suiKit.getBalance(coinType, { accountIndex }))
-      .totalBalance;
+      .balance;
     console.log(`Account ${accountIndex}: ${addr} has ${balance} SUI`);
   };
   // log the first 10 accounts

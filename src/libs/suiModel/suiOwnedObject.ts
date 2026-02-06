@@ -1,6 +1,11 @@
 // TODO: I think we can remove this file or update to NormalizedCallArg
-import type { SuiTransactionBlockResponse } from '@mysten/sui/client';
+import type { SuiClientTypes } from '@mysten/sui/client';
 import type { CallArg } from '@mysten/sui/transactions';
+
+// Transaction result type with effects
+type TransactionResultWithEffects = SuiClientTypes.TransactionResult<{
+  effects: true;
+}>;
 
 export class SuiOwnedObject {
   public readonly objectId: string;
@@ -43,15 +48,19 @@ export class SuiOwnedObject {
    * Update object version & digest based on the transaction response.
    * @param txResponse
    */
-  updateFromTxResponse(txResponse: SuiTransactionBlockResponse) {
-    const changes = txResponse.objectChanges;
-    if (!changes) {
+  updateFromTxResponse(txResponse: TransactionResultWithEffects) {
+    const tx = txResponse.Transaction ?? txResponse.FailedTransaction;
+    if (!tx) {
       throw new Error('Bad transaction response!');
     }
-    for (const change of changes) {
-      if (change.type === 'mutated' && change.objectId === this.objectId) {
-        this.digest = change.digest;
-        this.version = change.version;
+    const effects = tx.effects;
+    if (!effects) {
+      throw new Error('Transaction response has no effects!');
+    }
+    for (const change of effects.changedObjects) {
+      if (change.objectId === this.objectId && change.outputDigest) {
+        this.digest = change.outputDigest;
+        this.version = change.outputVersion ?? undefined;
         return;
       }
     }

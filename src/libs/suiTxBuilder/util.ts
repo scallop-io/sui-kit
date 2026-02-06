@@ -11,6 +11,7 @@ import type {
   Transaction,
   TransactionObjectArgument,
 } from '@mysten/sui/transactions';
+import type { SuiClientTypes } from '@mysten/sui/client';
 import type {
   SuiObjectArg,
   SuiAddressArg,
@@ -18,8 +19,36 @@ import type {
   SuiVecTxArg,
   SuiInputTypes,
   SuiAmountsArg,
-} from 'src/types';
-import type { SuiObjectRef } from '@mysten/sui/client';
+} from '../../types/index.js';
+
+// Object reference type
+interface SuiObjectRef {
+  objectId: string;
+  version: number | string;
+  digest: string;
+}
+
+// Simple types that can be converted to OpenSignatureBody
+const SIMPLE_BCS_TYPES = [
+  'u8',
+  'u16',
+  'u32',
+  'u64',
+  'u128',
+  'u256',
+  'bool',
+  'address',
+] as const;
+
+type SimpleBcsType = (typeof SIMPLE_BCS_TYPES)[number];
+
+// Convert simple type string to OpenSignatureBody
+function toOpenSignatureBody(type: string): SuiClientTypes.OpenSignatureBody {
+  if (!SIMPLE_BCS_TYPES.includes(type as SimpleBcsType)) {
+    throw new Error(`Invalid SimpleBcsType: ${type}`);
+  }
+  return { $kind: type } as SuiClientTypes.OpenSignatureBody;
+}
 
 // TODO: unclear why we need this function and types
 export const getDefaultSuiInputType = (
@@ -138,13 +167,18 @@ export function makeVecParam(
     !VECTOR_REGEX.test(type) &&
     !STRUCT_REGEX.test(type)
   ) {
-    const bcsSchema = getPureBcsSchema(type)!;
+    // Convert simple type to OpenSignatureBody for BCS schema
+    const signatureBody = toOpenSignatureBody(type as SimpleBcsType);
+    const bcsSchema = getPureBcsSchema(signatureBody);
+    if (!bcsSchema) {
+      throw new Error(`Unknown type: ${type}`);
+    }
     return txBlock.pure(bcs.vector(bcsSchema).serialize(args));
   } else {
     const elements = args.map((arg) =>
       convertObjArg(txBlock, arg as SuiObjectArg)
     );
-    return txBlock.makeMoveVec({ elements, type });
+    return txBlock.makeMoveVec({ elements, type: type as string });
   }
 }
 
@@ -175,7 +209,8 @@ export function convertArgs(
       return convertAmounts(txBlock, [arg])[0];
     }
 
-    return convertObjArg(txBlock, arg);
+    // Cast to SuiObjectArg - at this point it should be an object type
+    return convertObjArg(txBlock, arg as unknown as SuiObjectArg);
   });
 }
 

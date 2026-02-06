@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { Transaction } from '@mysten/sui/transactions';
-import { SuiClient, getFullnodeUrl } from '@mysten/sui/client';
-import { SuiAccountManager } from 'src/libs/suiAccountManager';
-import { MultiSigClient } from 'src/libs/multiSig';
+import { SuiGrpcClient, type SuiGrpcClientOptions } from '@mysten/sui/grpc';
+import { SuiAccountManager } from 'src/libs/suiAccountManager/index.js';
+import { MultiSigClient } from 'src/libs/multiSig/index.js';
+import { getFullnodeUrl } from 'src/index.js';
 
 const ENABLE_LOG = false;
 
@@ -10,7 +11,10 @@ describe('Test MultiSigClient', async () => {
   const mnemonics =
     'elite balcony laundry unique quit flee farm dry buddy outside airport service';
   const accountManager = new SuiAccountManager({ mnemonics });
-  const suiClient = new SuiClient({ url: getFullnodeUrl('mainnet') });
+  const suiClient = new SuiGrpcClient({
+    baseUrl: getFullnodeUrl('mainnet'),
+    network: 'mainnet',
+  } as SuiGrpcClientOptions);
 
   const rawPubkeys: string[] = [];
   for (let i = 0; i < 5; i++) {
@@ -58,22 +62,17 @@ describe('Test MultiSigClient', async () => {
     const sigs = [sig1.signature, sig2.signature];
 
     const signature = multiSigClient.combinePartialSigs(sigs);
-    const result = await suiClient.executeTransactionBlock({
-      transactionBlock: txBytes,
-      signature,
-      options: {
-        showEffects: true,
-        showRawEffects: true,
-      },
+    const result = await suiClient.core.executeTransaction({
+      transaction: txBytes,
+      signatures: [signature],
     });
 
     if (ENABLE_LOG) {
       console.log(result);
     }
 
-    expect(result.effects && result.effects.status.status === 'success').toBe(
-      true
-    );
+    const txResult = result.Transaction ?? result.FailedTransaction;
+    expect(txResult?.status?.success === true).toBe(true);
   });
 
   it.skip('Test multiSig combine with weight 1 + 1 + 1 should success', async () => {
@@ -96,21 +95,16 @@ describe('Test MultiSigClient', async () => {
     const sigs = [sig1.signature, sig2.signature, sig3.signature];
 
     const signature = multiSigClient.combinePartialSigs(sigs);
-    const result = await suiClient.executeTransactionBlock({
-      transactionBlock: txBytes,
-      signature,
-      options: {
-        showEffects: true,
-        showRawEffects: true,
-      },
+    const result = await suiClient.core.executeTransaction({
+      transaction: txBytes,
+      signatures: [signature],
     });
 
     if (ENABLE_LOG) {
       console.log(result);
     }
 
-    expect(result.effects && result.effects.status.status === 'success').toBe(
-      true
-    );
+    const txResult = result.Transaction ?? result.FailedTransaction;
+    expect(txResult?.status?.success === true).toBe(true);
   });
 });

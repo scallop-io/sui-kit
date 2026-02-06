@@ -126,7 +126,7 @@ async function checkAccounts(suiKit: SuiKit) {
     const coinType = '0x2::sui::SUI';
     const addr = suiKit.getAddress({ accountIndex });
     const balance = (await suiKit.getBalance(coinType, { accountIndex }))
-      .totalBalance;
+      .balance;
     console.log(`账户 ${accountIndex}: ${addr} 余额为 ${balance} SUI`);
   };
   // 显示前10个账户

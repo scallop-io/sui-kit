@@ -1,4 +1,4 @@
-import { SuiSharedObject } from 'src/libs/suiModel/suiSharedObject';
+import { SuiSharedObject } from 'src/libs/suiModel/suiSharedObject.js';
 import { describe, it, expect } from 'vitest';
 
 describe('SuiSharedObject', () => {

@@ -1,10 +1,27 @@
 import { config as dotenvConfig } from 'dotenv';
 import { describe, it, expect } from 'vitest';
-import { SuiKit, SuiTxBlock } from 'src/index';
-import { getDerivePathForSUI } from 'src/libs/suiAccountManager/keypair';
-import { getFullnodeUrl } from '@mysten/sui/client';
+import {
+  SUI_TYPE_ARG,
+  SuiKit,
+  SuiTxBlock,
+  getFullnodeUrl,
+  normalizeStructTag,
+} from 'src/index.js';
+import { getDerivePathForSUI } from 'src/libs/suiAccountManager/keypair.js';
+import type {
+  SuiTransactionBlockResponse,
+  SimulateTransactionResponse,
+} from 'src/index.js';
 
 const ENABLE_LOG = false;
+
+// Helper to check if transaction was successful in v2 SDK response
+function isTransactionSuccess(
+  result: SuiTransactionBlockResponse | SimulateTransactionResponse
+): boolean {
+  const tx = result.Transaction ?? result.FailedTransaction;
+  return tx?.status?.success === true;
+}
 
 dotenvConfig();
 
@@ -22,10 +39,10 @@ describe('Test Scallop Kit with secret key', () => {
       addressIndex: 0,
     };
     const deriveAddress = suiKit.getAddress(derivePathParams);
-    const currentAddressBalance = (await suiKit.getBalance()).totalBalance;
+    const currentAddressBalance = (await suiKit.getBalance()).balance;
     const deriveAddressBalance = (
       await suiKit.getBalance(coinType, derivePathParams)
-    ).totalBalance;
+    ).balance;
     const currentPrivateKey = suiKit.getKeypair().getSecretKey();
 
     if (ENABLE_LOG) {
@@ -53,7 +70,7 @@ describe('Test Scallop Kit with secret key', () => {
       console.log(signAndSendTxnRes);
     }
 
-    expect(signAndSendTxnRes.effects?.status.status === 'success').toBe(true);
+    expect(isTransactionSuccess(signAndSendTxnRes)).toBe(true);
   });
 
   it('Test Interactor with Sui: get objects', async () => {
@@ -66,7 +83,7 @@ describe('Test Scallop Kit with secret key', () => {
       '0x9193fd47f9a0ab99b6e365a464c8a9ae30e6150fc37ed2a89c1586631f6fc4ab',
     ];
     const getObjectsRes = await suiKit.getObjects(objIds, {
-      showContent: false,
+      include: { content: false },
     });
 
     if (ENABLE_LOG) {
@@ -87,7 +104,7 @@ describe('Test Scallop Kit with secret key', () => {
       '0x9193fd47f9a0ab99b6e365a464c8a9ae30e6150fc37ed2a89c1586631f6fc4ab',
     ];
     const getObjectsRes = await suiKit.getObjects(objIds, {
-      showContent: false,
+      include: { content: false },
       batchSize: 2,
     });
 
@@ -122,7 +139,7 @@ describe('Test Scallop Kit with secret key', () => {
       console.log(`Transfer coins response: ${transferCoinsRes}`);
     }
 
-    expect(transferCoinsRes.effects.status.status === 'success').toBe(true);
+    expect(isTransactionSuccess(transferCoinsRes)).toBe(true);
   });
 
   it('Test interactor with sui: transfer coin to many', async () => {
@@ -148,7 +165,7 @@ describe('Test Scallop Kit with secret key', () => {
       console.log(`Transfer coins response: ${transferCoinsRes}`);
     }
 
-    expect(transferCoinsRes.effects.status.status === 'success').toBe(true);
+    expect(isTransactionSuccess(transferCoinsRes)).toBe(true);
   });
 
   it('Test Interactor with Sui: transfer sui', async () => {
@@ -160,7 +177,7 @@ describe('Test Scallop Kit with secret key', () => {
       console.log(`Transfer coins response: ${transferCoinsRes}`);
     }
 
-    expect(transferCoinsRes.effects.status.status === 'success').toBe(true);
+    expect(isTransactionSuccess(transferCoinsRes)).toBe(true);
   });
 
   it('Test Interactor with Sui: transfer sui to many', async () => {
@@ -184,7 +201,7 @@ describe('Test Scallop Kit with secret key', () => {
       console.log(`Transfer coins response: ${transferCoinsRes}`);
     }
 
-    expect(transferCoinsRes.effects.status.status === 'success').toBe(true);
+    expect(isTransactionSuccess(transferCoinsRes)).toBe(true);
   });
 
   it('Test Interactor with sui: stake sui', async () => {
@@ -203,16 +220,21 @@ describe('Test Scallop Kit with secret key', () => {
       console.log(`Stake sui response: ${stakeSuiRes}`);
     }
 
-    expect(stakeSuiRes.effects.status.status === 'success').toBe(true);
+    expect(isTransactionSuccess(stakeSuiRes)).toBe(true);
   });
 
   it('Test Interactor with sui: transfer object', async () => {
-    const object = (
-      await suiKit.client.getOwnedObjects({
-        owner: suiKit.currentAddress,
-        limit: 1,
-      })
-    ).data[0].data;
+    const objectsResult = await suiKit.client.core.listOwnedObjects({
+      owner: suiKit.currentAddress,
+      limit: 2,
+    });
+    const object = objectsResult.objects.find(
+      (t) =>
+        t.type !==
+        normalizeStructTag(
+          `0x0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<${SUI_TYPE_ARG}>`
+        )
+    );
 
     if (!object)
       throw new Error(
@@ -220,13 +242,13 @@ describe('Test Scallop Kit with secret key', () => {
       );
 
     const receiver = suiKit.currentAddress;
-    const tx = await suiKit.transferObjects([object], receiver, false);
+    const tx = await suiKit.transferObjects([object.objectId], receiver, false);
     const transferCoinsRes = await suiKit.inspectTxn(tx); // inspect txn should be enough to check if the txn is valid
     if (ENABLE_LOG) {
       console.log(`Transfer coins response: ${transferCoinsRes}`);
     }
 
-    expect(transferCoinsRes.effects.status.status === 'success').toBe(true);
+    expect(isTransactionSuccess(transferCoinsRes)).toBe(true);
   });
 });
 
@@ -244,10 +266,10 @@ describe('Test Scallop Kit with mnemonics', () => {
       addressIndex: 0,
     };
     const deriveAddress = suiKit.getAddress(derivePathParams);
-    const currentAddressBalance = (await suiKit.getBalance()).totalBalance;
+    const currentAddressBalance = (await suiKit.getBalance()).balance;
     const deriveAddressBalance = (
       await suiKit.getBalance(coinType, derivePathParams)
-    ).totalBalance;
+    ).balance;
     const currentPrivateKey = suiKit.getKeypair().getSecretKey();
 
     if (ENABLE_LOG) {
@@ -275,7 +297,7 @@ describe('Test Scallop Kit with mnemonics', () => {
       console.log(signAndSendTxnRes);
     }
 
-    expect(signAndSendTxnRes.effects?.status.status === 'success').toBe(true);
+    expect(isTransactionSuccess(signAndSendTxnRes)).toBe(true);
   });
 
   it('Test Interactor with Sui: get objects', async () => {
@@ -288,7 +310,7 @@ describe('Test Scallop Kit with mnemonics', () => {
       '0x9193fd47f9a0ab99b6e365a464c8a9ae30e6150fc37ed2a89c1586631f6fc4ab',
     ];
     const getObjectsRes = await suiKit.getObjects(objIds, {
-      showContent: false,
+      include: { content: false },
     });
 
     if (ENABLE_LOG) {
@@ -309,7 +331,7 @@ describe('Test Scallop Kit with mnemonics', () => {
       '0x9193fd47f9a0ab99b6e365a464c8a9ae30e6150fc37ed2a89c1586631f6fc4ab',
     ];
     const getObjectsRes = await suiKit.getObjects(objIds, {
-      showContent: false,
+      include: { content: false },
       batchSize: 2,
     });
 
@@ -344,7 +366,7 @@ describe('Test Scallop Kit with mnemonics', () => {
       console.log(`Transfer coins response: ${transferCoinsRes}`);
     }
 
-    expect(transferCoinsRes.effects.status.status === 'success').toBe(true);
+    expect(isTransactionSuccess(transferCoinsRes)).toBe(true);
   });
 
   it('Test interactor with sui: transfer coin to many', async () => {
@@ -370,7 +392,7 @@ describe('Test Scallop Kit with mnemonics', () => {
       console.log(`Transfer coins response: ${transferCoinsRes}`);
     }
 
-    expect(transferCoinsRes.effects.status.status === 'success').toBe(true);
+    expect(isTransactionSuccess(transferCoinsRes)).toBe(true);
   });
 
   it('Test Interactor with Sui: transfer sui', async () => {
@@ -382,7 +404,7 @@ describe('Test Scallop Kit with mnemonics', () => {
       console.log(`Transfer coins response: ${transferCoinsRes}`);
     }
 
-    expect(transferCoinsRes.effects.status.status === 'success').toBe(true);
+    expect(isTransactionSuccess(transferCoinsRes)).toBe(true);
   });
 
   it('Test Interactor with Sui: transfer sui to many', async () => {
@@ -406,7 +428,7 @@ describe('Test Scallop Kit with mnemonics', () => {
       console.log(`Transfer coins response: ${transferCoinsRes}`);
     }
 
-    expect(transferCoinsRes.effects.status.status === 'success').toBe(true);
+    expect(isTransactionSuccess(transferCoinsRes)).toBe(true);
   });
 
   it('Test Interactor with sui: stake sui', async () => {
@@ -425,16 +447,21 @@ describe('Test Scallop Kit with mnemonics', () => {
       console.log(`Stake sui response: ${stakeSuiRes}`);
     }
 
-    expect(stakeSuiRes.effects.status.status === 'success').toBe(true);
+    expect(isTransactionSuccess(stakeSuiRes)).toBe(true);
   });
 
   it('Test Interactor with sui: transfer object', async () => {
-    const object = (
-      await suiKit.client.getOwnedObjects({
-        owner: suiKit.currentAddress,
-        limit: 1,
-      })
-    ).data[0].data;
+    const objectsResult = await suiKit.client.core.listOwnedObjects({
+      owner: suiKit.currentAddress,
+      limit: 2,
+    });
+    const object = objectsResult.objects.find(
+      (t) =>
+        t.type !==
+        normalizeStructTag(
+          `0x0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<${SUI_TYPE_ARG}>`
+        )
+    );
 
     if (!object)
       throw new Error(
@@ -442,18 +469,18 @@ describe('Test Scallop Kit with mnemonics', () => {
       );
 
     const receiver = suiKit.currentAddress;
-    const tx = await suiKit.transferObjects([object], receiver, false);
+    const tx = await suiKit.transferObjects([object.objectId], receiver, false);
     const transferCoinsRes = await suiKit.inspectTxn(tx); // inspect txn should be enough to check if the txn is valid
     if (ENABLE_LOG) {
       console.log(`Transfer coins response: ${transferCoinsRes}`);
     }
 
-    expect(transferCoinsRes.effects.status.status === 'success').toBe(true);
+    expect(isTransactionSuccess(transferCoinsRes)).toBe(true);
   });
 });
 
 describe('Test Scallop Kit with sui clients', () => {
-  const fullnodeUrls = ['https://sui-mainnet.public.blastapi.io'];
+  const fullnodeUrls = [getFullnodeUrl('mainnet')];
   const suiKit = new SuiKit({
     secretKey: process.env.SECRET_KEY,
     fullnodeUrls,
@@ -468,10 +495,10 @@ describe('Test Scallop Kit with sui clients', () => {
       addressIndex: 0,
     };
     const deriveAddress = suiKit.getAddress(derivePathParams);
-    const currentAddressBalance = (await suiKit.getBalance()).totalBalance;
+    const currentAddressBalance = (await suiKit.getBalance()).balance;
     const deriveAddressBalance = (
       await suiKit.getBalance(coinType, derivePathParams)
-    ).totalBalance;
+    ).balance;
     const currentPrivateKey = suiKit.getKeypair().getSecretKey();
 
     if (ENABLE_LOG) {
@@ -499,7 +526,7 @@ describe('Test Scallop Kit with sui clients', () => {
       console.log(signAndSendTxnRes);
     }
 
-    expect(signAndSendTxnRes.effects?.status.status === 'success').toBe(true);
+    expect(isTransactionSuccess(signAndSendTxnRes)).toBe(true);
   });
 
   it('Test Interactor with Sui: get objects', async () => {
@@ -512,7 +539,7 @@ describe('Test Scallop Kit with sui clients', () => {
       '0x9193fd47f9a0ab99b6e365a464c8a9ae30e6150fc37ed2a89c1586631f6fc4ab',
     ];
     const getObjectsRes = await suiKit.getObjects(objIds, {
-      showContent: false,
+      include: { content: false },
     });
 
     if (ENABLE_LOG) {
@@ -533,7 +560,7 @@ describe('Test Scallop Kit with sui clients', () => {
       '0x9193fd47f9a0ab99b6e365a464c8a9ae30e6150fc37ed2a89c1586631f6fc4ab',
     ];
     const getObjectsRes = await suiKit.getObjects(objIds, {
-      showContent: false,
+      include: { content: false },
       batchSize: 2,
     });
 
@@ -568,7 +595,7 @@ describe('Test Scallop Kit with sui clients', () => {
       console.log(`Transfer coins response: ${transferCoinsRes}`);
     }
 
-    expect(transferCoinsRes.effects.status.status === 'success').toBe(true);
+    expect(isTransactionSuccess(transferCoinsRes)).toBe(true);
   });
 
   it('Test interactor with sui: transfer coin to many', async () => {
@@ -594,7 +621,7 @@ describe('Test Scallop Kit with sui clients', () => {
       console.log(`Transfer coins response: ${transferCoinsRes}`);
     }
 
-    expect(transferCoinsRes.effects.status.status === 'success').toBe(true);
+    expect(isTransactionSuccess(transferCoinsRes)).toBe(true);
   });
 
   it('Test Interactor with Sui: transfer sui', async () => {
@@ -606,7 +633,7 @@ describe('Test Scallop Kit with sui clients', () => {
       console.log(`Transfer coins response: ${transferCoinsRes}`);
     }
 
-    expect(transferCoinsRes.effects.status.status === 'success').toBe(true);
+    expect(isTransactionSuccess(transferCoinsRes)).toBe(true);
   });
 
   it('Test Interactor with Sui: transfer sui to many', async () => {
@@ -630,7 +657,7 @@ describe('Test Scallop Kit with sui clients', () => {
       console.log(`Transfer coins response: ${transferCoinsRes}`);
     }
 
-    expect(transferCoinsRes.effects.status.status === 'success').toBe(true);
+    expect(isTransactionSuccess(transferCoinsRes)).toBe(true);
   });
 
   it('Test Interactor with sui: stake sui', async () => {
@@ -649,16 +676,21 @@ describe('Test Scallop Kit with sui clients', () => {
       console.log(`Stake sui response: ${stakeSuiRes}`);
     }
 
-    expect(stakeSuiRes.effects.status.status === 'success').toBe(true);
+    expect(isTransactionSuccess(stakeSuiRes)).toBe(true);
   });
 
   it('Test Interactor with sui: transfer object', async () => {
-    const object = (
-      await suiKit.client.getOwnedObjects({
-        owner: suiKit.currentAddress,
-        limit: 1,
-      })
-    ).data[0].data;
+    const objectsResult = await suiKit.client.core.listOwnedObjects({
+      owner: suiKit.currentAddress,
+      limit: 2,
+    });
+    const object = objectsResult.objects.find(
+      (t) =>
+        t.type !==
+        normalizeStructTag(
+          `0x0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<${SUI_TYPE_ARG}>`
+        )
+    );
 
     if (!object)
       throw new Error(
@@ -666,13 +698,13 @@ describe('Test Scallop Kit with sui clients', () => {
       );
 
     const receiver = suiKit.currentAddress;
-    const tx = await suiKit.transferObjects([object], receiver, false);
+    const tx = await suiKit.transferObjects([object.objectId], receiver, false);
     const transferCoinsRes = await suiKit.inspectTxn(tx); // inspect txn should be enough to check if the txn is valid
     if (ENABLE_LOG) {
       console.log(`Transfer coins response: ${transferCoinsRes}`);
     }
 
-    expect(transferCoinsRes.effects.status.status === 'success').toBe(true);
+    expect(isTransactionSuccess(transferCoinsRes)).toBe(true);
   });
 
   it('Test switching fullnodes', async () => {

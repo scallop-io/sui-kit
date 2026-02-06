@@ -1,8 +1,11 @@
 import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
-import { getKeyPair } from './keypair';
-import { hexOrBase64ToUint8Array, normalizePrivateKey } from './util';
-import { generateMnemonic } from './crypto';
-import type { AccountManagerParams, DerivePathParams } from 'src/types';
+import { getKeyPair } from './keypair.js';
+import { hexOrBase64ToUint8Array, normalizePrivateKey } from './util.js';
+import { generateMnemonic } from './crypto.js';
+import type {
+  AccountManagerParams,
+  DerivePathParams,
+} from '../../types/index.js';
 import {
   SUI_PRIVATE_KEY_PREFIX,
   decodeSuiPrivateKey,

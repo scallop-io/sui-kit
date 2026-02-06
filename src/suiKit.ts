@@ -1,18 +1,16 @@
 /**
  * @description This file is used to aggregate the tools that used to interact with SUI network.
  */
-import { getFullnodeUrl } from '@mysten/sui/client';
 import { Transaction } from '@mysten/sui/transactions';
-import { SuiAccountManager } from './libs/suiAccountManager';
-import { SuiTxBlock } from './libs/suiTxBuilder';
-import { SuiInteractor } from './libs/suiInteractor';
-import type {
-  SuiTransactionBlockResponse,
-  DevInspectResults,
-  SuiObjectDataOptions,
-  DryRunTransactionBlockResponse,
-} from '@mysten/sui/client';
-import type { SuiSharedObject, SuiOwnedObject } from './libs/suiModel';
+import { SuiAccountManager } from './libs/suiAccountManager/index.js';
+import { SuiTxBlock } from './libs/suiTxBuilder/index.js';
+import {
+  SuiInteractor,
+  getFullnodeUrl,
+  type SuiObjectDataOptions,
+  type SimulateTransactionResponse,
+} from './libs/suiInteractor/index.js';
+import type { SuiSharedObject, SuiOwnedObject } from './libs/suiModel/index.js';
 import type {
   SuiKitParams,
   DerivePathParams,
@@ -20,7 +18,9 @@ import type {
   SuiVecTxArg,
   SuiKitReturnType,
   SuiObjectArg,
-} from './types';
+  SuiTransactionBlockResponse,
+} from './types/index.js';
+import { normalizeStructTag, SUI_TYPE_ARG } from '@mysten/sui/utils';
 
 /**
  * @class SuiKit
@@ -46,14 +46,20 @@ export class SuiKit {
     // Init the account manager
     this.accountManager = new SuiAccountManager({ mnemonics, secretKey });
 
+    const network = networkType ?? 'mainnet';
+
     let suiInteractorParams;
     if ('fullnodeUrls' in params) {
-      suiInteractorParams = { fullnodeUrls: params.fullnodeUrls };
+      suiInteractorParams = {
+        fullnodeUrls: params.fullnodeUrls,
+        network,
+      };
     } else if ('suiClients' in params) {
       suiInteractorParams = { suiClients: params.suiClients };
     } else {
       suiInteractorParams = {
-        fullnodeUrls: [getFullnodeUrl(networkType ?? 'mainnet')],
+        fullnodeUrls: [getFullnodeUrl(network)],
+        network,
       };
     }
 
@@ -102,7 +108,11 @@ export class SuiKit {
 
   async getBalance(coinType?: string, derivePathParams?: DerivePathParams) {
     const owner = this.accountManager.getAddress(derivePathParams);
-    return this.suiInteractor.currentClient.getBalance({ owner, coinType });
+    const { balance } = await this.suiInteractor.currentClient.core.getBalance({
+      owner,
+      coinType,
+    });
+    return balance;
   }
 
   get client() {
@@ -111,7 +121,8 @@ export class SuiKit {
 
   async getObjects(
     objectIds: string[],
-    options?: SuiObjectDataOptions & {
+    options?: {
+      include?: SuiObjectDataOptions;
       batchSize?: number;
       switchClientDelay?: number;
     }
@@ -154,7 +165,7 @@ export class SuiKit {
   async dryRunTxn(
     tx: Uint8Array | Transaction | SuiTxBlock,
     derivePathParams?: DerivePathParams
-  ): Promise<DryRunTransactionBlockResponse> {
+  ): Promise<SimulateTransactionResponse> {
     if (tx instanceof SuiTxBlock) {
       tx.setSender(this.getAddress(derivePathParams));
     }
@@ -262,17 +273,23 @@ export class SuiKit {
     const tx = new SuiTxBlock();
     const owner = this.accountManager.getAddress(derivePathParams);
     const totalAmount = amounts.reduce((a, b) => a + b, 0);
-    const coins = await this.suiInteractor.selectCoins(
-      owner,
-      totalAmount,
-      coinType
-    );
-    tx.transferCoinToMany(
-      coins.map((c) => c.objectId),
-      owner,
-      recipients,
-      amounts
-    );
+    if (normalizeStructTag(coinType) === normalizeStructTag(SUI_TYPE_ARG)) {
+      tx.transferSuiToMany(recipients, amounts);
+    } else {
+      const coins = await this.suiInteractor.selectCoins(
+        owner,
+        totalAmount,
+        coinType
+      );
+
+      tx.transferCoinToMany(
+        coins.map((coin) => ('objectId' in coin ? tx.objectRef(coin) : coin)),
+        owner,
+        recipients,
+        amounts
+      );
+    }
+
     return sign
       ? ((await this.signAndSendTxn(
           tx,
@@ -409,11 +426,24 @@ export class SuiKit {
   async inspectTxn(
     tx: Uint8Array | Transaction | SuiTxBlock,
     derivePathParams?: DerivePathParams
-  ): Promise<DevInspectResults> {
+  ): Promise<SimulateTransactionResponse> {
+    if (tx instanceof SuiTxBlock) {
+      tx.setSender(this.getAddress(derivePathParams));
+    }
     const txBlock = tx instanceof SuiTxBlock ? tx.txBlock : tx;
-    return this.suiInteractor.currentClient.devInspectTransactionBlock({
-      transactionBlock: txBlock,
-      sender: this.getAddress(derivePathParams),
+    const txBytes =
+      txBlock instanceof Uint8Array
+        ? txBlock
+        : await txBlock.build({ client: this.client });
+
+    return this.suiInteractor.currentClient.core.simulateTransaction({
+      transaction: txBytes,
+      include: {
+        effects: true,
+        events: true,
+        balanceChanges: true,
+        commandResults: true,
+      },
     });
   }
 }

@@ -50,7 +50,7 @@ suiKit
 import { SuiKit } from '@scallop-io/sui-kit';
 
 const secretKey = '<密钥>';
-const suiKit = new SuiKit({ secretyKey, networkType: 'devnet' });
+const suiKit = new SuiKit({ secretKey, networkType: 'devnet' });
 suiKit.requestFaucet().then(() => {
   console.log('请求水龙头成功');
 });
@@ -67,7 +67,7 @@ suiKit.requestFaucet().then(() => {
 import { SuiKit } from '@scallop-io/sui-kit';
 
 const secretKey = '<密钥>';
-const suiKit = new SuiKit({ secretyKey, networkType: 'devnet' });
+const suiKit = new SuiKit({ secretKey, networkType: 'devnet' });
 const stakeAmount = 1000;
 const validatorAddress = '0x123';
 suiKit.stakeSui(stakeAmount, validatorAddress).then(() => {
@@ -84,18 +84,18 @@ suiKit.stakeSui(stakeAmount, validatorAddress).then(() => {
  * 这个示例演示如何使用 SuiKit 进行可编程交易
  */
 
-import { SuiKit, TransactionBlock } from '@scallop-io/sui-kit';
+import { SuiKit, SuiTxBlock } from '@scallop-io/sui-kit';
 
 const secretKey = '<密钥>';
 const suiKit = new SuiKit({ secretKey });
 
 // 构建一个交易块以将代币发送到多个账户
-const tx = new TransactionBlock();
+const tx = new SuiTxBlock();
 
 const recipients = ['0x123', '0x456', '0x789'];
 recipients.forEach((recipient) => {
-  const [coin] = tx.splitCoins(tx.gas, [tx.pure(1000)]);
-  tx.transferObjects([coin], tx.pure(recipient));
+  const [coin] = tx.splitCoins(tx.gas, [1000]);
+  tx.transferObjects([coin], recipient);
 });
 
 // 发送交易

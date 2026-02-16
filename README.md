@@ -53,8 +53,8 @@ const suiKit = new SuiKit({
 You can use SuiKit to transfer SUI, custom coins, and any objects.
 
 ```typescript
-const recipient1 = '0x123'; // repace with real address
-const recipient2 = '0x456'; // repace with real address
+const recipient1 = '0x123'; // replace with real address
+const recipient2 = '0x456'; // replace with real address
 
 // transfer SUI to single recipient
 await suiKit.transferSui(recipient1, 1000);
@@ -204,7 +204,7 @@ const pkgId =
     paybackCoinB,
     loan,
   ]);
-  // 4. Transfer profits to sender
+  // 5. Transfer profits to sender
   tx.transferObjects([coinB2], sender);
 
   // 5. Execute transaction
@@ -265,6 +265,10 @@ internalTransferSui(suiKit, 0, 1, 1000).then(() => {});
 
 We have a standalone npm package to help you publish and upgrade Move package based on sui-kit.
 
-Please refer to the repository: [sui-package-kit](https://docs.sui.io/devnet/build/install)
+Please refer to the repository: [sui-package-kit](https://github.com/scallop-io/sui-package-kit)
+
+## Migration Guide
+
+If you're upgrading from v1.x to v2.0.0, please refer to the [Migration Guide](./document/migration-guide-v2.md).
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/scallop-io/sui-kit)

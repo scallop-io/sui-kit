@@ -87,7 +87,9 @@ function isAmountArg(arg: any): arg is bigint | number | string {
  * @param arg The argument to check.
  * @returns boolean.
  */
-function isMoveVecArg(arg: SuiTxArg | SuiVecTxArg): arg is SuiVecTxArg {
+function isMoveVecArg(
+  arg: SuiTxArg | SuiVecTxArg | SuiObjectArg | SuiAmountsArg
+): arg is SuiVecTxArg {
   if (typeof arg === 'object' && 'vecType' in arg && 'value' in arg) {
     return true;
   } else if (Array.isArray(arg)) {
@@ -191,7 +193,7 @@ export function makeVecParam(
  */
 export function convertArgs(
   txBlock: Transaction,
-  args: (SuiTxArg | SuiVecTxArg)[]
+  args: (SuiTxArg | SuiVecTxArg | SuiObjectArg | SuiAmountsArg)[]
 ): TransactionArgument[] {
   return args.map((arg) => {
     if (arg instanceof SerializedBcs || isSerializedBcs(arg)) {
@@ -206,11 +208,10 @@ export function convertArgs(
     }
 
     if (isAmountArg(arg)) {
-      return convertAmounts(txBlock, [arg])[0];
+      return convertAmounts(txBlock, [arg as unknown as SuiAmountsArg])[0];
     }
 
-    // Cast to SuiObjectArg - at this point it should be an object type
-    return convertObjArg(txBlock, arg as unknown as SuiObjectArg);
+    return convertObjArg(txBlock, arg as SuiObjectArg);
   });
 }
 

@@ -90,7 +90,12 @@ function isAmountArg(arg: any): arg is bigint | number | string {
 function isMoveVecArg(
   arg: SuiTxArg | SuiVecTxArg | SuiObjectArg | SuiAmountsArg
 ): arg is SuiVecTxArg {
-  if (typeof arg === 'object' && 'vecType' in arg && 'value' in arg) {
+  if (
+    arg !== null &&
+    typeof arg === 'object' &&
+    'vecType' in arg &&
+    'value' in arg
+  ) {
     return true;
   } else if (Array.isArray(arg)) {
     return true;

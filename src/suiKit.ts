@@ -18,6 +18,7 @@ import type {
   SuiVecTxArg,
   SuiKitReturnType,
   SuiObjectArg,
+  SuiAmountsArg,
   SuiTransactionBlockResponse,
 } from './types/index.js';
 import { normalizeStructTag, SUI_TYPE_ARG } from '@mysten/sui/utils';
@@ -351,7 +352,7 @@ export class SuiKit {
 
   async moveCall(callParams: {
     target: string;
-    arguments?: (SuiTxArg | SuiVecTxArg)[];
+    arguments?: (SuiTxArg | SuiVecTxArg | SuiObjectArg | SuiAmountsArg)[];
     typeArguments?: string[];
     derivePathParams?: DerivePathParams;
   }) {

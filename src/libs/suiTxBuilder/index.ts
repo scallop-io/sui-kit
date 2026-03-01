@@ -166,7 +166,7 @@ export class SuiTxBlock {
    */
   moveCall(
     target: string,
-    args: (SuiTxArg | SuiVecTxArg)[] = [],
+    args: (SuiTxArg | SuiVecTxArg | SuiObjectArg | SuiAmountsArg)[] = [],
     typeArgs: string[] = []
   ) {
     // a regex for pattern `${string}::${string}::${string}`

@@ -23,13 +23,13 @@ jobs:
 
       - uses: actions/setup-node@v6.4.0
         with:
-          node-version: '22'
+          node-version: '22.14.0'
           cache: 'pnpm'
           registry-url: 'https://registry.npmjs.org'
           scope: '@scallop-io'
 
       - name: Upgrade npm for OIDC support
-        run: npm install -g npm@latest
+        run: npm install -g npm@11.14.1
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts

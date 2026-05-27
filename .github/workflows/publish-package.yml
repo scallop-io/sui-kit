@@ -1,34 +1,42 @@
-name: Publish package to GitHub Packages
+name: Publish package to npm Packages
 
 on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+  packages: write
+  id-token: write # REQUIRED for npm OIDC Trusted Publishing
+
 jobs:
   release:
     runs-on: ubuntu-22.04
-    permissions: 
-      contents: read
-      packages: write 
+    environment: npm-publish # must match Trusted Publisher config on npmjs.com
+
     steps:
-      - uses: actions/checkout@v3
-      
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v6.0.2
+
+      - uses: pnpm/action-setup@v6.0.8
         with:
-          version: 9.12.3
-      - uses: actions/setup-node@v3.6.0
+          version: 10.32.1
+
+      - uses: actions/setup-node@v6.4.0
         with:
-          node-version: '18'
+          node-version: '22.14.0'
           cache: 'pnpm'
           registry-url: 'https://registry.npmjs.org'
           scope: '@scallop-io'
-      
-      - run: |
-          pnpm install --frozen-lockfile
-          pnpm run build
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-      
+
+      - name: Upgrade npm for OIDC support
+        run: npm install -g npm@11.14.1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Build
+        run: pnpm run build
+
       - name: Determine npm tag
         id: npm_tag
         run: |
@@ -39,17 +47,7 @@ jobs:
           else
             echo "tag=latest" >> $GITHUB_ENV
           fi
-      - run: pnpm publish --no-git-checks --tag ${{ env.tag }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-      
-      - uses: actions/setup-node@v3.6.0
-        with:
-          node-version: '18'
-          cache: 'pnpm'
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@scallop-io'
-      
-      - run: pnpm publish --no-git-checks --access public --registry https://npm.pkg.github.com --tag ${{ env.tag }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Publish to npmjs.com via OIDC — use npm (not pnpm) for OIDC token exchange
+      - name: Publish to npmjs.com (OIDC)
+        run: npm publish --tag ${{ env.tag }} --access public --ignore-scripts

@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.1.0](https://github.com/scallop-io/sui-kit/compare/v2.0.1...v2.1.0) (2026-05-28)
+
+### Changed
+
+- Move `@mysten/sui` to `peerDependencies`; consumers must now explicitly install `@mysten/sui@^2.0.0` ([eb6c535](https://github.com/scallop-io/sui-kit/commit/eb6c535207cec524306bf5f58cf46d4d8d5a180a))
+
 ### [2.0.1](https://github.com/scallop-io/sui-kit/compare/v2.0.0...v2.0.1) (2026-03-01)
 
 ### Changed

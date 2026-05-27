@@ -63,16 +63,19 @@
     "doc": "typedoc --out docs src/index.ts"
   },
   "dependencies": {
-    "@mysten/bcs": "^2.0.0",
-    "@mysten/sui": "^2.0.0",
+    "@mysten/bcs": "^2.0.1",
     "@scure/bip39": "^1.5.4",
     "assert": "^2.1.0",
     "bech32": "^2.0.0"
+  },
+  "peerDependencies": {
+    "@mysten/sui": "^2.0.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^18.0.0",
     "@commitlint/config-conventional": "^18.0.0",
     "@commitlint/prompt-cli": "^18.0.0",
+    "@mysten/sui": "^2.14.1",
     "@protobuf-ts/grpcweb-transport": "^2.11.1",
     "@protobuf-ts/runtime-rpc": "^2.11.1",
     "@types/node": "^20.8.7",

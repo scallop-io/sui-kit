@@ -20,16 +20,19 @@ node --version
 v2.0.0 is now an ESM-only package. CommonJS support has been removed.
 
 **Before (CommonJS):**
+
 ```javascript
 const { SuiKit } = require('@scallop-io/sui-kit');
 ```
 
 **After (ESM):**
+
 ```javascript
 import { SuiKit } from '@scallop-io/sui-kit';
 ```
 
 If your project uses CommonJS, you need to either:
+
 - Convert your project to ESM by adding `"type": "module"` to `package.json`
 - Use dynamic imports: `const { SuiKit } = await import('@scallop-io/sui-kit')`
 
@@ -37,8 +40,8 @@ If your project uses CommonJS, you need to either:
 
 v2.0.0 migrates to the latest Mysten SDK:
 
-| Package | v1.x | v2.0.0 |
-|---------|------|--------|
+| Package     | v1.x | v2.0.0 |
+| ----------- | ---- | ------ |
 | @mysten/sui | ^1.x | ^2.0.0 |
 | @mysten/bcs | ^1.x | ^2.0.0 |
 
@@ -47,11 +50,13 @@ v2.0.0 migrates to the latest Mysten SDK:
 The client type has changed from `SuiClient` to `ClientWithCoreApi`.
 
 **Before:**
+
 ```typescript
 import { SuiClient } from '@mysten/sui/client';
 ```
 
 **After:**
+
 ```typescript
 import { ClientWithCoreApi } from '@mysten/sui/client';
 ```
@@ -61,6 +66,7 @@ import { ClientWithCoreApi } from '@mysten/sui/client';
 v2.0.0 adds gRPC client support alongside the existing REST client.
 
 **Using gRPC client:**
+
 ```typescript
 import { SuiKit, SuiGrpcClient } from '@scallop-io/sui-kit';
 
@@ -79,8 +85,8 @@ v2.0.0 exports additional utilities:
 import {
   SuiKit,
   SuiTxBlock,
-  getFullnodeUrl,           // New in v2.0.0
-  SimulateTransactionResponse // New in v2.0.0
+  getFullnodeUrl, // New in v2.0.0
+  SimulateTransactionResponse, // New in v2.0.0
 } from '@scallop-io/sui-kit';
 ```
 
@@ -148,5 +154,6 @@ A: Yes, the SuiKit API remains largely the same. The main changes are in the mod
 ## Need Help?
 
 If you encounter issues during migration, please:
+
 1. Check the [CHANGELOG](../CHANGELOG.md) for detailed changes
 2. Open an issue on [GitHub](https://github.com/scallop-io/sui-kit/issues)

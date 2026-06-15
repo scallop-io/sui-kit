@@ -302,7 +302,7 @@ export class SuiInteractor {
 					cursor: nextCursor,
 				});
 			// Sort the coins by balance in descending order
-			objects.sort((a, b) => parseInt(b.balance) - parseInt(a.balance));
+			objects.sort((a, b) => parseInt(b.balance, 10) - parseInt(a.balance, 10));
 			for (const coinData of objects) {
 				selectedCoins.push({
 					objectId: coinData.objectId,
@@ -310,7 +310,7 @@ export class SuiInteractor {
 					version: coinData.version,
 					balance: coinData.balance,
 				});
-				totalAmount = totalAmount + parseInt(coinData.balance);
+				totalAmount = totalAmount + parseInt(coinData.balance, 10);
 				if (totalAmount >= amount) {
 					break;
 				}

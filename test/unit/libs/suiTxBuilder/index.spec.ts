@@ -217,9 +217,9 @@ describe("SuiTxBlock (simple coverage)", () => {
 		const tx = new SuiTxBlock();
 		tx.setSender(`0x${"1".repeat(64)}`);
 		tx.setGasPayment([
-			{ objectId: "0x" + "4".repeat(64), version: "1", digest: "abc" },
+			{ objectId: `0x${"4".repeat(64)}`, version: "1", digest: "abc" },
 		]);
-		tx.transferObjects(["0x" + "2".repeat(64)], "0x" + "3".repeat(64));
+		tx.transferObjects([`0x${"2".repeat(64)}`], `0x${"3".repeat(64)}`);
 		expect(() => tx.getDigest({ client: suiKit.client })).not.toThrow();
 	});
 
@@ -227,9 +227,9 @@ describe("SuiTxBlock (simple coverage)", () => {
 		const tx = new SuiTxBlock();
 		tx.setSender(`0x${"1".repeat(64)}`);
 		tx.setGasPayment([
-			{ objectId: "0x" + "4".repeat(64), version: "1", digest: "abc" },
+			{ objectId: `0x${"4".repeat(64)}`, version: "1", digest: "abc" },
 		]);
-		tx.transferObjects(["0x" + "2".repeat(64)], "0x" + "3".repeat(64));
+		tx.transferObjects([`0x${"2".repeat(64)}`], `0x${"3".repeat(64)}`);
 		expect(() => tx.build({ client: suiKit.client })).not.toThrow();
 	});
 });

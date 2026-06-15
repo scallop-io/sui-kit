@@ -38,7 +38,7 @@ describe("SuiInteractor", () => {
 	it("should construct with suiClients param", () => {
 		const fakeClient = { core: { foo: "bar" } };
 		const i = new SuiInteractor({ suiClients: [fakeClient as any] });
-		expect(i["clients"][0]).toBe(fakeClient);
+		expect(i.getClient(0)).toBe(fakeClient);
 		expect(i.currentClient).toBe(fakeClient);
 	});
 
@@ -52,9 +52,11 @@ describe("SuiInteractor", () => {
 
 	it("should switch full nodes", () => {
 		interactor.switchFullNodes(["a", "b"]);
+		// biome-ignore lint/complexity/useLiteralKeys: Private field access for testing
 		expect(interactor["fullNodes"]).toEqual(["a", "b"]);
+		// biome-ignore lint/complexity/useLiteralKeys: Private field access for testing
 		expect(interactor["clients"].length).toBe(2);
-		expect(interactor.currentClient).toBe(interactor["clients"][0]);
+		expect(interactor.currentClient).toBe(interactor.getClient(0));
 	});
 
 	it("should throw if switchFullNodes is called with empty array", () => {
@@ -64,11 +66,13 @@ describe("SuiInteractor", () => {
 	});
 
 	it("should throw if currentFullNode is called with no fullNodes", () => {
+		// biome-ignore lint/complexity/useLiteralKeys: Private field access for testing
 		interactor["fullNodes"] = [];
 		expect(() => interactor.currentFullNode).toThrow("No full nodes available");
 	});
 
 	it("should throw if current client not found", () => {
+		// biome-ignore lint/complexity/useLiteralKeys: Private field access for testing
 		interactor["clients"] = [];
 		expect(() => interactor.currentFullNode).toThrow(
 			"Current client not found",

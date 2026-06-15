@@ -175,6 +175,7 @@ export class SuiTxBlock {
 		const match = target.match(regex);
 		if (match === null)
 			throw new Error(
+				// biome-ignore lint/suspicious/noTemplateCurlyInString: Intended error message format
 				"Invalid target format. Expected `${string}::${string}::${string}`",
 			);
 		const convertedArgs = convertArgs(this.txBlock, args);

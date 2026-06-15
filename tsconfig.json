@@ -1,32 +1,32 @@
 {
-  "ts-node": {
-    "require": ["tsconfig-paths/register"]
-  },
-  "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "baseUrl": ".",
-    "downlevelIteration": true,
-    "rootDir": "src",
-    "outDir": "dist",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "strict": true,
-    "sourceMap": true,
-    "declaration": true,
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "skipLibCheck": true,
-    "preserveSymlinks": true,
-    "forceConsistentCasingInFileNames": true,
-    "allowJs": true,
-    "noEmit": false,
-    "emitDeclarationOnly": true,
-    "incremental": false,
-    "typeRoots": ["./node_modules/@types"],
-    "types": ["node"]
-  },
-  "include": ["./src/**/*"],
-  "exclude": ["node_modules", "dist"]
+	"ts-node": {
+		"require": ["tsconfig-paths/register"]
+	},
+	"compilerOptions": {
+		"target": "ES2022",
+		"lib": ["dom", "dom.iterable", "esnext"],
+		"baseUrl": ".",
+		"downlevelIteration": true,
+		"rootDir": "src",
+		"outDir": "dist",
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"strict": true,
+		"sourceMap": true,
+		"declaration": true,
+		"esModuleInterop": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"skipLibCheck": true,
+		"preserveSymlinks": true,
+		"forceConsistentCasingInFileNames": true,
+		"allowJs": true,
+		"noEmit": false,
+		"emitDeclarationOnly": true,
+		"incremental": false,
+		"typeRoots": ["./node_modules/@types"],
+		"types": ["node"]
+	},
+	"include": ["./src/**/*"],
+	"exclude": ["node_modules", "dist"]
 }

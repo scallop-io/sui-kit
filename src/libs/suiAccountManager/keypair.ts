@@ -1,19 +1,19 @@
-import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
-import type { DerivePathParams } from '../../types/index.js';
+import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
+import type { DerivePathParams } from "../../types/index.js";
 
 /**
  * @description Get ed25519 derive path for SUI
  * @param derivePathParams
  */
 export const getDerivePathForSUI = (
-  derivePathParams: DerivePathParams = {}
+	derivePathParams: DerivePathParams = {},
 ) => {
-  const {
-    accountIndex = 0,
-    isExternal = false,
-    addressIndex = 0,
-  } = derivePathParams;
-  return `m/44'/784'/${accountIndex}'/${isExternal ? 1 : 0}'/${addressIndex}'`;
+	const {
+		accountIndex = 0,
+		isExternal = false,
+		addressIndex = 0,
+	} = derivePathParams;
+	return `m/44'/784'/${accountIndex}'/${isExternal ? 1 : 0}'/${addressIndex}'`;
 };
 
 /**
@@ -30,9 +30,9 @@ export const getDerivePathForSUI = (
  * @param derivePathParams
  */
 export const getKeyPair = (
-  mnemonics: string,
-  derivePathParams: DerivePathParams = {}
+	mnemonics: string,
+	derivePathParams: DerivePathParams = {},
 ) => {
-  const derivePath = getDerivePathForSUI(derivePathParams);
-  return Ed25519Keypair.deriveKeypair(mnemonics, derivePath);
+	const derivePath = getDerivePathForSUI(derivePathParams);
+	return Ed25519Keypair.deriveKeypair(mnemonics, derivePath);
 };

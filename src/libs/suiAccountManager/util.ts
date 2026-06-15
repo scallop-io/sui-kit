@@ -1,11 +1,11 @@
-import { fromBase64, fromHex } from '@mysten/bcs';
+import { fromBase64, fromHex } from "@mysten/bcs";
 
 /**
  * @description This regular expression matches any string that contains only hexadecimal digits (0-9, A-F, a-f).
  * @param str
  */
 export const isHex = (str: string) =>
-  /^0x[0-9a-fA-F]+$|^[0-9a-fA-F]+$/.test(str);
+	/^0x[0-9a-fA-F]+$|^[0-9a-fA-F]+$/.test(str);
 
 /**
  * @description This regular expression matches any string that contains only base64 digits (0-9, A-Z, a-z, +, /, =).
@@ -19,13 +19,13 @@ export const isBase64 = (str: string) => /^[a-zA-Z0-9+/]+={0,2}$/g.test(str);
  * @description Convert a hex or base64 string to Uint8Array
  */
 export const hexOrBase64ToUint8Array = (str: string): Uint8Array => {
-  if (isHex(str)) {
-    return fromHex(str);
-  }
-  if (isBase64(str)) {
-    return fromBase64(str);
-  }
-  throw new Error('The string is not a valid hex or base64 string.');
+	if (isHex(str)) {
+		return fromHex(str);
+	}
+	if (isBase64(str)) {
+		return fromBase64(str);
+	}
+	throw new Error("The string is not a valid hex or base64 string.");
 };
 
 const PRIVATE_KEY_SIZE = 32;
@@ -39,19 +39,19 @@ const LEGACY_PRIVATE_KEY_SIZE = 64;
  * 3. A 33-byte array with the first byte being 0x00 (sui.keystore key is a Base64 string with scheme flag 0x00 at the beginning)
  */
 export const normalizePrivateKey = (key: Uint8Array): Uint8Array => {
-  if (key.length === LEGACY_PRIVATE_KEY_SIZE) {
-    return key.slice(0, PRIVATE_KEY_SIZE);
-  }
-  if (key.length === PRIVATE_KEY_SIZE + 1 && key[0] === 0) {
-    return key.slice(1);
-  }
-  if (key.length === PRIVATE_KEY_SIZE) {
-    return key;
-  }
-  throw new Error('invalid secret key');
+	if (key.length === LEGACY_PRIVATE_KEY_SIZE) {
+		return key.slice(0, PRIVATE_KEY_SIZE);
+	}
+	if (key.length === PRIVATE_KEY_SIZE + 1 && key[0] === 0) {
+		return key.slice(1);
+	}
+	if (key.length === PRIVATE_KEY_SIZE) {
+		return key;
+	}
+	throw new Error("invalid secret key");
 };
 
 /**
  * @deprecated Please use fromHex and fromBase64 from '@mysten/bcs' directly.
  */
-export { fromHex, fromBase64 } from '@mysten/bcs';
+export { fromBase64, fromHex } from "@mysten/bcs";

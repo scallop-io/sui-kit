@@ -1,1 +1,1 @@
-export { MultiSigClient } from './client.js';
+export { MultiSigClient } from "./client.js";

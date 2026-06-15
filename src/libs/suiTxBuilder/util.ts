@@ -1,69 +1,69 @@
+import { bcs, isSerializedBcs, SerializedBcs } from "@mysten/bcs";
+import type { SuiClientTypes } from "@mysten/sui/client";
+import type {
+	Transaction,
+	TransactionArgument,
+	TransactionObjectArgument,
+} from "@mysten/sui/transactions";
+import { getPureBcsSchema, Inputs } from "@mysten/sui/transactions";
 import {
-  normalizeSuiObjectId,
-  normalizeSuiAddress,
-  isValidSuiObjectId,
-  isValidSuiAddress,
-} from '@mysten/sui/utils';
-import { Inputs, getPureBcsSchema } from '@mysten/sui/transactions';
-import { SerializedBcs, bcs, isSerializedBcs } from '@mysten/bcs';
+	isValidSuiAddress,
+	isValidSuiObjectId,
+	normalizeSuiAddress,
+	normalizeSuiObjectId,
+} from "@mysten/sui/utils";
 import type {
-  TransactionArgument,
-  Transaction,
-  TransactionObjectArgument,
-} from '@mysten/sui/transactions';
-import type { SuiClientTypes } from '@mysten/sui/client';
-import type {
-  SuiObjectArg,
-  SuiAddressArg,
-  SuiTxArg,
-  SuiVecTxArg,
-  SuiInputTypes,
-  SuiAmountsArg,
-} from '../../types/index.js';
+	SuiAddressArg,
+	SuiAmountsArg,
+	SuiInputTypes,
+	SuiObjectArg,
+	SuiTxArg,
+	SuiVecTxArg,
+} from "../../types/index.js";
 
 // Object reference type
 interface SuiObjectRef {
-  objectId: string;
-  version: number | string;
-  digest: string;
+	objectId: string;
+	version: number | string;
+	digest: string;
 }
 
 // Simple types that can be converted to OpenSignatureBody
 const SIMPLE_BCS_TYPES = [
-  'u8',
-  'u16',
-  'u32',
-  'u64',
-  'u128',
-  'u256',
-  'bool',
-  'address',
+	"u8",
+	"u16",
+	"u32",
+	"u64",
+	"u128",
+	"u256",
+	"bool",
+	"address",
 ] as const;
 
 type SimpleBcsType = (typeof SIMPLE_BCS_TYPES)[number];
 
 // Convert simple type string to OpenSignatureBody
 function toOpenSignatureBody(type: string): SuiClientTypes.OpenSignatureBody {
-  if (!SIMPLE_BCS_TYPES.includes(type as SimpleBcsType)) {
-    throw new Error(`Invalid SimpleBcsType: ${type}`);
-  }
-  return { $kind: type } as SuiClientTypes.OpenSignatureBody;
+	if (!SIMPLE_BCS_TYPES.includes(type as SimpleBcsType)) {
+		throw new Error(`Invalid SimpleBcsType: ${type}`);
+	}
+	return { $kind: type } as SuiClientTypes.OpenSignatureBody;
 }
 
 // TODO: unclear why we need this function and types
 export const getDefaultSuiInputType = (
-  value: SuiTxArg
-): 'u64' | 'bool' | 'object' | undefined => {
-  if (typeof value === 'string' && isValidSuiObjectId(value)) {
-    return 'object';
-  }
-  if (typeof value === 'number' || typeof value === 'bigint') {
-    return 'u64';
-  }
-  if (typeof value === 'boolean') {
-    return 'bool';
-  }
-  return undefined;
+	value: SuiTxArg,
+): "u64" | "bool" | "object" | undefined => {
+	if (typeof value === "string" && isValidSuiObjectId(value)) {
+		return "object";
+	}
+	if (typeof value === "number" || typeof value === "bigint") {
+		return "u64";
+	}
+	if (typeof value === "boolean") {
+		return "bool";
+	}
+	return undefined;
 };
 
 // =========== TYPE GUARD ============
@@ -74,11 +74,13 @@ export const getDefaultSuiInputType = (
  * @returns boolean.
  */
 function isAmountArg(arg: any): arg is bigint | number | string {
-  return (
-    typeof arg === 'number' ||
-    typeof arg === 'bigint' ||
-    (typeof arg === 'string' && !isValidSuiAddress(arg) && !isNaN(Number(arg)))
-  );
+	return (
+		typeof arg === "number" ||
+		typeof arg === "bigint" ||
+		(typeof arg === "string" &&
+			!isValidSuiAddress(arg) &&
+			!Number.isNaN(Number(arg)))
+	);
 }
 
 /**
@@ -88,19 +90,19 @@ function isAmountArg(arg: any): arg is bigint | number | string {
  * @returns boolean.
  */
 function isMoveVecArg(
-  arg: SuiTxArg | SuiVecTxArg | SuiObjectArg | SuiAmountsArg
+	arg: SuiTxArg | SuiVecTxArg | SuiObjectArg | SuiAmountsArg,
 ): arg is SuiVecTxArg {
-  if (
-    arg !== null &&
-    typeof arg === 'object' &&
-    'vecType' in arg &&
-    'value' in arg
-  ) {
-    return true;
-  } else if (Array.isArray(arg)) {
-    return true;
-  }
-  return false;
+	if (
+		arg !== null &&
+		typeof arg === "object" &&
+		"vecType" in arg &&
+		"value" in arg
+	) {
+		return true;
+	} else if (Array.isArray(arg)) {
+		return true;
+	}
+	return false;
 }
 
 /**
@@ -109,12 +111,12 @@ function isMoveVecArg(
  * @returns boolean
  */
 function isObjectRef(arg: SuiObjectArg): arg is SuiObjectRef {
-  return (
-    typeof arg === 'object' &&
-    'digest' in arg &&
-    'version' in arg &&
-    'objectId' in arg
-  );
+	return (
+		typeof arg === "object" &&
+		"digest" in arg &&
+		"version" in arg &&
+		"objectId" in arg
+	);
 }
 
 /**
@@ -123,14 +125,14 @@ function isObjectRef(arg: SuiObjectArg): arg is SuiObjectRef {
  * @returns
  */
 function isSharedObjectRef(
-  arg: SuiObjectArg
+	arg: SuiObjectArg,
 ): arg is Parameters<typeof Inputs.SharedObjectRef>[0] {
-  return (
-    typeof arg === 'object' &&
-    'objectId' in arg &&
-    'initialSharedVersion' in arg &&
-    'mutable' in arg
-  );
+	return (
+		typeof arg === "object" &&
+		"objectId" in arg &&
+		"initialSharedVersion" in arg &&
+		"mutable" in arg
+	);
 }
 // ===================================
 
@@ -148,45 +150,45 @@ function isSharedObjectRef(
  * @param type 'address' | 'bool' | 'u8' | 'u16' | 'u32' | 'u64' | 'u128' | 'u256' | 'signer' | 'object' | string
  */
 export function makeVecParam(
-  txBlock: Transaction,
-  args: SuiTxArg[],
-  type?: SuiInputTypes
+	txBlock: Transaction,
+	args: SuiTxArg[],
+	type?: SuiInputTypes,
 ): TransactionArgument {
-  if (args.length === 0)
-    throw new Error('Transaction builder error: Empty array is not allowed');
-  // Using first element value as default type
-  // TODO: unclear why we need this function and types
-  const defaultSuiType = getDefaultSuiInputType(args[0]);
-  const VECTOR_REGEX = /^vector<(.+)>$/;
-  const STRUCT_REGEX = /^([^:]+)::([^:]+)::([^<]+)(<(.+)>)?/;
+	if (args.length === 0)
+		throw new Error("Transaction builder error: Empty array is not allowed");
+	// Using first element value as default type
+	// TODO: unclear why we need this function and types
+	const defaultSuiType = getDefaultSuiInputType(args[0]);
+	const VECTOR_REGEX = /^vector<(.+)>$/;
+	const STRUCT_REGEX = /^([^:]+)::([^:]+)::([^<]+)(<(.+)>)?/;
 
-  type = type || defaultSuiType;
+	type = type || defaultSuiType;
 
-  if (type === 'object') {
-    const elements = args.map((arg) =>
-      typeof arg === 'string' && isValidSuiObjectId(arg)
-        ? txBlock.object(normalizeSuiObjectId(arg))
-        : convertObjArg(txBlock, arg as SuiObjectArg)
-    );
-    return txBlock.makeMoveVec({ elements });
-  } else if (
-    typeof type === 'string' &&
-    !VECTOR_REGEX.test(type) &&
-    !STRUCT_REGEX.test(type)
-  ) {
-    // Convert simple type to OpenSignatureBody for BCS schema
-    const signatureBody = toOpenSignatureBody(type as SimpleBcsType);
-    const bcsSchema = getPureBcsSchema(signatureBody);
-    if (!bcsSchema) {
-      throw new Error(`Unknown type: ${type}`);
-    }
-    return txBlock.pure(bcs.vector(bcsSchema).serialize(args));
-  } else {
-    const elements = args.map((arg) =>
-      convertObjArg(txBlock, arg as SuiObjectArg)
-    );
-    return txBlock.makeMoveVec({ elements, type: type as string });
-  }
+	if (type === "object") {
+		const elements = args.map((arg) =>
+			typeof arg === "string" && isValidSuiObjectId(arg)
+				? txBlock.object(normalizeSuiObjectId(arg))
+				: convertObjArg(txBlock, arg as SuiObjectArg),
+		);
+		return txBlock.makeMoveVec({ elements });
+	} else if (
+		typeof type === "string" &&
+		!VECTOR_REGEX.test(type) &&
+		!STRUCT_REGEX.test(type)
+	) {
+		// Convert simple type to OpenSignatureBody for BCS schema
+		const signatureBody = toOpenSignatureBody(type as SimpleBcsType);
+		const bcsSchema = getPureBcsSchema(signatureBody);
+		if (!bcsSchema) {
+			throw new Error(`Unknown type: ${type}`);
+		}
+		return txBlock.pure(bcs.vector(bcsSchema).serialize(args));
+	} else {
+		const elements = args.map((arg) =>
+			convertObjArg(txBlock, arg as SuiObjectArg),
+		);
+		return txBlock.makeMoveVec({ elements, type: type as string });
+	}
 }
 
 /**
@@ -197,27 +199,27 @@ export function makeVecParam(
  * @returns The converted array of TransactionArgument.
  */
 export function convertArgs(
-  txBlock: Transaction,
-  args: (SuiTxArg | SuiVecTxArg | SuiObjectArg | SuiAmountsArg)[]
+	txBlock: Transaction,
+	args: (SuiTxArg | SuiVecTxArg | SuiObjectArg | SuiAmountsArg)[],
 ): TransactionArgument[] {
-  return args.map((arg) => {
-    if (arg instanceof SerializedBcs || isSerializedBcs(arg)) {
-      return txBlock.pure(arg);
-    }
+	return args.map((arg) => {
+		if (arg instanceof SerializedBcs || isSerializedBcs(arg)) {
+			return txBlock.pure(arg);
+		}
 
-    if (isMoveVecArg(arg)) {
-      const vecType = 'vecType' in arg;
-      return vecType
-        ? makeVecParam(txBlock, arg.value, arg.vecType)
-        : makeVecParam(txBlock, arg);
-    }
+		if (isMoveVecArg(arg)) {
+			const vecType = "vecType" in arg;
+			return vecType
+				? makeVecParam(txBlock, arg.value, arg.vecType)
+				: makeVecParam(txBlock, arg);
+		}
 
-    if (isAmountArg(arg)) {
-      return convertAmounts(txBlock, [arg as unknown as SuiAmountsArg])[0];
-    }
+		if (isAmountArg(arg)) {
+			return convertAmounts(txBlock, [arg as unknown as SuiAmountsArg])[0];
+		}
 
-    return convertObjArg(txBlock, arg as SuiObjectArg);
-  });
+		return convertObjArg(txBlock, arg as SuiObjectArg);
+	});
 }
 
 /**
@@ -228,14 +230,14 @@ export function convertArgs(
  * @returns The converted TransactionArgument.
  */
 export function convertAddressArg(
-  txBlock: Transaction,
-  arg: SuiAddressArg
+	txBlock: Transaction,
+	arg: SuiAddressArg,
 ): SuiTxArg {
-  if (typeof arg === 'string' && isValidSuiAddress(arg)) {
-    return txBlock.pure.address(normalizeSuiAddress(arg));
-  } else {
-    return convertArgs(txBlock, [arg])[0];
-  }
+	if (typeof arg === "string" && isValidSuiAddress(arg)) {
+		return txBlock.pure.address(normalizeSuiAddress(arg));
+	} else {
+		return convertArgs(txBlock, [arg])[0];
+	}
 }
 
 /**
@@ -246,64 +248,64 @@ export function convertAddressArg(
  * @returns The converted TransactionArgument.
  */
 export function convertObjArg(
-  txb: Transaction,
-  arg: SuiObjectArg
+	txb: Transaction,
+	arg: SuiObjectArg,
 ): TransactionObjectArgument {
-  if (typeof arg === 'string') {
-    return txb.object(arg);
-  }
+	if (typeof arg === "string") {
+		return txb.object(arg);
+	}
 
-  if (isObjectRef(arg)) {
-    return txb.objectRef(arg);
-  }
+	if (isObjectRef(arg)) {
+		return txb.objectRef(arg);
+	}
 
-  if (isSharedObjectRef(arg)) {
-    return txb.sharedObjectRef(arg);
-  }
+	if (isSharedObjectRef(arg)) {
+		return txb.sharedObjectRef(arg);
+	}
 
-  if ('Object' in arg) {
-    if ('ImmOrOwnedObject' in arg.Object) {
-      return txb.object(Inputs.ObjectRef(arg.Object.ImmOrOwnedObject));
-    } else if ('SharedObject' in arg.Object) {
-      return txb.object(Inputs.SharedObjectRef(arg.Object.SharedObject));
-    } else {
-      throw new Error('Invalid argument type');
-    }
-  }
+	if ("Object" in arg) {
+		if ("ImmOrOwnedObject" in arg.Object) {
+			return txb.object(Inputs.ObjectRef(arg.Object.ImmOrOwnedObject));
+		} else if ("SharedObject" in arg.Object) {
+			return txb.object(Inputs.SharedObjectRef(arg.Object.SharedObject));
+		} else {
+			throw new Error("Invalid argument type");
+		}
+	}
 
-  if (typeof arg === 'function') {
-    return arg;
-  }
+	if (typeof arg === "function") {
+		return arg;
+	}
 
-  if (
-    'GasCoin' in arg ||
-    'Input' in arg ||
-    'Result' in arg ||
-    'NestedResult' in arg
-  ) {
-    return arg;
-  }
+	if (
+		"GasCoin" in arg ||
+		"Input" in arg ||
+		"Result" in arg ||
+		"NestedResult" in arg
+	) {
+		return arg;
+	}
 
-  throw new Error('Invalid argument type');
+	throw new Error("Invalid argument type");
 }
 
 export function convertAmounts(
-  txBlock: Transaction,
-  amounts: SuiAmountsArg[]
+	txBlock: Transaction,
+	amounts: SuiAmountsArg[],
 ): TransactionArgument[] {
-  return amounts.map((amount) => {
-    if (isAmountArg(amount)) {
-      return txBlock.pure.u64(amount);
-    } else {
-      return convertArgs(txBlock, [amount])[0];
-    }
-  });
+	return amounts.map((amount) => {
+		if (isAmountArg(amount)) {
+			return txBlock.pure.u64(amount);
+		} else {
+			return convertArgs(txBlock, [amount])[0];
+		}
+	});
 }
 
 export const partitionArray = <T>(array: T[], chunkSize: number) => {
-  const result: T[][] = [];
-  for (let i = 0; i < array.length; i += chunkSize) {
-    result.push(array.slice(i, i + chunkSize));
-  }
-  return result;
+	const result: T[][] = [];
+	for (let i = 0; i < array.length; i += chunkSize) {
+		result.push(array.slice(i, i + chunkSize));
+	}
+	return result;
 };

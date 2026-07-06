@@ -47,6 +47,7 @@
 		"test": "pnpm test:typecheck && pnpm test:unit && pnpm test:integration",
 		"test:typecheck": "tsc -p ./test",
 		"test:unit": "vitest run test/unit --test-timeout=60000",
+		"test:gate": "node scripts/check-test-pass-rate.mjs",
 		"test:integration": "vitest run test/integration --test-timeout=60000",
 		"test:watch": "vitest",
 		"test:coverage-unit": "vitest run test/unit --coverage --test-timeout=60000",

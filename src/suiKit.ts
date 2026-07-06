@@ -456,6 +456,7 @@ export class SuiKit {
 				balanceChanges: true,
 				commandResults: true,
 			},
+			checksEnabled: false,
 		});
 	}
 }

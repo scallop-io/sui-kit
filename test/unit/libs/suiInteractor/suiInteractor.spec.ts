@@ -4,22 +4,23 @@ import { SuiOwnedObject, SuiSharedObject } from "src/libs/suiModel/index.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@mysten/sui/grpc", () => {
-	return {
-		SuiGrpcClient: vi.fn().mockImplementation(({ baseUrl, network }) => {
-			const client: any = {
-				baseUrl,
-				network,
-				core: {
-					executeTransaction: vi.fn(),
-					simulateTransaction: vi.fn(),
-					getObjects: vi.fn(),
-					listCoins: vi.fn(),
-					getBalance: vi.fn(),
-				},
-			};
-			return client;
-		}),
-	};
+	// Must be a class so vitest 4 can instantiate it with `new SuiGrpcClient(...)`.
+	class SuiGrpcClient {
+		baseUrl: string;
+		network: string;
+		core = {
+			executeTransaction: vi.fn(),
+			simulateTransaction: vi.fn(),
+			getObjects: vi.fn(),
+			listCoins: vi.fn(),
+			getBalance: vi.fn(),
+		};
+		constructor({ baseUrl, network }: { baseUrl: string; network: string }) {
+			this.baseUrl = baseUrl;
+			this.network = network;
+		}
+	}
+	return { SuiGrpcClient };
 });
 
 describe("SuiInteractor", () => {

@@ -10,8 +10,10 @@
 
 ## Pre-requisites
 
+`@mysten/sui` is a peer dependency, so install it alongside sui-kit:
+
 ```bash
-npm install @scallop-io/sui-kit
+npm install @scallop-io/sui-kit @mysten/sui
 ```
 
 ## How to use
@@ -38,13 +40,11 @@ const suiKit3 = new SuiKit();
 // Override options
 const suiKit = new SuiKit({
   mnemonics: '<Mnemonics>',
-  // 'testnet' | 'mainnet' | 'devnet', default is 'devnet'
+  // 'testnet' | 'mainnet' | 'devnet' | 'localnet', default is 'mainnet'
   networkType: 'testnet',
-  // the fullnode url, default is the preconfig fullnode url for the given network type
+  // the fullnode urls, default is the preconfig fullnode url for the given network type
   // It will rotate the fullnode when the current fullnode is not available
-  fullnodeUrls: '[<SUI fullnode1>, <SUI fullnode2>]',
-  // the faucet url, default is the preconfig faucet url for the given network type
-  faucetUrl: '<SUI faucet url>',
+  fullnodeUrls: ['<SUI fullnode1>', '<SUI fullnode2>'],
 });
 ```
 

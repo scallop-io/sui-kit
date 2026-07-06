@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.2.0](https://github.com/scallop-io/sui-kit/compare/v2.1.0...v2.2.0) (2026-07-06)
+
+### Added
+
+- Add `SuiInteractor.getClient(idx)` to access a specific client by index ([fbd015d](https://github.com/scallop-io/sui-kit/commit/fbd015d8c13e4539cc526b80a0cb11ecf41dcd8d))
+
+### Changed
+
+- Disable transaction checks (`checksEnabled: false`) in `simulateTransaction` ([e8339f4](https://github.com/scallop-io/sui-kit/commit/e8339f4a7d960759b0c275eec4dd219f93b2f51f))
+
+### Removed
+
+- Remove exported `SuiTransactionResult` type; use `SuiTransactionBlockResponse` instead ([fbd015d](https://github.com/scallop-io/sui-kit/commit/fbd015d8c13e4539cc526b80a0cb11ecf41dcd8d))
+
 ### [2.1.0](https://github.com/scallop-io/sui-kit/compare/v2.0.1...v2.1.0) (2026-05-28)
 
 ### Changed

@@ -12,9 +12,23 @@
  *   ALLOW_SKIPPED   Set to "1"/"true" to permit skipped/.only tests. Default: off.
  */
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+// Resolve the repo-local vitest binary. Husky hooks (and a bare `node`
+// invocation) do not have node_modules/.bin on PATH the way `pnpm run` does,
+// so relying on PATH resolution silently fails with ENOENT.
+const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
+const isWin = process.platform === "win32";
+const localVitest = join(
+	repoRoot,
+	"node_modules",
+	".bin",
+	isWin ? "vitest.CMD" : "vitest",
+);
+const vitestBin = existsSync(localVitest) ? localVitest : "vitest";
 
 const MIN_PASS_RATE = Number(process.env.MIN_PASS_RATE ?? "100");
 const ALLOW_SKIPPED = /^(1|true)$/i.test(process.env.ALLOW_SKIPPED ?? "");
@@ -36,7 +50,7 @@ console.log(
 // Note: vitest exits non-zero when tests fail; we still parse the JSON to report
 // the exact pass rate rather than relying solely on the exit code.
 const run = spawnSync(
-	"vitest",
+	vitestBin,
 	[
 		"run",
 		"test/unit",
@@ -45,8 +59,14 @@ const run = spawnSync(
 		"--reporter=json",
 		`--outputFile=${outputFile}`,
 	],
-	{ stdio: "inherit", shell: false },
+	{ stdio: "inherit", shell: false, cwd: repoRoot },
 );
+
+if (run.error) {
+	console.error(`✖ Failed to launch vitest (${vitestBin}): ${run.error.message}`);
+	rmSync(dir, { recursive: true, force: true });
+	process.exit(1);
+}
 
 let report;
 try {

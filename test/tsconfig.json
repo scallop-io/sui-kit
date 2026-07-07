@@ -1,9 +1,10 @@
 {
-  "extends": "../tsconfig.json",
-  "include": ["./", "../src"],
-  "compilerOptions": {
-    "rootDir": "..",
-    "noEmit": true,
-    "emitDeclarationOnly": false
-  }
+	"extends": "../tsconfig.json",
+	"include": ["./", "../src"],
+	"compilerOptions": {
+		"rootDir": "..",
+		"noEmit": true,
+		"emitDeclarationOnly": false,
+		"types": ["node", "chai"]
+	}
 }

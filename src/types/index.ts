@@ -1,87 +1,87 @@
+import type { SerializedBcs } from "@mysten/bcs";
+import type { ClientWithCoreApi, SuiClientTypes } from "@mysten/sui/client";
 import type {
-  Transaction,
-  TransactionObjectArgument,
-  Argument,
-  Inputs,
-  TransactionArgument,
-} from '@mysten/sui/transactions';
-import type { SerializedBcs } from '@mysten/bcs';
-import type { ClientWithCoreApi, SuiClientTypes } from '@mysten/sui/client';
-import { SuiTxBlock } from 'src/libs/suiTxBuilder/index.js';
+	Argument,
+	Inputs,
+	Transaction,
+	TransactionArgument,
+	TransactionObjectArgument,
+} from "@mysten/sui/transactions";
+import type { SuiTxBlock } from "src/libs/suiTxBuilder/index.js";
 
 export type SuiKitParams = (AccountManagerParams & {
-  faucetUrl?: string;
-  networkType?: NetworkType;
+	faucetUrl?: string;
+	networkType?: NetworkType;
 }) &
-  Partial<SuiInteractorParams>;
+	Partial<SuiInteractorParams>;
 
 export type SuiInteractorParams =
-  | {
-      fullnodeUrls: string[];
-      network?: NetworkType;
-    }
-  | {
-      suiClients: ClientWithCoreApi[];
-    };
+	| {
+			fullnodeUrls: string[];
+			network?: NetworkType;
+	  }
+	| {
+			suiClients: ClientWithCoreApi[];
+	  };
 
-export type NetworkType = 'testnet' | 'mainnet' | 'devnet' | 'localnet';
+export type NetworkType = "testnet" | "mainnet" | "devnet" | "localnet";
 
 export type AccountManagerParams = {
-  mnemonics?: string;
-  secretKey?: string;
+	mnemonics?: string;
+	secretKey?: string;
 };
 
 export type DerivePathParams = {
-  accountIndex?: number;
-  isExternal?: boolean;
-  addressIndex?: number;
+	accountIndex?: number;
+	isExternal?: boolean;
+	addressIndex?: number;
 };
 
 type TransactionBlockType = InstanceType<typeof Transaction>;
 
 export type PureCallArg = {
-  Pure: number[];
+	Pure: number[];
 };
 
 type SharedObjectRef = {
-  /** Hex code as string representing the object id */
-  objectId: string;
+	/** Hex code as string representing the object id */
+	objectId: string;
 
-  /** The version the object was shared at */
-  initialSharedVersion: number | string;
+	/** The version the object was shared at */
+	initialSharedVersion: number | string;
 
-  /** Whether reference is mutable */
-  mutable: boolean;
+	/** Whether reference is mutable */
+	mutable: boolean;
 };
 
 type SuiObjectRef = {
-  /** Base64 string representing the object digest */
-  objectId: string;
-  /** Object version */
-  version: number | string;
-  /** Hex code as string representing the object id */
-  digest: string;
+	/** Base64 string representing the object digest */
+	objectId: string;
+	/** Object version */
+	version: number | string;
+	/** Hex code as string representing the object id */
+	digest: string;
 };
 
 /**
  * An object argument.
  */
 type ObjectArg =
-  | { ImmOrOwnedObject: SuiObjectRef }
-  | { SharedObject: SharedObjectRef }
-  | { Receiving: SuiObjectRef };
+	| { ImmOrOwnedObject: SuiObjectRef }
+	| { SharedObject: SharedObjectRef }
+	| { Receiving: SuiObjectRef };
 
 export type ObjectCallArg = {
-  Object: ObjectArg;
+	Object: ObjectArg;
 };
-export type TransactionType = Parameters<TransactionBlockType['add']>;
+export type TransactionType = Parameters<TransactionBlockType["add"]>;
 
 export type TransactionPureArgument = Extract<
-  Argument,
-  {
-    $kind: 'Input';
-    type?: 'pure';
-  }
+	Argument,
+	{
+		$kind: "Input";
+		type?: "pure";
+	}
 >;
 
 export type SuiTxArg = TransactionArgument | SerializedBcs<any>;
@@ -89,44 +89,39 @@ export type SuiAddressArg = Argument | SerializedBcs<any> | string;
 export type SuiAmountsArg = SuiTxArg | number | bigint;
 
 export type SuiObjectArg =
-  | TransactionObjectArgument
-  | string
-  | Parameters<typeof Inputs.ObjectRef>[0]
-  | Parameters<typeof Inputs.SharedObjectRef>[0]
-  | ObjectCallArg;
+	| TransactionObjectArgument
+	| string
+	| Parameters<typeof Inputs.ObjectRef>[0]
+	| Parameters<typeof Inputs.SharedObjectRef>[0]
+	| ObjectCallArg;
 
 export type SuiVecTxArg =
-  | { value: SuiTxArg[]; vecType: SuiInputTypes }
-  | SuiTxArg[];
+	| { value: SuiTxArg[]; vecType: SuiInputTypes }
+	| SuiTxArg[];
 
 /**
  * These are the basics types that can be used in the SUI
  */
 export type SuiBasicTypes =
-  | 'address'
-  | 'bool'
-  | 'u8'
-  | 'u16'
-  | 'u32'
-  | 'u64'
-  | 'u128'
-  | 'u256';
+	| "address"
+	| "bool"
+	| "u8"
+	| "u16"
+	| "u32"
+	| "u64"
+	| "u128"
+	| "u256";
 
-export type SuiInputTypes = 'object' | SuiBasicTypes;
-
-// Transaction result type from SDK v2
-export type SuiTransactionResult<
-  Include extends SuiClientTypes.TransactionInclude = {},
-> = SuiClientTypes.TransactionResult<Include>;
+export type SuiInputTypes = "object" | SuiBasicTypes;
 
 // Full transaction response with all includes enabled
 export type SuiTransactionBlockResponse = SuiClientTypes.TransactionResult<{
-  balanceChanges: true;
-  effects: true;
-  events: true;
-  objectTypes: true;
+	balanceChanges: true;
+	effects: true;
+	events: true;
+	objectTypes: true;
 }>;
 
 export type SuiKitReturnType<T extends boolean> = T extends true
-  ? SuiTransactionBlockResponse
-  : SuiTxBlock;
+	? SuiTransactionBlockResponse
+	: SuiTxBlock;

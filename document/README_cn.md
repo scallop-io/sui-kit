@@ -4,7 +4,6 @@
 
 - [x] 相比于 Mystenlab 的 SDK，更加易于使用
 - [x] 支持转账 SUI 和自定义代币
-- [x] 从开发网络和测试网络请求水龙头
 - [x] 质押 SUI
 - [x] 兼容可编程交易
 - [x] 交易检查（无需 gas 的交易检查）
@@ -14,8 +13,10 @@
 
 1. 安装包
 
+`@mysten/sui` 是对等依赖（peer dependency），需要与 sui-kit 一起安装：
+
 ```bash
-npm install @scallop-io/sui-kit
+npm install @scallop-io/sui-kit @mysten/sui
 ```
 
 2. 安装 SUI cli（可选：仅在发布包时需要）
@@ -40,20 +41,6 @@ suiKit.transferSui(recipient, 1000).then(() => console.log('转账了 1000 SUI')
 suiKit
   .transferCoin(recipient, 1000, '0xCOFFEE::coin::COIN')
   .then(() => console.log('转账了 1000 COIN'));
-```
-
-### 请求水龙头
-
-你可以使用 SuiKit 来从开发网络和测试网络请求水龙头。
-
-```typescript
-import { SuiKit } from '@scallop-io/sui-kit';
-
-const secretKey = '<密钥>';
-const suiKit = new SuiKit({ secretKey, networkType: 'devnet' });
-suiKit.requestFaucet().then(() => {
-  console.log('请求水龙头成功');
-});
 ```
 
 ### 质押 SUI

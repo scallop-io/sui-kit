@@ -1,228 +1,233 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { SuiInteractor } from 'src/libs/suiInteractor/suiInteractor.js';
-import { SuiOwnedObject, SuiSharedObject } from 'src/libs/suiModel/index.js';
-import { batch, delay } from 'src/libs/suiInteractor/util.js';
+import { SuiInteractor } from "src/libs/suiInteractor/suiInteractor.js";
+import { batch, delay } from "src/libs/suiInteractor/util.js";
+import { SuiOwnedObject, SuiSharedObject } from "src/libs/suiModel/index.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock('@mysten/sui/grpc', () => {
-  return {
-    SuiGrpcClient: vi.fn().mockImplementation(({ baseUrl, network }) => {
-      const client: any = {
-        baseUrl,
-        network,
-        core: {
-          executeTransaction: vi.fn(),
-          simulateTransaction: vi.fn(),
-          getObjects: vi.fn(),
-          listCoins: vi.fn(),
-          getBalance: vi.fn(),
-        },
-      };
-      return client;
-    }),
-  };
+vi.mock("@mysten/sui/grpc", () => {
+	// Must be a class so vitest 4 can instantiate it with `new SuiGrpcClient(...)`.
+	class SuiGrpcClient {
+		baseUrl: string;
+		network: string;
+		core = {
+			executeTransaction: vi.fn(),
+			simulateTransaction: vi.fn(),
+			getObjects: vi.fn(),
+			listCoins: vi.fn(),
+			getBalance: vi.fn(),
+		};
+		constructor({ baseUrl, network }: { baseUrl: string; network: string }) {
+			this.baseUrl = baseUrl;
+			this.network = network;
+		}
+	}
+	return { SuiGrpcClient };
 });
 
-describe('SuiInteractor', () => {
-  let interactor: SuiInteractor;
-  let client0: any, client1: any;
+describe("SuiInteractor", () => {
+	let interactor: SuiInteractor;
+	let client0: any, client1: any;
 
-  beforeEach(() => {
-    interactor = new SuiInteractor({
-      fullnodeUrls: ['url1', 'url2'],
-      network: 'testnet',
-    });
-    client0 = interactor['clients'][0];
-    client1 = interactor['clients'][1];
-  });
+	beforeEach(() => {
+		interactor = new SuiInteractor({
+			fullnodeUrls: ["url1", "url2"],
+			network: "testnet",
+		});
+		client0 = interactor.getClient(0);
+		client1 = interactor.getClient(1);
+	});
 
-  it('should construct with suiClients param', () => {
-    const fakeClient = { core: { foo: 'bar' } };
-    const i = new SuiInteractor({ suiClients: [fakeClient as any] });
-    expect(i['clients'][0]).toBe(fakeClient);
-    expect(i.currentClient).toBe(fakeClient);
-  });
+	it("should construct with suiClients param", () => {
+		const fakeClient = { core: { foo: "bar" } };
+		const i = new SuiInteractor({ suiClients: [fakeClient as any] });
+		expect(i.getClient(0)).toBe(fakeClient);
+		expect(i.currentClient).toBe(fakeClient);
+	});
 
-  it('should switch to next client', () => {
-    const first = interactor.currentClient;
-    interactor.switchToNextClient();
-    expect(interactor.currentClient).not.toBe(first);
-    interactor.switchToNextClient();
-    expect(interactor.currentClient).toBe(first);
-  });
+	it("should switch to next client", () => {
+		const first = interactor.currentClient;
+		interactor.switchToNextClient();
+		expect(interactor.currentClient).not.toBe(first);
+		interactor.switchToNextClient();
+		expect(interactor.currentClient).toBe(first);
+	});
 
-  it('should switch full nodes', () => {
-    interactor.switchFullNodes(['a', 'b']);
-    expect(interactor['fullNodes']).toEqual(['a', 'b']);
-    expect(interactor['clients'].length).toBe(2);
-    expect(interactor.currentClient).toBe(interactor['clients'][0]);
-  });
+	it("should switch full nodes", () => {
+		interactor.switchFullNodes(["a", "b"]);
+		// biome-ignore lint/complexity/useLiteralKeys: Private field access for testing
+		expect(interactor["fullNodes"]).toEqual(["a", "b"]);
+		// biome-ignore lint/complexity/useLiteralKeys: Private field access for testing
+		expect(interactor["clients"].length).toBe(2);
+		expect(interactor.currentClient).toBe(interactor.getClient(0));
+	});
 
-  it('should throw if switchFullNodes is called with empty array', () => {
-    expect(() => interactor.switchFullNodes([])).toThrow(
-      'fullNodes cannot be empty'
-    );
-  });
+	it("should throw if switchFullNodes is called with empty array", () => {
+		expect(() => interactor.switchFullNodes([])).toThrow(
+			"fullNodes cannot be empty",
+		);
+	});
 
-  it('should throw if currentFullNode is called with no fullNodes', () => {
-    interactor['fullNodes'] = [];
-    expect(() => interactor.currentFullNode).toThrow('No full nodes available');
-  });
+	it("should throw if currentFullNode is called with no fullNodes", () => {
+		// biome-ignore lint/complexity/useLiteralKeys: Private field access for testing
+		interactor["fullNodes"] = [];
+		expect(() => interactor.currentFullNode).toThrow("No full nodes available");
+	});
 
-  it('should throw if current client not found', () => {
-    interactor['clients'] = [];
-    expect(() => interactor.currentFullNode).toThrow(
-      'Current client not found'
-    );
-  });
+	it("should throw if current client not found", () => {
+		// biome-ignore lint/complexity/useLiteralKeys: Private field access for testing
+		interactor["clients"] = [];
+		expect(() => interactor.currentFullNode).toThrow(
+			"Current client not found",
+		);
+	});
 
-  it('should try all clients and throw if all fail in sendTx', async () => {
-    client0.core.executeTransaction.mockRejectedValue(new Error('fail'));
-    client1.core.executeTransaction.mockRejectedValue(new Error('fail'));
-    await expect(
-      interactor.sendTx(new Uint8Array([1, 2, 3]), 'sig')
-    ).rejects.toThrow('Failed to send transaction with all fullnodes');
-  });
+	it("should try all clients and throw if all fail in sendTx", async () => {
+		client0.core.executeTransaction.mockRejectedValue(new Error("fail"));
+		client1.core.executeTransaction.mockRejectedValue(new Error("fail"));
+		await expect(
+			interactor.sendTx(new Uint8Array([1, 2, 3]), "sig"),
+		).rejects.toThrow("Failed to send transaction with all fullnodes");
+	});
 
-  it('should return result if a client succeeds in sendTx', async () => {
-    const result = { $kind: 'Transaction', Transaction: { digest: 'ok' } };
-    client0.core.executeTransaction.mockRejectedValue(new Error('fail'));
-    client1.core.executeTransaction.mockResolvedValue(result);
-    await expect(
-      interactor.sendTx(new Uint8Array([1, 2, 3]), 'sig')
-    ).resolves.toBe(result);
-  });
+	it("should return result if a client succeeds in sendTx", async () => {
+		const result = { $kind: "Transaction", Transaction: { digest: "ok" } };
+		client0.core.executeTransaction.mockRejectedValue(new Error("fail"));
+		client1.core.executeTransaction.mockResolvedValue(result);
+		await expect(
+			interactor.sendTx(new Uint8Array([1, 2, 3]), "sig"),
+		).resolves.toBe(result);
+	});
 
-  it('should try all clients and throw if all fail in dryRunTx', async () => {
-    client0.core.simulateTransaction.mockRejectedValue(new Error('fail'));
-    client1.core.simulateTransaction.mockRejectedValue(new Error('fail'));
-    await expect(interactor.dryRunTx(new Uint8Array())).rejects.toThrow(
-      'Failed to dry run transaction with all fullnodes'
-    );
-  });
+	it("should try all clients and throw if all fail in dryRunTx", async () => {
+		client0.core.simulateTransaction.mockRejectedValue(new Error("fail"));
+		client1.core.simulateTransaction.mockRejectedValue(new Error("fail"));
+		await expect(interactor.dryRunTx(new Uint8Array())).rejects.toThrow(
+			"Failed to dry run transaction with all fullnodes",
+		);
+	});
 
-  it('should return result if a client succeeds in dryRunTx', async () => {
-    const result = { $kind: 'Transaction', Transaction: { digest: 'ok' } };
-    client0.core.simulateTransaction.mockRejectedValue(new Error('fail'));
-    client1.core.simulateTransaction.mockResolvedValue(result);
-    await expect(interactor.dryRunTx(new Uint8Array())).resolves.toBe(result);
-  });
+	it("should return result if a client succeeds in dryRunTx", async () => {
+		const result = { $kind: "Transaction", Transaction: { digest: "ok" } };
+		client0.core.simulateTransaction.mockRejectedValue(new Error("fail"));
+		client1.core.simulateTransaction.mockResolvedValue(result);
+		await expect(interactor.dryRunTx(new Uint8Array())).resolves.toBe(result);
+	});
 
-  it('should get objects from core.getObjects', async () => {
-    client0.core.getObjects.mockResolvedValue({
-      objects: [{ objectId: 'a', version: '1', digest: 'd1' }],
-    });
-    const res = await interactor.getObjects(['a']);
-    expect(res).toEqual([{ objectId: 'a', version: '1', digest: 'd1' }]);
-  });
+	it("should get objects from core.getObjects", async () => {
+		client0.core.getObjects.mockResolvedValue({
+			objects: [{ objectId: "a", version: "1", digest: "d1" }],
+		});
+		const res = await interactor.getObjects(["a"]);
+		expect(res).toEqual([{ objectId: "a", version: "1", digest: "d1" }]);
+	});
 
-  it('should filter out Error objects in getObjects', async () => {
-    client0.core.getObjects.mockResolvedValue({
-      objects: [
-        new Error('not found'),
-        { objectId: 'b', version: '2', digest: 'd2' },
-      ],
-    });
-    const res = await interactor.getObjects(['a', 'b']);
-    expect(res).toEqual([{ objectId: 'b', version: '2', digest: 'd2' }]);
-  });
+	it("should filter out Error objects in getObjects", async () => {
+		client0.core.getObjects.mockResolvedValue({
+			objects: [
+				new Error("not found"),
+				{ objectId: "b", version: "2", digest: "d2" },
+			],
+		});
+		const res = await interactor.getObjects(["a", "b"]);
+		expect(res).toEqual([{ objectId: "b", version: "2", digest: "d2" }]);
+	});
 
-  it('should throw if all clients fail in getObjects', async () => {
-    client0.core.getObjects.mockRejectedValue(new Error('fail'));
-    client1.core.getObjects.mockRejectedValue(new Error('fail'));
-    await expect(interactor.getObjects(['id1'])).rejects.toThrow(
-      'Failed to get objects with all fullnodes'
-    );
-  });
+	it("should throw if all clients fail in getObjects", async () => {
+		client0.core.getObjects.mockRejectedValue(new Error("fail"));
+		client1.core.getObjects.mockRejectedValue(new Error("fail"));
+		await expect(interactor.getObjects(["id1"])).rejects.toThrow(
+			"Failed to get objects with all fullnodes",
+		);
+	});
 
-  it('should call getObjects and return first in getObject', async () => {
-    const obj = { objectId: 'x', version: '1', digest: 'd1' };
-    interactor.getObjects = vi.fn().mockResolvedValue([obj]);
-    const res = await interactor.getObject('x');
-    expect(res).toBe(obj);
-    expect(interactor.getObjects).toHaveBeenCalledWith(['x'], undefined);
-  });
+	it("should call getObjects and return first in getObject", async () => {
+		const obj = { objectId: "x", version: "1", digest: "d1" };
+		interactor.getObjects = vi.fn().mockResolvedValue([obj]);
+		const res = await interactor.getObject("x");
+		expect(res).toBe(obj);
+		expect(interactor.getObjects).toHaveBeenCalledWith(["x"], undefined);
+	});
 
-  it('should update SuiSharedObject initialSharedVersion', async () => {
-    const sharedObj = new SuiSharedObject({ objectId: 'id1' });
-    interactor.getObjects = vi.fn().mockResolvedValue([
-      {
-        objectId: 'id1',
-        owner: { Shared: { initialSharedVersion: '123' } },
-      },
-    ]);
-    await interactor.updateObjects([sharedObj]);
-    expect(sharedObj.initialSharedVersion).toBe('123');
-  });
+	it("should update SuiSharedObject initialSharedVersion", async () => {
+		const sharedObj = new SuiSharedObject({ objectId: "id1" });
+		interactor.getObjects = vi.fn().mockResolvedValue([
+			{
+				objectId: "id1",
+				owner: { Shared: { initialSharedVersion: "123" } },
+			},
+		]);
+		await interactor.updateObjects([sharedObj]);
+		expect(sharedObj.initialSharedVersion).toBe("123");
+	});
 
-  it('should set SuiSharedObject initialSharedVersion to undefined if not Shared', async () => {
-    const sharedObj = new SuiSharedObject({ objectId: 'id1' });
-    interactor.getObjects = vi
-      .fn()
-      .mockResolvedValue([{ objectId: 'id1', owner: { NotShared: {} } }]);
-    await interactor.updateObjects([sharedObj]);
-    expect(sharedObj.initialSharedVersion).toBeUndefined();
-  });
+	it("should set SuiSharedObject initialSharedVersion to undefined if not Shared", async () => {
+		const sharedObj = new SuiSharedObject({ objectId: "id1" });
+		interactor.getObjects = vi
+			.fn()
+			.mockResolvedValue([{ objectId: "id1", owner: { NotShared: {} } }]);
+		await interactor.updateObjects([sharedObj]);
+		expect(sharedObj.initialSharedVersion).toBeUndefined();
+	});
 
-  it('should update SuiOwnedObject version and digest', async () => {
-    const ownedObj = new SuiOwnedObject({ objectId: 'id2' });
-    interactor.getObjects = vi
-      .fn()
-      .mockResolvedValue([{ objectId: 'id2', version: 'v1', digest: 'd1' }]);
-    await interactor.updateObjects([ownedObj]);
-    expect(ownedObj.version).toBe('v1');
-    expect(ownedObj.digest).toBe('d1');
-  });
+	it("should update SuiOwnedObject version and digest", async () => {
+		const ownedObj = new SuiOwnedObject({ objectId: "id2" });
+		interactor.getObjects = vi
+			.fn()
+			.mockResolvedValue([{ objectId: "id2", version: "v1", digest: "d1" }]);
+		await interactor.updateObjects([ownedObj]);
+		expect(ownedObj.version).toBe("v1");
+		expect(ownedObj.digest).toBe("d1");
+	});
 
-  it('should select coins and sum up to amount', async () => {
-    client0.core.listCoins = vi.fn().mockResolvedValueOnce({
-      objects: [
-        { objectId: 'a', digest: 'd', version: '1', balance: '60' },
-        { objectId: 'b', digest: 'e', version: '2', balance: '50' },
-      ],
-      hasNextPage: false,
-      cursor: null,
-    });
-    interactor.currentClient = client0;
-    const coins = await interactor.selectCoins('addr', 100);
-    expect(coins.length).toBe(2);
-    expect(coins[0].objectId).toBe('a');
-    expect(coins[1].objectId).toBe('b');
-  });
+	it("should select coins and sum up to amount", async () => {
+		client0.core.listCoins = vi.fn().mockResolvedValueOnce({
+			objects: [
+				{ objectId: "a", digest: "d", version: "1", balance: "60" },
+				{ objectId: "b", digest: "e", version: "2", balance: "50" },
+			],
+			hasNextPage: false,
+			cursor: null,
+		});
+		interactor.currentClient = client0;
+		const coins = await interactor.selectCoins("addr", 100);
+		expect(coins.length).toBe(2);
+		expect(coins[0].objectId).toBe("a");
+		expect(coins[1].objectId).toBe("b");
+	});
 
-  it('should throw if no coins found in selectCoins', async () => {
-    client0.core.listCoins = vi
-      .fn()
-      .mockResolvedValue({ objects: [], hasNextPage: false, cursor: null });
-    interactor.currentClient = client0;
-    await expect(interactor.selectCoins('addr', 100)).rejects.toThrow(
-      'No valid coins found for the transaction.'
-    );
-  });
+	it("should throw if no coins found in selectCoins", async () => {
+		client0.core.listCoins = vi
+			.fn()
+			.mockResolvedValue({ objects: [], hasNextPage: false, cursor: null });
+		interactor.currentClient = client0;
+		await expect(interactor.selectCoins("addr", 100)).rejects.toThrow(
+			"No valid coins found for the transaction.",
+		);
+	});
 });
 
-describe('SuiInteractor Utils', () => {
-  it('delay should resolve after given time', async () => {
-    // Enable fake timers
-    vi.useFakeTimers();
+describe("SuiInteractor Utils", () => {
+	it("delay should resolve after given time", async () => {
+		// Enable fake timers
+		vi.useFakeTimers();
 
-    const start = Date.now();
-    const delayPromise = delay(100); // Start the delay
+		const start = Date.now();
+		const delayPromise = delay(100); // Start the delay
 
-    // Fast-forward time
-    vi.advanceTimersToNextTimer();
+		// Fast-forward time
+		vi.advanceTimersToNextTimer();
 
-    await delayPromise; // Wait for the delay to complete
+		await delayPromise; // Wait for the delay to complete
 
-    const duration = Date.now() - start;
-    expect(duration).toBeGreaterThanOrEqual(100);
+		const duration = Date.now() - start;
+		expect(duration).toBeGreaterThanOrEqual(100);
 
-    // Restore real timers
-    vi.useRealTimers();
-  });
+		// Restore real timers
+		vi.useRealTimers();
+	});
 
-  it('batch should split array into chunks of given size', () => {
-    const arr = [1, 2, 3, 4, 5];
-    const result = batch(arr, 2);
-    expect(result).toEqual([[1, 2], [3, 4], [5]]);
-  });
+	it("batch should split array into chunks of given size", () => {
+		const arr = [1, 2, 3, 4, 5];
+		const result = batch(arr, 2);
+		expect(result).toEqual([[1, 2], [3, 4], [5]]);
+	});
 });

@@ -1,2 +1,2 @@
-export { SuiOwnedObject } from './suiOwnedObject.js';
-export { SuiSharedObject } from './suiSharedObject.js';
+export { SuiOwnedObject } from "./suiOwnedObject.js";
+export { SuiSharedObject } from "./suiSharedObject.js";

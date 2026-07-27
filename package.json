@@ -70,7 +70,7 @@
 		"bech32": "^2.0.0"
 	},
 	"peerDependencies": {
-		"@mysten/sui": "^2.0.0"
+		"@mysten/sui": "~2.22.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.0",

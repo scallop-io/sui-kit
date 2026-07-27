@@ -157,11 +157,8 @@ export class SuiKit {
 		if (tx instanceof SuiTxBlock) {
 			tx.setSender(this.getAddress(derivePathParams));
 		}
-		const txBlock = tx instanceof SuiTxBlock ? tx.txBlock : tx;
 		const txBytes =
-			txBlock instanceof Uint8Array
-				? txBlock
-				: await txBlock.build({ client: this.client });
+			tx instanceof Uint8Array ? tx : await tx.build({ client: this.client });
 		const keyPair = this.getKeypair(derivePathParams);
 		return await keyPair.signTransaction(txBytes);
 	}
@@ -181,11 +178,8 @@ export class SuiKit {
 		if (tx instanceof SuiTxBlock) {
 			tx.setSender(this.getAddress(derivePathParams));
 		}
-		const txBlock = tx instanceof SuiTxBlock ? tx.txBlock : tx;
 		const txBytes =
-			txBlock instanceof Uint8Array
-				? txBlock
-				: await txBlock.build({ client: this.client });
+			tx instanceof Uint8Array ? tx : await tx.build({ client: this.client });
 		return this.suiInteractor.dryRunTx(txBytes);
 	}
 
@@ -442,11 +436,8 @@ export class SuiKit {
 		if (tx instanceof SuiTxBlock) {
 			tx.setSender(this.getAddress(derivePathParams));
 		}
-		const txBlock = tx instanceof SuiTxBlock ? tx.txBlock : tx;
 		const txBytes =
-			txBlock instanceof Uint8Array
-				? txBlock
-				: await txBlock.build({ client: this.client });
+			tx instanceof Uint8Array ? tx : await tx.build({ client: this.client });
 
 		return this.suiInteractor.currentClient.core.simulateTransaction({
 			transaction: txBytes,

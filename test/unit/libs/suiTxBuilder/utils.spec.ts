@@ -1,4 +1,4 @@
-import { Transaction } from "@mysten/sui/transactions";
+import { SuiTxBlock } from "src/index.js";
 import {
 	convertAddressArg,
 	convertAmounts,
@@ -22,7 +22,7 @@ const mockSharedObject = { Object: { SharedObject: mockSharedObjectRef } };
 
 // Helper for Transaction mock
 function createTx() {
-	return new Transaction();
+	return new SuiTxBlock();
 }
 
 describe("util.ts", () => {

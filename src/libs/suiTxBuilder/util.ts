@@ -1,7 +1,6 @@
 import { bcs, isSerializedBcs, SerializedBcs } from "@mysten/bcs";
 import type { SuiClientTypes } from "@mysten/sui/client";
 import type {
-	Transaction,
 	TransactionArgument,
 	TransactionObjectArgument,
 } from "@mysten/sui/transactions";
@@ -12,6 +11,7 @@ import {
 	normalizeSuiAddress,
 	normalizeSuiObjectId,
 } from "@mysten/sui/utils";
+import type { SuiTxBlock } from "src/libs/suiTxBuilder/index.js";
 import type {
 	SuiAddressArg,
 	SuiAmountsArg,
@@ -150,7 +150,7 @@ function isSharedObjectRef(
  * @param type 'address' | 'bool' | 'u8' | 'u16' | 'u32' | 'u64' | 'u128' | 'u256' | 'signer' | 'object' | string
  */
 export function makeVecParam(
-	txBlock: Transaction,
+	txBlock: SuiTxBlock,
 	args: SuiTxArg[],
 	type?: SuiInputTypes,
 ): TransactionArgument {
@@ -199,7 +199,7 @@ export function makeVecParam(
  * @returns The converted array of TransactionArgument.
  */
 export function convertArgs(
-	txBlock: Transaction,
+	txBlock: SuiTxBlock,
 	args: (SuiTxArg | SuiVecTxArg | SuiObjectArg | SuiAmountsArg)[],
 ): TransactionArgument[] {
 	return args.map((arg) => {
@@ -230,7 +230,7 @@ export function convertArgs(
  * @returns The converted TransactionArgument.
  */
 export function convertAddressArg(
-	txBlock: Transaction,
+	txBlock: SuiTxBlock,
 	arg: SuiAddressArg,
 ): SuiTxArg {
 	if (typeof arg === "string" && isValidSuiAddress(arg)) {
@@ -248,7 +248,7 @@ export function convertAddressArg(
  * @returns The converted TransactionArgument.
  */
 export function convertObjArg(
-	txb: Transaction,
+	txb: SuiTxBlock,
 	arg: SuiObjectArg,
 ): TransactionObjectArgument {
 	if (typeof arg === "string") {
@@ -290,7 +290,7 @@ export function convertObjArg(
 }
 
 export function convertAmounts(
-	txBlock: Transaction,
+	txBlock: SuiTxBlock,
 	amounts: SuiAmountsArg[],
 ): TransactionArgument[] {
 	return amounts.map((amount) => {

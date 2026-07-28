@@ -213,6 +213,54 @@ const pkgId =
 })();
 ```
 
+#### SuiTxBlock and `Transaction`
+
+`SuiTxBlock` extends `Transaction` from `@mysten/sui`, so every base method and
+property is available directly on it — there is no wrapped `.txBlock` to reach
+through.
+
+```typescript
+const tx = new SuiTxBlock();
+tx.setSender(sender);
+const coin = tx.object('<objId>');
+const [amount] = tx.splitCoins(tx.gas, [1000]);
+const bytes = await tx.build({ client: suiKit.client });
+```
+
+You can also copy or restore a transaction as a `SuiTxBlock`:
+
+```typescript
+import { Transaction } from '@mysten/sui/transactions';
+
+// copy an existing Transaction (or SuiTxBlock)
+const copy = new SuiTxBlock(new Transaction());
+// restore from `toJSON()` output or BCS transaction bytes
+const restored = SuiTxBlock.from(await tx.toJSON());
+// restore from transaction kind bytes
+const kind = SuiTxBlock.fromKind(
+  await tx.build({ client: suiKit.client, onlyTransactionKind: true })
+);
+```
+
+The overridden helpers accept sui-kit's looser argument types, so object ids,
+object refs and shared object refs work anywhere an object is expected:
+
+```typescript
+tx.splitCoins({ objectId: '<objId>', version: '1', digest: '<digest>' }, [1000]);
+tx.mergeCoins('<destObjId>', ['<srcObjId1>', '<srcObjId2>']);
+tx.transferObjects(['<objId>'], recipient);
+```
+
+Two differences from the base class to keep in mind:
+
+- `moveCall` takes positional arguments (`target`, `args`, `typeArgs`) as shown
+  above; the base `{ target, arguments, typeArguments }` object form is not
+  accepted.
+- Because `moveCall` narrows the base signature, TypeScript may require a cast
+  when passing a `SuiTxBlock` to an API typed as `Transaction`. `SuiKit` methods
+  such as `signTxn`, `signAndSendTxn`, `dryRunTxn` and `inspectTxn` accept it
+  directly.
+
 ### Multi-accounts
 
 SuiKit follows bip32 & bip39 standard, so you can use it to manage multiple accounts.

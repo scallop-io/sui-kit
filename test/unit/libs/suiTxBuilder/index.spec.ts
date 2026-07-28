@@ -1,3 +1,4 @@
+import { Transaction } from "@mysten/sui/transactions";
 import { SuiTxBlock } from "src/libs/suiTxBuilder/index.js";
 import { SuiKit } from "src/suiKit.js";
 import { describe, expect, it } from "vitest";
@@ -82,6 +83,149 @@ describe("SuiTxBlock", () => {
 		const tx = createTxBlock();
 		const result = tx.stakeSui(1, suiKit.currentAddress);
 		expect(result).toBeDefined();
+	});
+});
+
+describe("SuiTxBlock as a Transaction subclass", () => {
+	const SENDER = `0x${"1".repeat(64)}`;
+	const COIN_ID = `0x${"2".repeat(64)}`;
+
+	function sourceTx() {
+		const tx = new Transaction();
+		tx.setSender(SENDER);
+		tx.splitCoins(tx.gas, [1]);
+		return tx;
+	}
+
+	// SuiTxBlock is passed directly to @mysten/sui APIs that expect a Transaction,
+	// so the prototype chain must hold.
+	it("is an instance of Transaction", () => {
+		expect(new SuiTxBlock()).toBeInstanceOf(Transaction);
+	});
+
+	it("starts empty when constructed without a transaction", () => {
+		expect(new SuiTxBlock().getData().commands).toHaveLength(0);
+	});
+
+	it("copies commands and sender from an existing transaction", () => {
+		const source = sourceTx();
+		const tx = new SuiTxBlock(source);
+
+		expect(tx).toBeInstanceOf(SuiTxBlock);
+		expect(tx.getData().sender).toBe(SENDER);
+		expect(tx.getData().commands).toEqual(source.getData().commands);
+	});
+
+	// The copy is produced by re-pointing a base Transaction at SuiTxBlock's
+	// prototype, so verify the subclass helpers are actually reachable on it.
+	it("exposes SuiTxBlock helpers on a copied transaction", () => {
+		const tx = new SuiTxBlock(sourceTx());
+		tx.moveCall("0x1::module::func", [COIN_ID]);
+
+		expect(tx.getData().commands).toHaveLength(2);
+		expect(tx.getData().commands[1].$kind).toBe("MoveCall");
+	});
+
+	it("does not mutate the source transaction when copying", () => {
+		const source = sourceTx();
+		const tx = new SuiTxBlock(source);
+		tx.splitCoins(tx.gas, [2]);
+
+		expect(source.getData().commands).toHaveLength(1);
+		expect(tx.getData().commands).toHaveLength(2);
+	});
+
+	it("from() restores a serialized transaction as a SuiTxBlock", async () => {
+		const source = sourceTx();
+		const tx = SuiTxBlock.from(await source.toJSON());
+
+		expect(tx).toBeInstanceOf(SuiTxBlock);
+		expect(tx.getData().sender).toBe(SENDER);
+		expect(tx.getData().commands).toHaveLength(1);
+	});
+
+	it("fromKind() restores transaction kind bytes as a SuiTxBlock", async () => {
+		const kind = await sourceTx().build({ onlyTransactionKind: true });
+		const tx = SuiTxBlock.fromKind(kind);
+
+		expect(tx).toBeInstanceOf(SuiTxBlock);
+		expect(tx.getData().commands).toHaveLength(1);
+	});
+});
+
+describe("SuiTxBlock.splitCoins", () => {
+	const COIN_ID = `0x${"2".repeat(64)}`;
+
+	// The override exists so that every SuiObjectArg shape accepted elsewhere in
+	// the class also works here; the base Transaction.splitCoins rejects these.
+	it("accepts an object reference as the coin", () => {
+		const tx = new SuiTxBlock();
+		tx.splitCoins({ objectId: COIN_ID, version: "1", digest: "abc" }, [1]);
+
+		const [command] = tx.getData().commands;
+		expect(command.$kind).toBe("SplitCoins");
+		expect(tx.getData().inputs[0].$kind).toBe("Object");
+	});
+
+	it("accepts an ObjectCallArg as the coin", () => {
+		const tx = new SuiTxBlock();
+		tx.splitCoins(
+			{
+				Object: {
+					ImmOrOwnedObject: { objectId: COIN_ID, version: "1", digest: "abc" },
+				},
+			},
+			[1],
+		);
+
+		expect(tx.getData().commands[0].$kind).toBe("SplitCoins");
+		expect(tx.getData().inputs[0].$kind).toBe("Object");
+	});
+
+	// SuiAmountsArg allows strings so callers can pass u64 values that overflow
+	// `number`; they must be serialized as pure u64, not treated as object ids.
+	it("serializes string amounts as pure u64 inputs", () => {
+		const tx = new SuiTxBlock();
+		tx.splitCoins(tx.gas, ["18446744073709551615"]);
+
+		const input = tx.getData().inputs[0];
+		expect(input.$kind).toBe("Pure");
+		expect(input.Pure?.bytes).toBe("//////////8=");
+	});
+
+	it("returns one result per requested amount", () => {
+		const tx = new SuiTxBlock();
+		const coins = tx.splitCoins(tx.gas, [1, 2, 3]);
+
+		expect(coins[0]).toBeDefined();
+		expect(coins[1]).toBeDefined();
+		expect(coins[2]).toBeDefined();
+	});
+});
+
+describe("SuiTxBlock.moveCall", () => {
+	it("rejects a target that is not package::module::function", () => {
+		const tx = new SuiTxBlock();
+		expect(() => tx.moveCall("not-a-move-target")).toThrow(
+			/Invalid target format/,
+		);
+	});
+
+	it("converts positional args and type args", () => {
+		const tx = new SuiTxBlock();
+		tx.moveCall(
+			"0x2::coin::zero",
+			[`0x${"3".repeat(64)}`, 42],
+			["0x2::sui::SUI"],
+		);
+
+		const [command] = tx.getData().commands;
+		expect(command.$kind).toBe("MoveCall");
+		expect(command.MoveCall?.typeArguments).toEqual(["0x2::sui::SUI"]);
+		expect(command.MoveCall?.arguments).toHaveLength(2);
+		// a bare object id stays unresolved until build time; the amount is pure u64
+		expect(tx.getData().inputs[0].$kind).toBe("UnresolvedObject");
+		expect(tx.getData().inputs[1].$kind).toBe("Pure");
 	});
 });
 
